@@ -1,0 +1,85 @@
+services:
+  # Base de Datos
+  db-global:
+    image: postgres:15
+    container_name: postgres-wetube
+    environment:
+      POSTGRES_USER: ${user_db_env}
+      POSTGRES_PASSWORD: ${password_db_env}
+    volumes:
+      - ./init-db:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Consul
+  consul:
+    image: hashicorp/consul:1.15
+    container_name: consul-server
+    ports:
+      - "8500:8500"
+    command: agent -dev -client=0.0.0.0
+
+  # MinIO
+  minio:
+    image: minio/minio
+    container_name: minio-server
+    environment:
+      - MINIO_ROOT_USER=${minio_accessKey_env}
+      - MINIO_ROOT_PASSWORD=${minio_secretKey_env}
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    command: server /data --console-address ":9001"
+
+#microservicio auth
+  auth-service:
+    build:
+      context: ./auth
+      dockerfile: Dockerfile
+    container_name: auth-microservice
+    ports:
+      - "8081:8081"
+    depends_on:
+      db-global:
+        condition: service_healthy
+      consul:
+        condition: service_started
+    environment:
+      - user_db=${user_db_env}
+      - password_db=${password_db_env}
+      - JWT_SECRET=${jwt_secret_env}
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db-global:5432/authdb
+      - SPRING_CLOUD_CONSUL_HOST=consul
+
+  # microservicio video
+  video-service:
+    build: 
+      context: ./video
+      dockerfile: Dockerfile
+    container_name: video-microservice
+    ports:
+      - "8082:8082"
+    depends_on:
+      db-global:
+        condition: service_healthy
+      consul:
+        condition: service_started
+      minio:
+        condition: service_started
+    environment:
+      - user_db=${user_db_env}
+      - password_db=${password_db_env}
+      - JWT_SECRET=${jwt_secret_env}
+      - MINIO_ACCESS_KEY=${minio_accessKey_env}
+      - MINIO_SECRET_KEY=${minio_secretKey_env}
+      - AWS_ACCESS_KEY=${aws_accessKey_env}
+      - AWS_SECRET_KEY=${aws_secretKey_env}
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db-global:5432/videodb
+      - SPRING_CLOUD_CONSUL_HOST=consul
+      - MINIO_URL=http://minio:9000
+      - STORAGE_TYPE=minio
