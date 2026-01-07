@@ -1,0 +1,72 @@
+# Documentación o archivos innecesarios
+HELP.md
+
+# Archivos compilados y generados por Maven/Gradle
+**/target/
+build/
+!.mvn/wrapper/maven-wrapper.jar
+
+# Spring Boot (STS)
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# VS Code
+.vscode/
+
+# Maven Wrapper (opcionalmente puedes incluirlo en Git)
+mvnw
+mvnw.cmd
+.mvn/
+
+# Gradle (si usas Gradle en lugar de Maven)
+.gradle/
+gradle-app.setting
+
+# Logs y archivos temporales
+logs/
+log/
+*.log
+
+# Configuraciones del sistema operativo
+.DS_Store
+Thumbs.db
+
+# Evitar que recursos de `src/main/resources` sean ignorados accidentalmente
+!src/main/resources/static/
+!src/main/resources/templates/
+!application.properties
+
+#archivos multimedia pesados
+**/test-data/
+*.mp4
+*.mkv
+*.avi
+*.mov
+*.jpg
+*.png
+
+#otros
+#ignorar todos los archivos txt en todos los niveles
+**/*.txt
+**/*.http
+
+#credenciales
+.env
