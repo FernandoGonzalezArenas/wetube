@@ -1,0 +1,48 @@
+package com.wetube.comments.controller;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.wetube.comments.dto.CommentDtoEntrada;
+import com.wetube.comments.security.JwtUtil;
+import com.wetube.comments.service.CommentService;
+import com.wetube.comments.service.CommentServiceImpl;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.MockBeans;
+import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.web.servlet.MockMvc;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+
+@WebMvcTest(CommentsController.class)
+public class CommentsControllerTest {
+
+@Autowired
+    private MockMvc mockMvc;
+@MockBean
+    private CommentService commentService;
+@MockBean
+    private JwtUtil jwtUtil;
+@Autowired
+    private ObjectMapper mapper;
+
+@Test
+    @WithMockUser
+    void createComment_ShouldReturnBadRequest_WhenContentIsTooLong() throws  Exception{
+    //un comentario de mas de 1200 caracteres
+    String longContent="a".repeat(1202);
+    CommentDtoEntrada entrada=new CommentDtoEntrada(1L, longContent);
+    mockMvc.perform(post("/comentarios")
+            .with(csrf())
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(mapper.writeValueAsString(entrada)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.message").value("validacion fallida"))
+            .andExpect(jsonPath("$.fieldErrors.content").exists());
+}
+
+}

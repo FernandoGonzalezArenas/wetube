@@ -80,7 +80,6 @@ CommentEntity comment=commentRepository.findById(id)
         throw new ResponseStatusException(HttpStatus.FORBIDDEN, "no tienes permiso para modificar este comentario");
     }
     comment.setContent(content.getContent());
-    comment.setUpdatedAt(LocalDateTime.now());
     return mapToDto(commentRepository.save(comment));
  }
 

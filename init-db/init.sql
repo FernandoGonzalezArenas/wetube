@@ -1,2 +1,3 @@
 CREATE DATABASE authdb;
 CREATE DATABASE videodb;
+CREATE DATABASE commentdb;

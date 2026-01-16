@@ -101,5 +101,5 @@ services:
       - user_db=${user_db_env}
       - password_db=${password_db_env}
       - JWT_SECRET=${jwt_secret_env}
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://db-global:5432/commentsdb
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db-global:5432/commentdb
       - SPRING_CLOUD_CONSUL_HOST=consul
