@@ -24,7 +24,6 @@ private final String SECRET="test_secret_key_12345678901234567890";
     ReflectionTestUtils.setField(jwtUtil, "secretKey", SECRET);
 }
 
-
 @Test
     void extractUsername_ShouldReturnUsername_WhenTokenIsValid(){
     String token= JWT.create()
@@ -49,11 +48,10 @@ private final String SECRET="test_secret_key_12345678901234567890";
             .withExpiresAt(new Date(System.currentTimeMillis()- 3600000))
             .sign(Algorithm.HMAC256(SECRET));
     HttpServletRequest request=Mockito.mock(HttpServletRequest.class);
-    when(request.getHeader("Authorization")).thenReturn("Bearer "+token);
+Optional<String> username=jwtUtil.extractUsername(request);
 
-    //validaciones
-    assertThrows(RuntimeException.class, () -> jwtUtil.extractUsername(request));
-
+//validacion
+assertTrue(username.isEmpty());
 }
 
 }

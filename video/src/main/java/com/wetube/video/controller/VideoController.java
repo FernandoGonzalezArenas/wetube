@@ -1,28 +1,17 @@
 package com.wetube.video.controller;
 
-import java.util.List;
-import java.util.Map;
-
-import com.wetube.video.dto.UploadUrlResponse;
-import com.wetube.video.security.JwtUtil;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.wetube.video.dto.InteractionsDto;
+import com.wetube.video.dto.UploadUrlResponse;
 import com.wetube.video.dto.VideoDto;
 import com.wetube.video.dto.VideoDtoEntrada;
+import com.wetube.video.security.JwtUtil;
 import com.wetube.video.service.VideoService;
-
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/videos")
@@ -38,16 +27,15 @@ private JwtUtil jwtUtil;
 
 //controlador para generar una URL firmada para subir un video a S3
     @GetMapping("/upload-url")
-    public ResponseEntity<UploadUrlResponse> getUploadUrl(@RequestParam String filename, HttpServletRequest request){
-        jwtUtil.getUseridOrThrow(request);
+    public ResponseEntity<UploadUrlResponse> getUploadUrl(@RequestParam String filename){
        UploadUrlResponse  response= videoService.generateUploadUrl(filename);
     return ResponseEntity.ok(response);
     }
 
 //controlador para guardar los metadatos de el video despues de la subida
     @PostMapping("/save-metadata")
-    public ResponseEntity<VideoDto> saveVideoMetadata(@Valid @RequestBody VideoDtoEntrada entrada, HttpServletRequest request){
-    VideoDto saveVideo= videoService.saveVideoMetadata(entrada, request);
+    public ResponseEntity<VideoDto> saveVideoMetadata(@Valid @RequestBody VideoDtoEntrada entrada){
+    VideoDto saveVideo= videoService.saveVideoMetadata(entrada);
     return ResponseEntity.ok(saveVideo);
     }
 
@@ -62,9 +50,9 @@ public ResponseEntity<List<VideoDto>> getFeed(@RequestParam(required = false) Lo
 }
 
     @GetMapping("/interactions/{videoId}")
-    public ResponseEntity<InteractionsDto> getInteractions(@PathVariable Long videoId){
+    public ResponseEntity<InteractionsDto> getInteractions(@PathVariable Long videoId, @RequestParam(value = "lastId", required = false) Long lastId, @RequestParam(value = "limit", defaultValue = "10") Integer limit){
 try {
-    return ResponseEntity.ok(videoService.getInteractions(videoId));
+    return ResponseEntity.ok(videoService.getInteractions(videoId, lastId, limit));
 }catch (Exception e){
     return ResponseEntity.notFound().build();
 }

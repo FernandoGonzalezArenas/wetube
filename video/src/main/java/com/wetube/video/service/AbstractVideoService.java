@@ -4,12 +4,12 @@ import com.wetube.video.dto.*;
 import com.wetube.video.entity.VideoEntity;
 import com.wetube.video.repository.VideoRepository;
 import com.wetube.video.security.JwtUtil;
-import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -32,10 +32,10 @@ this.interactionsService=interactionsService;
 
     //metodo para guardar los metadatos de el video
     @Override
-    public VideoDto saveVideoMetadata(VideoDtoEntrada entrada, HttpServletRequest request){
+    public VideoDto saveVideoMetadata(VideoDtoEntrada entrada){
         String videoUrl = buildFullVideoUrl(entrada.getFilename());
-Long userId= jwtUtil.getUseridOrThrow(request);
-VideoEntity video = new VideoEntity();
+Long userId=(Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        VideoEntity video = new VideoEntity();
             video.setUserId(userId);
             video.setTitle(entrada.getTitle());
             video.setDescription(entrada.getDescription());
@@ -61,9 +61,8 @@ return result.map(this::mapToDto);
     }
 
     @Override
-    public InteractionsDto getInteractions(Long videoId){
-
-            List<CommentsDto> comments=interactionsService.getCommentsByVideo(videoId);
+    public InteractionsDto getInteractions(Long videoId, Long lastId, Integer limit){
+         List<CommentsDto> comments=interactionsService.getCommentsByVideo(videoId, lastId, limit);
             long likes=interactionsService.countLikes(videoId);
 
         return new InteractionsDto(comments, likes);

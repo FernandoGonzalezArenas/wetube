@@ -20,18 +20,18 @@ public InteractionsService(CommentsClient commentsClient, LikesClient likesClien
 }
 
     //metodos circuitbreaker para controlar las fayas de microservicios a los que se llama
-    @CircuitBreaker(name = "comment-service", fallbackMethod = "fallbackForComments")
-    public List<CommentsDto> getCommentsByVideo(Long videoId){
-        return commentsClient.getCommentsByVideo(videoId);
+    @CircuitBreaker(name = "comments", fallbackMethod = "fallbackForComments")
+    public List<CommentsDto> getCommentsByVideo(Long videoId, Long lastId, Integer limit){
+        return commentsClient.getCommentsByVideo(videoId, lastId, limit);
     }
 
-    @CircuitBreaker(name = "like-service", fallbackMethod = "fallbackForLikes")
+    @CircuitBreaker(name = "likes", fallbackMethod = "fallbackForLikes")
     public long countLikes(Long videoId){
         return likesClient.countLikes(videoId);
     }
 
-    public List<CommentsDto> fallbackForComments(Long videoId, Throwable throwable){
-        return List.of(new CommentsDto("sistema", "comentarios temporalmente no disponibles (Resilience4J fallback)", null, null));
+    public List<CommentsDto> fallbackForComments(Long videoId, Long lastId, Integer limit, Throwable throwable){
+        return List.of(CommentsDto.builder().usernameAuthor("sistema").content("comentarios temporalmente no disponibles... ").build());
     }
 
     public  long fallbackForLikes(Long videoId, Throwable throwable){

@@ -3,7 +3,7 @@ FROM eclipse-temurin:21-jdk-jammy
 #crear un directorio de trabajo en el contenedor
 WORKDIR /app
 #copiar el archivo jar de el microservicio previamente creado con mvn clean package 
-COPY target/*.jar app.jar
+COPY target/video-0.0.1-SNAPSHOT.jar app.jar
 
 #exponer el puerto que usa el microservicio
 EXPOSE 8082

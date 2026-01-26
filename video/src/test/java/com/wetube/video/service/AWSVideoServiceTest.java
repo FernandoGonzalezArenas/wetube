@@ -1,16 +1,10 @@
 package com.wetube.video.service;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.when;
-
 import com.wetube.video.dto.UploadUrlResponse;
 import com.wetube.video.dto.VideoDtoEntrada;
 import com.wetube.video.entity.VideoEntity;
 import com.wetube.video.repository.VideoRepository;
 import com.wetube.video.security.JwtUtil;
-import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -18,12 +12,20 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.util.ReflectionTestUtils;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
 
 import java.net.URL;
+import java.util.Collections;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class AWSVideoServiceTest {
@@ -37,16 +39,17 @@ public class AWSVideoServiceTest {
 @Mock
     private S3Presigner s3Presigner;
 @Mock
-    private HttpServletRequest request;
-@Mock
     private PresignedPutObjectRequest presignedPutObjectRequest;
 
 private AWSVideoServiceImpl service;
+private Long userId=1L;
 
 @BeforeEach
     void setup(){
     service=new AWSVideoServiceImpl(repository, interactionsService, jwtUtil, s3Presigner);
     ReflectionTestUtils.setField(service, "bucketName", "aws-bucket-videos");
+    UsernamePasswordAuthenticationToken auth=new UsernamePasswordAuthenticationToken(userId, null, Collections.emptyList());
+    SecurityContextHolder.getContext().setAuthentication(auth);
 }
 
 @Test
@@ -59,9 +62,8 @@ private AWSVideoServiceImpl service;
             .thumbnailUrl("img.jpg")
             .build();
 
-when(jwtUtil.getUseridOrThrow(request)).thenReturn(99L);
 ArgumentCaptor<VideoEntity> captor=ArgumentCaptor.forClass(VideoEntity.class);
-service.saveVideoMetadata(entrada, request);
+service.saveVideoMetadata(entrada);
 
 //validaciones
     verify(repository).save(captor.capture());

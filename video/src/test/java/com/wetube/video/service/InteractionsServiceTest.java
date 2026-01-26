@@ -31,9 +31,9 @@ public class InteractionsServiceTest {
     @Test
     @DisplayName("debe retornar comentarios cuando el cliente responde OK")
     void shouldReturnCommentsOnSuccess(){
-        when(commentsClient.getCommentsByVideo(1L))
-                .thenReturn(List.of(new CommentsDto("user1", "hola", null, null)));
-        List<CommentsDto> result=service.getCommentsByVideo(1L);
+        when(commentsClient.getCommentsByVideo(1L, null, 10))
+                .thenReturn(List.of(CommentsDto.builder().usernameAuthor("user1").content("hola").build()));
+        List<CommentsDto> result=service.getCommentsByVideo(1L, null, 10);
 
         //validaciones
         assertEquals(1, result.size());
@@ -43,7 +43,7 @@ public class InteractionsServiceTest {
     @Test
     @DisplayName("debe retornar fallback manual y retornar lista por defecto ante error")
 void shouldExecuteFallbackLogic(){
-        List<CommentsDto> result=service.fallbackForComments(1L, new RuntimeException("error feign"));
+        List<CommentsDto> result=service.fallbackForComments(1L, null, 10, new RuntimeException("error feign"));
 
 assertEquals(1, result.size());
 assertEquals("sistema", result.get(0).getUsernameAuthor());

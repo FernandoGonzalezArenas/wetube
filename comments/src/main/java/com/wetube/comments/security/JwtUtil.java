@@ -39,12 +39,12 @@ public boolean isTokenExpired(String token){
     public  Optional<String> extractUsername(HttpServletRequest request){
         try {
             String token =extractToken(request);
-            if (token != null && !isTokenExpired(token)) {
-                DecodedJWT decodedJWT = JWT.decode(token);
+            if (token != null) {
+                DecodedJWT decodedJWT =validateToken(token);
                 return Optional.ofNullable(decodedJWT.getSubject());
             }
         }catch (Exception e){
-            throw new RuntimeException("token invalido o usuario no autenticado");
+return Optional.empty();
         }
         return Optional.empty();
     }

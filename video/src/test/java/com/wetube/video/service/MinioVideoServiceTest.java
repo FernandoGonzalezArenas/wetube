@@ -7,7 +7,6 @@ import com.wetube.video.entity.VideoEntity;
 import com.wetube.video.repository.VideoRepository;
 import com.wetube.video.security.JwtUtil;
 import io.minio.MinioClient;
-import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,7 +14,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.util.ReflectionTestUtils;
+
+import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -33,9 +36,9 @@ public class MinioVideoServiceTest {
     private JwtUtil jwtUtil;
 @Mock
     private MinioClient minioClient;
-@Mock
-    private HttpServletRequest request;
 private MinioVideoServiceImpl service;
+
+private Long userId=55L;
 
 @BeforeEach
     void setup(){
@@ -45,6 +48,10 @@ private MinioVideoServiceImpl service;
     //inyectamos valores de value con ReflectionTestUtils
     ReflectionTestUtils.setField(service, "bucketName", "test-bucket");
     ReflectionTestUtils.setField(service, "minioUrl", "http://localhost:9000");
+
+    //agregamos el userId a el contexto de spring
+    UsernamePasswordAuthenticationToken auth=new UsernamePasswordAuthenticationToken(userId, null, Collections.emptyList());
+    SecurityContextHolder.getContext().setAuthentication(auth);
 }
 
 @Test
@@ -57,12 +64,11 @@ private MinioVideoServiceImpl service;
             .thumbnailUrl("/thumb.jpg")
             .build();
 
-when(jwtUtil.getUseridOrThrow(request)).thenReturn(55L);
 
 //capturamos lo que se envia al repositorio para verificarlo
 ArgumentCaptor<VideoEntity> captor=ArgumentCaptor.forClass(VideoEntity.class);
 
-    VideoDto result=service.saveVideoMetadata(entrada, request);
+    VideoDto result=service.saveVideoMetadata(entrada);
 
     //verificaciones y validaciones
     verify(repository).save(captor.capture());

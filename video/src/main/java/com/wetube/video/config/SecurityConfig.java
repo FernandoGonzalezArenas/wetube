@@ -1,7 +1,7 @@
-package com.wetube.likes.config;
+package com.wetube.video.config;
 
-import com.wetube.likes.security.JwtAuthenticationFilter;
-import com.wetube.likes.security.JwtUtil;
+import com.wetube.video.security.JwtAuthenticationFilter;
+import com.wetube.video.security.JwtUtil;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -24,18 +24,18 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws  Exception {
-        http
-                .csrf(csrf -> csrf.disable())
-                .cors(cors -> cors.disable())
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.GET, "/like/*/count").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/like/*/status").permitAll()
-                        .requestMatchers("/actuator/**").permitAll()
-                        .anyRequest().authenticated())
-                .addFilterBefore(new JwtAuthenticationFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
-        return http.build();
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
+http
+        .csrf(csrf -> csrf.disable())
+        .cors(cors -> cors.disable())
+        .sessionManagement(sesion -> sesion.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .authorizeHttpRequests(auth -> auth
+                .requestMatchers(HttpMethod.GET, "/videos/search/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/videos/feed/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/videos/interactions/*").permitAll()
+                .anyRequest().authenticated())
+        .addFilterBefore(new JwtAuthenticationFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
+return http.build();
     }
 
     @Bean

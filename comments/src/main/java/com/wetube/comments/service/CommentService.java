@@ -3,18 +3,17 @@ package com.wetube.comments.service;
 import com.wetube.comments.dto.CommentDtoEntrada;
 import com.wetube.comments.dto.CommentsDto;
 import com.wetube.comments.dto.UpdateCommentDto;
-import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.List;
 
 public interface CommentService {
 
-     CommentsDto saveComments(CommentDtoEntrada comment, HttpServletRequest request);
+     CommentsDto saveComments(CommentDtoEntrada comment);
 
-     List<CommentsDto> getCommentsByVideo(Long videoId, Long lastId, int limit);
+     List<CommentsDto> getCommentsByVideo(Long videoId, Long lastId, Integer limit);
 
-     void  deleteComment(Long id, HttpServletRequest request);
+     void  deleteComment(Long id);
 
-     CommentsDto editComment(Long id, UpdateCommentDto content, HttpServletRequest request);
+     CommentsDto editComment(Long id, UpdateCommentDto content);
 
 }

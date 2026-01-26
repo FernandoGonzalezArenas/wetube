@@ -5,7 +5,7 @@ FROM eclipse-temurin:21-jdk-jammy
 WORKDIR /app
 
 #copiar el archivo jar previamente creado a el contenedor 
-COPY target/*.jar app.jar
+COPY target/auth-0.0.1-SNAPSHOT.jar app.jar
 
 #exponer el puerto que usa el microservicio
 EXPOSE 8081

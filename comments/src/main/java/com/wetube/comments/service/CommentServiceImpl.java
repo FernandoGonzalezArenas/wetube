@@ -6,17 +6,15 @@ import com.wetube.comments.dto.UpdateCommentDto;
 import com.wetube.comments.entity.CommentEntity;
 import com.wetube.comments.repository.CommentRepository;
 import com.wetube.comments.security.JwtUtil;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -33,8 +31,8 @@ public class CommentServiceImpl implements CommentService{
 
 //guardar un comentario
 @Override
-    public CommentsDto saveComments(CommentDtoEntrada comment, HttpServletRequest request){
-String username= jwtUtil.getUsernameOrThrow(request);
+    public CommentsDto saveComments(CommentDtoEntrada comment){
+    String username=(String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     if (comment.getVideoId() == null) {
         throw new IllegalArgumentException("el videoId es obligatorio para poder guardar un comentario correctamente");
     }
@@ -49,7 +47,7 @@ String username= jwtUtil.getUsernameOrThrow(request);
 
 //obtener los comentarios de un video
     @Override
-    public List<CommentsDto> getCommentsByVideo(Long videoId, Long lastId, int limit){
+    public List<CommentsDto> getCommentsByVideo(Long videoId, Long lastId, Integer limit){
         Pageable pageable= PageRequest.of(0, limit);
         List<CommentEntity> comments= commentRepository.findNextComments(videoId, lastId, pageable);
         return comments.stream().map(this::mapToDto).collect(Collectors.toList());
@@ -57,9 +55,9 @@ String username= jwtUtil.getUsernameOrThrow(request);
 
     //eliminar un comentario
 @Override
-    public void  deleteComment(Long id, HttpServletRequest request){
-    String username=jwtUtil.getUsernameOrThrow(request);
-CommentEntity comment= commentRepository.findById(id)
+    public void  deleteComment(Long id){
+String username=(String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    CommentEntity comment= commentRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "comentario no encontrado"));
 
 //validacion de autoría
@@ -72,9 +70,9 @@ CommentEntity comment= commentRepository.findById(id)
 
     //editar un comentario
 @Override
-    public CommentsDto editComment(Long id, UpdateCommentDto content, HttpServletRequest request){
-String username= jwtUtil.getUsernameOrThrow(request);
-CommentEntity comment=commentRepository.findById(id)
+    public CommentsDto editComment(Long id, UpdateCommentDto content){
+String username=(String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    CommentEntity comment=commentRepository.findById(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     if (!comment.getUsernameAuthor().equals(username)){
         throw new ResponseStatusException(HttpStatus.FORBIDDEN, "no tienes permiso para modificar este comentario");
