@@ -4,8 +4,6 @@ import com.wetube.likes.Service.LikeServiceImpl;
 import com.wetube.likes.dto.VideoLikeStatusDto;
 import com.wetube.likes.entity.LikeEntity;
 import com.wetube.likes.repository.LikeRepository;
-import com.wetube.likes.security.JwtUtil;
-import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,8 +24,6 @@ public class LikeServiceImplTest {
 
 @Mock
     private LikeRepository repository;
-@Mock
-    private JwtUtil jwtUtil;
 @InjectMocks
     private LikeServiceImpl service;
 

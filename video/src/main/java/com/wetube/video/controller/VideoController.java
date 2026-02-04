@@ -4,7 +4,6 @@ import com.wetube.video.dto.InteractionsDto;
 import com.wetube.video.dto.UploadUrlResponse;
 import com.wetube.video.dto.VideoDto;
 import com.wetube.video.dto.VideoDtoEntrada;
-import com.wetube.video.security.JwtUtil;
 import com.wetube.video.service.VideoService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -18,11 +17,9 @@ import java.util.List;
 public class VideoController {
 
 private final VideoService videoService;
-private JwtUtil jwtUtil;
 
-    public VideoController(VideoService videoService, JwtUtil jwtUtil){
+    public VideoController(VideoService videoService){
     this.videoService = videoService;
-    this.jwtUtil=jwtUtil;
 }
 
 //controlador para generar una URL firmada para subir un video a S3

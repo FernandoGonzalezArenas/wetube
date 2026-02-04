@@ -5,7 +5,6 @@ import com.wetube.comments.dto.CommentsDto;
 import com.wetube.comments.dto.UpdateCommentDto;
 import com.wetube.comments.entity.CommentEntity;
 import com.wetube.comments.repository.CommentRepository;
-import com.wetube.comments.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -21,12 +20,10 @@ import java.util.stream.Collectors;
 public class CommentServiceImpl implements CommentService{
 
     private final CommentRepository commentRepository;
-    private final JwtUtil jwtUtil;
 
 @Autowired
-    public CommentServiceImpl(CommentRepository commentRepository, JwtUtil jwtUtil){
+    public CommentServiceImpl(CommentRepository commentRepository){
     this.commentRepository=commentRepository;
-    this.jwtUtil=jwtUtil;
 }
 
 //guardar un comentario

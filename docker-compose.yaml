@@ -123,3 +123,19 @@ services:
       - JWT_SECRET=${jwt_secret_env}
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db-global:5432/likedb
       - SPRING_CLOUD_CONSUL_HOST=consul
+
+#microservicio gateway
+  gateway-service:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    container_name: gateway-microservice
+    ports:
+      - "8080:8080"
+    depends_on:
+      consul:
+        condition: service_started
+    environment:
+      - JWT_SECRET=${jwt_secret_env}
+      - SPRING_CLOUD_CONSUL_HOST=consul
+      - SPRING_CLOUD_CONSUL_PORT=8500

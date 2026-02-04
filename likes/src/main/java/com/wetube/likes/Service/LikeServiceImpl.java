@@ -3,7 +3,6 @@ package com.wetube.likes.Service;
 import com.wetube.likes.dto.VideoLikeStatusDto;
 import com.wetube.likes.entity.LikeEntity;
 import com.wetube.likes.repository.LikeRepository;
-import com.wetube.likes.security.JwtUtil;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,12 +16,10 @@ import java.util.Optional;
 public class LikeServiceImpl implements LikeService{
 
 private final LikeRepository likeRepository;
-private final JwtUtil jwtUtil;
 
 @Autowired
-    public LikeServiceImpl(LikeRepository likeRepository, JwtUtil jwtUtil){
+    public LikeServiceImpl(LikeRepository likeRepository){
     this.likeRepository=likeRepository;
-    this.jwtUtil=jwtUtil;
 }
 
 //agregar o eliminar like de el video

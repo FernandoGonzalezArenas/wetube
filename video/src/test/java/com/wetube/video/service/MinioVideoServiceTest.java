@@ -5,7 +5,6 @@ import com.wetube.video.dto.VideoDto;
 import com.wetube.video.dto.VideoDtoEntrada;
 import com.wetube.video.entity.VideoEntity;
 import com.wetube.video.repository.VideoRepository;
-import com.wetube.video.security.JwtUtil;
 import io.minio.MinioClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -33,8 +32,6 @@ public class MinioVideoServiceTest {
 @Mock
     private InteractionsService interactionsService;
 @Mock
-    private JwtUtil jwtUtil;
-@Mock
     private MinioClient minioClient;
 private MinioVideoServiceImpl service;
 
@@ -43,7 +40,7 @@ private Long userId=55L;
 @BeforeEach
     void setup(){
     //instanciamos la verdadera implementacion de la clase
-    service=new MinioVideoServiceImpl(repository, interactionsService, jwtUtil, minioClient);
+    service=new MinioVideoServiceImpl(repository, interactionsService, minioClient);
 
     //inyectamos valores de value con ReflectionTestUtils
     ReflectionTestUtils.setField(service, "bucketName", "test-bucket");

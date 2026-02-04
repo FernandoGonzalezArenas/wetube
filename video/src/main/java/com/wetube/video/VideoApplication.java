@@ -10,8 +10,10 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 @EnableFeignClients
 public class VideoApplication {
 
-	public static void main(String[] args) {
+	public static void main(String[] args)
+    {
 		SpringApplication.run(VideoApplication.class, args);
+        System.out.println("**prueba de diagnostico: log V2");
 	}
 
 }

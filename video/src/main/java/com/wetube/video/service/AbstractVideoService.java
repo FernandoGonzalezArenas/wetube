@@ -3,7 +3,6 @@ package com.wetube.video.service;
 import com.wetube.video.dto.*;
 import com.wetube.video.entity.VideoEntity;
 import com.wetube.video.repository.VideoRepository;
-import com.wetube.video.security.JwtUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,14 +17,12 @@ public abstract  class AbstractVideoService implements VideoService{
 
     protected final VideoRepository videoRepository;
 protected final  InteractionsService interactionsService;
-    protected final JwtUtil jwtUtil;
     protected static final Logger logger= LoggerFactory.getLogger(MinioVideoServiceImpl.class);
 
     @Autowired
-    public AbstractVideoService(VideoRepository videoRepository, InteractionsService interactionsService, JwtUtil jwtUtil){
+    public AbstractVideoService(VideoRepository videoRepository, InteractionsService interactionsService){
         this.videoRepository=videoRepository;
 this.interactionsService=interactionsService;
-        this.jwtUtil=jwtUtil;
     }
 
     public abstract UploadUrlResponse generateUploadUrl(String filename);

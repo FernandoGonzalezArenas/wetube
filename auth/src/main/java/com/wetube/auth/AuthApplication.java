@@ -10,8 +10,10 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableScheduling
 public class AuthApplication {
 
-	public static void main(String[] args) {
+	public static void main(String[] args)
+    {
 		SpringApplication.run(AuthApplication.class, args);
+        System.out.println("**prueba de diagnostico: log V2");
 	}
 
 }

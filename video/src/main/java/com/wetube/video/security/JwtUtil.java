@@ -4,14 +4,12 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import jakarta.servlet.http.HttpServletRequest;
-import java.util.Date;
-import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-import org.springframework.web.server.ResponseStatusException;
+
+import java.util.Optional;
 
 @Component
 public class JwtUtil {
@@ -24,20 +22,24 @@ public class JwtUtil {
     public Optional<Long> extractUserId(HttpServletRequest request){
         try {
             String token=extractToken(request);
-if (token!=null && !isTokenExpired(token)){
-    DecodedJWT decodedJWT= validateToken(token);
+if (token==null) return Optional.empty();
+    DecodedJWT decodedJWT= JWT.require(Algorithm.HMAC256(secretKey))
+            .build()
+            .verify(token);
     String userID_str=decodedJWT.getClaim("userId").asString();
     if (userID_str==null){
-        logger.warn("el token no contiene el userId");
+userID_str=decodedJWT.getClaim("userId").toString().replace("\"", "");
+    }
+
+    if (userID_str==null || userID_str.isEmpty() ||userID_str.equals("null")){
+        logger.warn("el token tiene un formato valido pero el userId esta vacío");
         return Optional.empty();
     }
-return Optional.of(Long.parseLong(userID_str));
-}
+    return Optional.of(Long.parseLong(userID_str));
         }catch (Exception e){
-            logger.error("error con la extraccion de el userId", e.getMessage(), e);
+            logger.error("error con la extraccion de el userId {}", e.getMessage());
             return Optional.empty();
         }
-return Optional.empty();
     }
 
     private static String extractToken(HttpServletRequest request){
@@ -47,20 +49,5 @@ return Optional.empty();
         }
 return null;
     }
-
-public DecodedJWT validateToken(String token){
-        return JWT.require(Algorithm.HMAC256(secretKey))
-                .build()
-                .verify(token);
-}
-
-public boolean isTokenExpired(String token){
-        return validateToken(token).getExpiresAt().before(new Date());
-}
-
-public Long getUseridOrThrow(HttpServletRequest request){
-        return extractUserId(request)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "usuario no autenticado"));
-}
 
 }

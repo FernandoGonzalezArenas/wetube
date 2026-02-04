@@ -4,15 +4,16 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Date;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class JwtUtilTest {
 
@@ -52,13 +53,23 @@ String token= JWT.create()
             assertFalse(userId.isPresent());
         }
 
-@Test
-        void isTokenExpired_ShouldReturnTrue_WhenTokenIsOld(){
-            String token=JWT.create()
-                    .withExpiresAt(new Date(System.currentTimeMillis() - 3600000))
+        @Test
+    @DisplayName("debe extraer el userId de el token incluso si viene como numero en el JSON (con comillas)")
+    void shouldExtractUserIdWhenItIsWrappedInQuotes(){
+    //simular un token
+            String token= JWT.create()
+                    .withClaim("userId", "77")
+                    .withExpiresAt(new Date(System.currentTimeMillis() + 60000))
                     .sign(Algorithm.HMAC256(SECRET));
 
-            assertThrows(Exception.class, () -> jwtUtil.isTokenExpired(token));
-    }
+            HttpServletRequest request=mock(HttpServletRequest.class);
+
+            when(request.getHeader("Authorization")).thenReturn("Bearer "+token);
+            Optional<Long> userId=jwtUtil.extractUserId(request);
+
+            //validaciones
+            assertTrue(userId.isPresent());
+            assertEquals(77L, userId.get());
+        }
 
 }

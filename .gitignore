@@ -67,6 +67,7 @@ Thumbs.db
 #ignorar todos los archivos txt en todos los niveles
 **/*.txt
 **/*.http
+**/.editorconfig
 
 #credenciales
 .env

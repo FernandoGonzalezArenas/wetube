@@ -57,11 +57,11 @@ CustomUserDetails userDetails=userDetailsMethod(username);
     @Override
     public AuthResponse refreshToken(String refreshToken){
         if (refreshToken==null || refreshToken.isBlank()){
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "token invalido");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "se requiere un refreshToken valido");
         }
 
         RefreshTokenEntity refresh=refreshTokenRepository.findByToken(refreshToken)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "token no encontrado o expirado"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "refreshToken no encontrado o expirado"));
 
         if (refresh.getExpiryDate().isBefore(Instant.now())){
             refreshTokenRepository.delete(refresh);

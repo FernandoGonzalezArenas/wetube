@@ -19,19 +19,18 @@ import com.wetube.auth.security.JwtFilter;
 @Configuration
 public class SecurityConfig {
 
+    private final JwtFilter jwtFilter;
+
+    public SecurityConfig(JwtFilter jwtFilter){
+        this.jwtFilter=jwtFilter;
+    }
+
 @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtFilter jwtFilter, AuthenticationManager authenticationManager) throws Exception{
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception{
     return http
-    .cors(cors -> cors.configurationSource(Request -> {
-CorsConfiguration config=new CorsConfiguration();
-config.setAllowedOrigins(List.of("http://localhost:8000"));
-config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-config.setAllowedHeaders(List.of("*"));
-return config;
-    }))
     .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                    .requestMatchers("/auth/register", "/auth/login", "/auth/refresh").permitAll()
+                    .requestMatchers("/actuator/**", "/auth/register", "/auth/login", "/auth/refresh").permitAll()
                     .anyRequest().authenticated())
             .authenticationManager(authenticationManager)
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)

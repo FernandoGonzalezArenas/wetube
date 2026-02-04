@@ -27,10 +27,9 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
     http
             .csrf(csrf -> csrf.disable())
-            .cors(cors -> cors.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                    .requestMatchers(HttpMethod.GET, "/comentarios/*").permitAll() //el gateway ya valida el jwt
+                    .requestMatchers(HttpMethod.GET, "/comentarios/**").permitAll() //el gateway ya valida el jwt
                     .requestMatchers("/actuator/**").permitAll()
                     .anyRequest().authenticated())
             .addFilterBefore(new JwtAuthenticationFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);

@@ -2,7 +2,6 @@ package com.wetube.comments.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wetube.comments.dto.CommentDtoEntrada;
-import com.wetube.comments.security.JwtUtil;
 import com.wetube.comments.service.CommentService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,8 +23,6 @@ public class CommentsControllerTest {
     private MockMvc mockMvc;
 @MockBean
     private CommentService commentService;
-@MockBean
-    private JwtUtil jwtUtil;
 @Autowired
     private ObjectMapper mapper;
 

@@ -5,7 +5,6 @@ import com.wetube.comments.dto.CommentsDto;
 import com.wetube.comments.dto.UpdateCommentDto;
 import com.wetube.comments.entity.CommentEntity;
 import com.wetube.comments.repository.CommentRepository;
-import com.wetube.comments.security.JwtUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,8 +29,6 @@ public class CommentServiceImplTest {
 
 @Mock
     private CommentRepository repository;
-@Mock
-    private JwtUtil jwtUtil;
 
 @InjectMocks
     private CommentServiceImpl service;

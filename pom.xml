@@ -21,6 +21,7 @@
         <module>video</module>
         <module>comments</module>
         <module>likes</module>
+        <module>gateway</module>
         </modules>
 
     <properties>

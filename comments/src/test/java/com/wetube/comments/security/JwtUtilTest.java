@@ -11,7 +11,8 @@ import org.springframework.test.util.ReflectionTestUtils;
 import java.util.Date;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 public class JwtUtilTest {
 
@@ -48,7 +49,8 @@ private final String SECRET="test_secret_key_12345678901234567890";
             .withExpiresAt(new Date(System.currentTimeMillis()- 3600000))
             .sign(Algorithm.HMAC256(SECRET));
     HttpServletRequest request=Mockito.mock(HttpServletRequest.class);
-Optional<String> username=jwtUtil.extractUsername(request);
+when(request.getHeader("Authorization")).thenReturn("Bearer "+ token);
+    Optional<String> username=jwtUtil.extractUsername(request);
 
 //validacion
 assertTrue(username.isEmpty());

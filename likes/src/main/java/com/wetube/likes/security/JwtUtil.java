@@ -5,11 +5,8 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Date;
 import java.util.Optional;
 
 @Component
@@ -21,18 +18,24 @@ public class JwtUtil {
     public Optional<Long> extractUserId(HttpServletRequest request){
 try {
     String token = extractToken(request);
-    if (token != null && !isTokenExpired(token)) {
-        DecodedJWT decodedJWT = JWT.decode(token);
+if (token==null) return Optional.empty();
+
+        DecodedJWT decodedJWT = JWT.require(Algorithm.HMAC256(secretKey))
+                .build()
+                .verify(token);
 
         String userIdStr=decodedJWT.getClaim("userId").asString();
-        if (userIdStr!=null) {
-            return Optional.of(Long.parseLong(userIdStr));
+        if (userIdStr==null) {
+userIdStr=decodedJWT.getClaim("userId").toString().replace("\"", "");
         }
-    }
+if (userIdStr==null || userIdStr.isEmpty() ||userIdStr.equals("null")){
+    return Optional.empty();
+}
+
+    return Optional.of(Long.parseLong(userIdStr));
 }catch (Exception e){
 return Optional.empty();
 }
-return Optional.empty();
     }
 
 private String extractToken(HttpServletRequest request){
@@ -41,21 +44,6 @@ private String extractToken(HttpServletRequest request){
             return authorizationHeader.substring(7);
         }
 return null;
-    }
-
-    public DecodedJWT validateToken(String token){
-        return JWT.require(Algorithm.HMAC256(secretKey))
-                .build()
-                .verify(token);
-    }
-
-    public boolean isTokenExpired(String token){
-        return validateToken(token).getExpiresAt().before(new Date());
-    }
-
-    public Long getUseridOrThrow(HttpServletRequest request){
-        return extractUserId(request)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "usuario no autenticado"));
     }
 
 }

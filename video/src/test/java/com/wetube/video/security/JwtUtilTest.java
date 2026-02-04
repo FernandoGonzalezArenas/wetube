@@ -11,12 +11,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.web.server.ResponseStatusException;
 
-import static org.mockito.Mockito.when;
-import static org.junit.jupiter.api.Assertions.*;
 import java.util.Date;
 import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class JwtUtilTest {
@@ -27,7 +28,7 @@ public class JwtUtilTest {
 @Mock
     private HttpServletRequest request;
 
-private final String SECRET="secret-test";
+private final String SECRET="test_secret_key_12345678901234567890";
 
 @BeforeEach
     void setup(){
@@ -64,12 +65,20 @@ assertEquals(10L, userId.get());
 }
 
 @Test
-    @DisplayName("debe lanzar excepcion si se requiere usuario y no hay token")
-    void shouldThrowExceptionIfRequiredAndNoToken(){
-    when(request.getHeader("Authorization")).thenReturn(null);
-    assertThrows(ResponseStatusException.class, () -> {
-        jwtUtil.getUseridOrThrow(request);
-    });
+    @DisplayName("debe extraer el userId de el token incluso si viene como numero en el JSON (con comillas)")
+void shouldExtractUserIdWhenItIsWrappedInQuotes(){
+    //simulamos un token donde el claim no es un string puro
+    String token= JWT.create()
+            .withClaim("userId", "77")
+            .withExpiresAt(new Date(System.currentTimeMillis() + 60000))
+            .sign(Algorithm.HMAC256(SECRET));
+
+    when(request.getHeader("Authorization")).thenReturn("Bearer "+ token);
+Optional<Long> userId=jwtUtil.extractUserId(request);
+
+//validaciones
+    assertTrue(userId.isPresent());
+    assertEquals(77L, userId.get());
 }
 
 }

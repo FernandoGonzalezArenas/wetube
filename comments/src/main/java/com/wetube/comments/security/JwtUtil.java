@@ -5,11 +5,8 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Date;
 import java.util.Optional;
 
 @Component
@@ -26,32 +23,18 @@ return authorizationHeader.substring(7);
 return null;
 }
 
-public DecodedJWT validateToken(String token){
-    return JWT.require(Algorithm.HMAC256(secretKey))
-            .build()
-            .verify(token);
-}
-
-public boolean isTokenExpired(String token){
-    return validateToken(token).getExpiresAt().before(new Date());
-}
-
     public  Optional<String> extractUsername(HttpServletRequest request){
         try {
             String token =extractToken(request);
-            if (token != null) {
-                DecodedJWT decodedJWT =validateToken(token);
+if (token==null) return Optional.empty();
+
+                DecodedJWT decodedJWT =JWT.require(Algorithm.HMAC256(secretKey))
+                        .build()
+                        .verify(token);
                 return Optional.ofNullable(decodedJWT.getSubject());
-            }
         }catch (Exception e){
 return Optional.empty();
         }
-        return Optional.empty();
-    }
-
-    public String getUsernameOrThrow(HttpServletRequest request){
-    return extractUsername(request)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "usuario no autenticado"));
     }
 
 }

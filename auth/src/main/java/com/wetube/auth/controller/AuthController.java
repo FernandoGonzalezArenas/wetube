@@ -18,7 +18,6 @@ import com.wetube.auth.service.RefreshTokenService;
 
 import jakarta.validation.Valid;
 
-@CrossOrigin(origins = "http://localhost:8000/")
  @RestController
 @RequestMapping("/auth")
 public class AuthController {

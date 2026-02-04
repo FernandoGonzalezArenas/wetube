@@ -8,8 +8,10 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 @EnableDiscoveryClient
 public class CommentsApplication {
 
-	public static void main(String[] args) {
+	public static void main(String[] args)
+    {
 		SpringApplication.run(CommentsApplication.class, args);
+        System.out.println("**prueba de diagnostico: log V2");
 	}
 
 }

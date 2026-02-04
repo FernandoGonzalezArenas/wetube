@@ -27,12 +27,12 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
 http
         .csrf(csrf -> csrf.disable())
-        .cors(cors -> cors.disable())
         .sessionManagement(sesion -> sesion.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.GET, "/videos/search/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/videos/feed/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/videos/interactions/*").permitAll()
+                .requestMatchers(HttpMethod.GET, "/videos/interactions/**").permitAll()
+                .requestMatchers("/actuator/**").permitAll()
                 .anyRequest().authenticated())
         .addFilterBefore(new JwtAuthenticationFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
 return http.build();

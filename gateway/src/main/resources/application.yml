@@ -1,0 +1,48 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: gateway
+  config:
+    import: "optional:consul:"
+  cloud:
+    loadbalancer:
+      cache:
+        enabled: true
+        ttl: 5s
+    consul:
+      host: ${SPRING_CLOUD_CONSUL_HOST:localhost}
+      port: 8500
+      discovery:
+        instance-id: ${spring.application.name}:${random.value}
+        health-check-path: /actuator/health
+        health-check-interval: 10s
+        prefer-ip-address: true
+    gateway:
+      routes:
+        #ruta para microservicio auth
+        - id: auth
+          uri: lb://auth
+          predicates:
+            - Path=/auth/**
+
+        #ruta para microservicio video
+        - id: video
+          uri: lb://video
+          predicates:
+              - Path=/videos/**
+
+        #ruta de microservicio comments
+        - id: comments
+          uri: lb://comments
+          predicates:
+            - Path=/comentarios/**
+        #ruta de microservicio likes
+        - id: likes
+          uri: lb://likes
+          predicates:
+            - Path=/like/**
+#seguridad JWT
+jwt:
+  secret: ${JWT_SECRET}

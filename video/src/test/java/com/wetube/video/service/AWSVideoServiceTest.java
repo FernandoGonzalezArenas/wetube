@@ -4,7 +4,6 @@ import com.wetube.video.dto.UploadUrlResponse;
 import com.wetube.video.dto.VideoDtoEntrada;
 import com.wetube.video.entity.VideoEntity;
 import com.wetube.video.repository.VideoRepository;
-import com.wetube.video.security.JwtUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -35,8 +34,6 @@ public class AWSVideoServiceTest {
 @Mock
     private InteractionsService interactionsService;
 @Mock
-    private JwtUtil jwtUtil;
-@Mock
     private S3Presigner s3Presigner;
 @Mock
     private PresignedPutObjectRequest presignedPutObjectRequest;
@@ -46,7 +43,7 @@ private Long userId=1L;
 
 @BeforeEach
     void setup(){
-    service=new AWSVideoServiceImpl(repository, interactionsService, jwtUtil, s3Presigner);
+    service=new AWSVideoServiceImpl(repository, interactionsService, s3Presigner);
     ReflectionTestUtils.setField(service, "bucketName", "aws-bucket-videos");
     UsernamePasswordAuthenticationToken auth=new UsernamePasswordAuthenticationToken(userId, null, Collections.emptyList());
     SecurityContextHolder.getContext().setAuthentication(auth);

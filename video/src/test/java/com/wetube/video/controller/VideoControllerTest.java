@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wetube.video.dto.InteractionsDto;
 import com.wetube.video.dto.UploadUrlResponse;
 import com.wetube.video.dto.VideoDtoEntrada;
-import com.wetube.video.security.JwtUtil;
 import com.wetube.video.service.VideoService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -19,11 +18,11 @@ import java.util.Collections;
 
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 @WebMvcTest(VideoController.class)
 public class VideoControllerTest {
 
@@ -33,8 +32,6 @@ public class VideoControllerTest {
     @MockBean
     private VideoService videoService;
 
-    @MockBean
-    private JwtUtil jwtUtil;
 
     @Autowired
     private ObjectMapper mapper;

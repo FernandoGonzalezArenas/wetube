@@ -1,19 +1,16 @@
 package com.wetube.video.service;
 
-import java.time.Duration;
-import java.util.UUID;
-
 import com.wetube.video.dto.UploadUrlResponse;
+import com.wetube.video.repository.VideoRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
-
-import com.wetube.video.repository.VideoRepository;
-import com.wetube.video.security.JwtUtil;
-
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
+
+import java.time.Duration;
+import java.util.UUID;
 
 @Service
 @ConditionalOnProperty(name = "storage.type", havingValue = "aws")
@@ -24,8 +21,8 @@ public class AWSVideoServiceImpl extends AbstractVideoService {
 @Value("${aws.s3.bucket-name}")
     private String bucketName;
 
-    public AWSVideoServiceImpl(VideoRepository videoRepository, InteractionsService interactionsService, JwtUtil jwtUtil, S3Presigner s3Presigner){
-    super(videoRepository, interactionsService, jwtUtil);
+    public AWSVideoServiceImpl(VideoRepository videoRepository, InteractionsService interactionsService, S3Presigner s3Presigner){
+    super(videoRepository, interactionsService);
     this.s3Presigner=s3Presigner;
 }
 

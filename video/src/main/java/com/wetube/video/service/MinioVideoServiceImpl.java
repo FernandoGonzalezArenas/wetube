@@ -1,21 +1,18 @@
 package com.wetube.video.service;
 
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-
 import com.wetube.video.dto.UploadUrlResponse;
+import com.wetube.video.repository.VideoRepository;
+import io.minio.GetPresignedObjectUrlArgs;
+import io.minio.MinioClient;
+import io.minio.http.Method;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
-import com.wetube.video.repository.VideoRepository;
-import com.wetube.video.security.JwtUtil;
-
-import io.minio.GetPresignedObjectUrlArgs;
-import io.minio.MinioClient;
-import io.minio.http.Method;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @ConditionalOnProperty(name = "storage.type", havingValue = "minio")
@@ -30,8 +27,8 @@ private static final Logger logger= LoggerFactory.getLogger(MinioVideoServiceImp
 @Value("${minio.url}")
 private String minioUrl;
 
-    public MinioVideoServiceImpl(VideoRepository videoRepository, InteractionsService interactionsService, JwtUtil jwtUtil, MinioClient minioClient){
-    super(videoRepository, interactionsService, jwtUtil);
+    public MinioVideoServiceImpl(VideoRepository videoRepository, InteractionsService interactionsService, MinioClient minioClient){
+    super(videoRepository, interactionsService);
     this.minioClient=minioClient;
 }
 
