@@ -1,11 +1,15 @@
 package com.wetube.auth.controller;
 
-import java.util.Map;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.wetube.auth.dto.AuthResponse;
+import com.wetube.auth.dto.LoginRequest;
+import com.wetube.auth.dto.RefreshTokenRequest;
+import com.wetube.auth.dto.RegisterRequest;
+import com.wetube.auth.security.JwtUtil;
+import com.wetube.auth.service.AuthService;
+import com.wetube.auth.service.RefreshTokenService;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.when;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -13,18 +17,13 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.web.servlet.MockMvc;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.wetube.auth.dto.AuthResponse;
-import com.wetube.auth.dto.LoginRequest;
-import com.wetube.auth.dto.RegisterRequest;
-import com.wetube.auth.security.JwtUtil;
-import com.wetube.auth.service.AuthService;
-import com.wetube.auth.service.RefreshTokenService;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(AuthController.class) //carga solo la capa MVC de el controlador
 @AutoConfigureMockMvc(addFilters=false) //se desactivan los filtros de seguridad para esta prueba
@@ -75,11 +74,14 @@ mvc.perform(post("/auth/login")
 
 @Test
 void  refresh_200_devuelveTokens() throws  Exception{
-when(refreshTokenService.refreshToken("REF")).thenReturn(new AuthResponse("NEW_ACC", "NEW_REF"));
+when(refreshTokenService.refreshToken("REF_TOKEN_VALIDO")).thenReturn(new AuthResponse("NEW_ACC", "NEW_REF"));
+
+    RefreshTokenRequest req=new RefreshTokenRequest();
+    req.setRefreshToken("REF_TOKEN_VALIDO");
 
 mvc.perform(post("/auth/refresh")
 .contentType(MediaType.APPLICATION_JSON)
-.content(mapper.writeValueAsString(Map.of("refreshToken", "REF"))))
+.content(mapper.writeValueAsString(req)))
 .andExpect(status().isOk())
 .andExpect(jsonPath("$.accessToken").value("NEW_ACC"))
 .andExpect(jsonPath("$.refreshToken").value("NEW_REF"));
@@ -87,13 +89,28 @@ mvc.perform(post("/auth/refresh")
 
 @Test
 void  logout_200_ok() throws  Exception{
-doNothing().when(refreshTokenService).deleteByToken("REF");
+doNothing().when(refreshTokenService).deleteByToken(anyString());
+
+RefreshTokenRequest req=new RefreshTokenRequest();
+req.setRefreshToken("REF_TOKEN_VALIDO");
 
 mvc.perform(post("/auth/logout")
 .contentType(MediaType.APPLICATION_JSON)
-.content(mapper.writeValueAsString(Map.of("refreshToken", "REF"))))
+.content(mapper.writeValueAsString(req)))
 .andExpect(status().isOk())
 .andExpect(content().string("sesion cerrada correctamente"));
+}
+
+@Test
+@DisplayName("debe fayar (400) si el refreshToken esta en blanco")
+void refresh_tokenBlanco_400() throws Exception{
+    RefreshTokenRequest req=new RefreshTokenRequest();
+    req.setRefreshToken("");
+
+    mvc.perform(post("/auth/refresh")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(mapper.writeValueAsString(req)))
+            .andExpect(status().isBadRequest());
 }
 
 @Test

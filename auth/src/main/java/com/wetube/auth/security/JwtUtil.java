@@ -58,11 +58,7 @@ public boolean isTokenValid(String token, String username){
 return false;
     }
 }
-/* 
-private  boolean isTokenExpired(DecodedJWT token){
-    return token.getExpiresAt().before(new Date());
-}
-*/
+
 private DecodedJWT verifyToken(String token){
     JWTVerifier verifier=JWT.require(Algorithm.HMAC256(secretKey)).build();
     return verifier.verify(token);

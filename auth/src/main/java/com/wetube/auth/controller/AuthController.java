@@ -1,22 +1,18 @@
 package com.wetube.auth.controller;
 
-import java.util.Map;
-
+import com.wetube.auth.dto.AuthResponse;
+import com.wetube.auth.dto.LoginRequest;
+import com.wetube.auth.dto.RefreshTokenRequest;
+import com.wetube.auth.dto.RegisterRequest;
+import com.wetube.auth.service.AuthService;
+import com.wetube.auth.service.RefreshTokenService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.wetube.auth.dto.AuthResponse;
-import com.wetube.auth.dto.LoginRequest;
-import com.wetube.auth.dto.RegisterRequest;
-import com.wetube.auth.service.AuthService;
-import com.wetube.auth.service.RefreshTokenService;
-
-import jakarta.validation.Valid;
 
  @RestController
 @RequestMapping("/auth")
@@ -43,16 +39,14 @@ public ResponseEntity<String> register(@Valid @RequestBody RegisterRequest reque
 }
 
 @PostMapping("/refresh")
-    public ResponseEntity<?> refreshToken(@RequestBody Map<String, String> request){
-        String refreshToken=request.get("refreshToken");
-        AuthResponse response=refreshTokenService.refreshToken(refreshToken);
+    public ResponseEntity<?> refreshToken(@Valid @RequestBody RefreshTokenRequest request){
+        AuthResponse response=refreshTokenService.refreshToken(request.getRefreshToken());
         return ResponseEntity.ok(response);
 }
 
 @PostMapping("/logout")
-public ResponseEntity<?> logout(@RequestBody Map<String, String> request){
-    String token= request.get("refreshToken");
-    refreshTokenService.deleteByToken(token);
+public ResponseEntity<?> logout(@Valid @RequestBody RefreshTokenRequest request){
+    refreshTokenService.deleteByToken(request.getRefreshToken());
     return ResponseEntity.ok("sesion cerrada correctamente");
     }
 }
