@@ -27,6 +27,12 @@ spring:
           predicates:
             - Path=/auth/**
 
+        #ruta para microservicio user
+        - id: user
+          uri: lb://user
+          predicates:
+            - Path=/users/**,/subs/**
+
         #ruta para microservicio video
         - id: video
           uri: lb://video

@@ -11,7 +11,7 @@ public class CommentsApplication {
 	public static void main(String[] args)
     {
 		SpringApplication.run(CommentsApplication.class, args);
-        System.out.println("**prueba de diagnostico: log V2");
+        System.out.println("**prueba de diagnostico: log V4");
 	}
 
 }

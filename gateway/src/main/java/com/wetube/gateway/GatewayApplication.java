@@ -8,7 +8,7 @@ public class GatewayApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(GatewayApplication.class, args);
-        System.out.println("**prueba de diagnostico: log V2");
+        System.out.println("**prueba de diagnostico: log V4");
 	}
 
 }

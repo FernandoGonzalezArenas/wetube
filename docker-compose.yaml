@@ -1,6 +1,12 @@
+networks:
+  wetube-network:
+    driver: bridge
+
 services:
   # Base de Datos
   db-global:
+    networks:
+      - wetube-network
     image: postgres:15
     container_name: postgres-wetube
     environment:
@@ -18,6 +24,8 @@ services:
 
   # Consul
   consul:
+    networks:
+      - wetube-network
     image: hashicorp/consul:1.15
     container_name: consul-server
     ports:
@@ -26,6 +34,8 @@ services:
 
   # MinIO
   minio:
+    networks:
+      - wetube-network
     image: minio/minio
     container_name: minio-server
     environment:
@@ -36,18 +46,29 @@ services:
       - "9001:9001"
     command: server /data --console-address ":9001"
 
+  rabbitmq:
+    networks:
+      - wetube-network
+    image: rabbitmq:3-management
+    container_name: rabbitmq-wetube
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
 #microservicio auth
   auth-service:
+    networks:
+      - wetube-network
     build:
       context: ./auth
       dockerfile: Dockerfile
     container_name: auth-microservice
-    ports:
-      - "8081:8081"
     depends_on:
       db-global:
         condition: service_healthy
       consul:
+        condition: service_started
+      rabbitmq:
         condition: service_started
     environment:
       - user_db=${user_db_env}
@@ -55,15 +76,18 @@ services:
       - JWT_SECRET=${jwt_secret_env}
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db-global:5432/authdb
       - SPRING_CLOUD_CONSUL_HOST=consul
+      - RABBIT_HOST=rabbitmq-wetube
+      - RABBIT_USER=guest
+      - RABBIT_PASSWORD=guest
 
   # microservicio video
   video-service:
+    networks:
+      - wetube-network
     build: 
       context: ./video
       dockerfile: Dockerfile
     container_name: video-microservice
-    ports:
-      - "8082:8082"
     depends_on:
       db-global:
         condition: service_healthy
@@ -86,12 +110,12 @@ services:
 
 #microservicio comments
   comments-service:
+    networks:
+      - wetube-network
     build:
       context: ./comments
       dockerfile: Dockerfile
     container_name: comments-microservice
-    ports:
-      - "8083:8083"
     depends_on:
       db-global:
         condition: service_healthy
@@ -106,12 +130,12 @@ services:
 
 #microservicio likes
   likes-service:
+    networks:
+      - wetube-network
     build:
       context: ./likes
       dockerfile: Dockerfile
     container_name: likes-microservice
-    ports:
-      - "8084:8084"
     depends_on:
       db-global:
         condition: service_healthy
@@ -124,8 +148,35 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db-global:5432/likedb
       - SPRING_CLOUD_CONSUL_HOST=consul
 
+#microservice user
+  user-service:
+    networks:
+      - wetube-network
+    build:
+      context: ./user
+      dockerfile: Dockerfile
+    container_name: user-microservice
+    depends_on:
+      db-global:
+        condition: service_healthy
+      consul:
+        condition: service_started
+      rabbitmq:
+        condition: service_started
+    environment:
+      - user_db=${user_db_env}
+      - password_db=${password_db_env}
+      - JWT_SECRET=${jwt_secret_env}
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db-global:5432/userdb
+      - SPRING_CLOUD_CONSUL_HOST=consul
+      - RABBIT_HOST=rabbitmq-wetube
+      - RABBIT_USER=guest
+      - RABBIT_PASSWORD=guest
+
 #microservicio gateway
   gateway-service:
+    networks:
+      - wetube-network
     build:
       context: ./gateway
       dockerfile: Dockerfile
@@ -139,3 +190,4 @@ services:
       - JWT_SECRET=${jwt_secret_env}
       - SPRING_CLOUD_CONSUL_HOST=consul
       - SPRING_CLOUD_CONSUL_PORT=8500
+

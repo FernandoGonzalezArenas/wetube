@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
+import java.util.Optional;
 
 @Component
 public class JwtUtil {
@@ -23,6 +24,16 @@ public DecodedJWT validateToken(String token){
 
 public String extractUserId(String token){
     return validateToken(token).getClaim("userId").asString();
+}
+
+public Optional<String> extractUsername(String token){
+    if (token==null) return Optional.empty();
+    try {
+        String username=validateToken(token).getSubject();
+        return Optional.of(username);
+    }catch (Exception e){
+        return Optional.empty();
+    }
 }
 
 public boolean isTokenExpired(String token){

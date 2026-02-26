@@ -11,7 +11,7 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 	public static void main(String[] args)
     {
 		SpringApplication.run(LikesApplication.class, args);
-        System.out.println("**prueba de diagnostico: log V2");
+        System.out.println("**prueba de diagnostico: log V4");
 	}
 
 }

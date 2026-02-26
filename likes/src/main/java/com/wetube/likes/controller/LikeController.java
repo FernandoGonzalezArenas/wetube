@@ -1,6 +1,7 @@
 package com.wetube.likes.controller;
 
 import com.wetube.likes.Service.LikeService;
+import com.wetube.likes.dto.IdsDto;
 import com.wetube.likes.dto.VideoLikeStatusDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -36,6 +37,12 @@ private final LikeService likeService;
 @GetMapping("/{videoId}/status")
     public ResponseEntity<VideoLikeStatusDto> getLikeStatus(@PathVariable Long videoId){
     return ResponseEntity.ok(likeService.getVideoLikeStatus(videoId));
+}
+
+@GetMapping("/me")
+    public ResponseEntity<IdsDto> getLikesVideosByUserId(@RequestHeader("X-User-Id") Long userId){
+    IdsDto videoIds=likeService.getLikesVideosByUserId(userId);
+  return ResponseEntity.ok(videoIds);
 }
 
 }

@@ -1,9 +1,7 @@
 package com.wetube.video.controller;
 
-import com.wetube.video.dto.InteractionsDto;
-import com.wetube.video.dto.UploadUrlResponse;
-import com.wetube.video.dto.VideoDto;
-import com.wetube.video.dto.VideoDtoEntrada;
+import com.wetube.video.dto.*;
+import com.wetube.video.entity.VideoEntity;
 import com.wetube.video.service.VideoService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
@@ -53,6 +51,21 @@ try {
 }catch (Exception e){
     return ResponseEntity.notFound().build();
 }
+    }
+
+    @PostMapping("/list-likes")
+    public ResponseEntity<List<VideoDto>> getVideosByIds(@RequestBody IdsDto ids){
+        return ResponseEntity.ok(videoService.getVideosByIds(ids));
+    }
+
+    @GetMapping("/{videoId}/play")
+    public ResponseEntity<VideoPlaybackDto> playVideo(@PathVariable Long videoId){
+        return ResponseEntity.ok(videoService.getVideoForPlayback(videoId));
+    }
+
+    @GetMapping("/my-feed-subs")
+    public ResponseEntity<List<VideoDto>> getSubscriptionsFeed(){
+        return ResponseEntity.ok(videoService.getSubscriptionsFeed());
     }
 
 }

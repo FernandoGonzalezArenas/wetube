@@ -23,8 +23,17 @@ public class VideoRepositoryTest {
 @Test
 @DisplayName("debe buscar videos ignorando mayusculas o minusculas")
     void ShouldFindVideosByTitleCaseInsensitive(){
-    repository.save(new VideoEntity(null, 1L, "spring boot intro", "desc", "url", null));
-repository.save(new VideoEntity(null, 2L, "advanced java", "desc", "url", null));
+    repository.save(VideoEntity.builder()
+            .userId(1L)
+            .title("spring boot intro")
+            .description("desc")
+            .videoUrl("url")
+            .build());
+repository.save(VideoEntity.builder().userId(2L)
+        .title("advanced java")
+        .description("desc")
+        .videoUrl("url")
+        .build());
 
     Page<VideoEntity> result=repository.searchByTitle("spring", PageRequest.of(0, 10));
 assertEquals(1, result.getTotalElements());
@@ -35,9 +44,27 @@ assertEquals("spring boot intro", result.getContent().get(0).getTitle());
     @DisplayName("debe retornar los siguientes videos basados en el ultimo ID (paginacion por cursor)")
     void shouldFindNextVideosBasedOnLastId(){
 //guardando videos
-    VideoEntity v1=repository.save(new VideoEntity(null, 101L, "video 1", "d", "u", "t"));
-    VideoEntity v2=repository.save(new VideoEntity(null, 101L, "video 2", "d", "u", "t"));
-    VideoEntity v3=repository.save(new VideoEntity(null, 101L, "video 3", "d", "u", "t"));
+    VideoEntity v1=repository.save(VideoEntity.builder()
+            .userId(101L)
+            .title("video 1")
+            .description("d")
+            .videoUrl("u")
+            .thumbnailUrl("t")
+            .build());
+    VideoEntity v2=repository.save(VideoEntity.builder()
+            .userId(101L)
+            .title("video 2")
+            .description("d")
+            .videoUrl("u")
+            .thumbnailUrl("t")
+            .build());
+    VideoEntity v3=repository.save(VideoEntity.builder()
+            .userId(101L)
+            .title("video 3")
+            .description("d")
+            .videoUrl("u")
+            .thumbnailUrl("t")
+            .build());
 
     Long lastId=v3.getId();
 

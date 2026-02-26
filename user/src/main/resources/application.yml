@@ -1,0 +1,52 @@
+server:
+  port: 8085
+
+spring:
+  application:
+    name: user
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/userdb}
+    username: ${user_db}
+    password: ${password_db}
+    driverClassName: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+
+  cloud:
+    consul:
+      host: ${SPRING_CLOUD_CONSUL_HOST:localhost}
+      port: 8500
+      discovery:
+        instance-id: ${spring.application.name}:${random.value}
+        health-check-path: /actuator/health
+        health-check-interval: 10s
+        enabled: true
+        register: true
+        prefer-ip-address: true
+  config:
+    import: "optional:consul:"
+
+
+  rabbitmq:
+    host: ${RABBIT_HOST:localhost}
+    port: 5672
+    username: ${RABBIT_USER:guest}
+    password: ${RABBIT_PASSWORD:guest}
+
+#seguridad jwt
+jwt:
+  secret: ${JWT_SECRET}
+
+
+
+#actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info
+  endpoint:
+    health:
+      show-details: always

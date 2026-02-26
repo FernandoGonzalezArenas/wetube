@@ -1,5 +1,13 @@
 package com.wetube.auth.service;
 
+import com.wetube.auth.config.RabbitMQConfig;
+import com.wetube.auth.dto.AuthResponse;
+import com.wetube.auth.dto.LoginRequest;
+import com.wetube.auth.dto.RegisterRequest;
+import com.wetube.auth.dto.UserRabbitDto;
+import com.wetube.auth.entity.UserEntity;
+import com.wetube.auth.repository.UserRepository;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -8,12 +16,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.wetube.auth.dto.AuthResponse;
-import com.wetube.auth.dto.LoginRequest;
-import com.wetube.auth.dto.RegisterRequest;
-import com.wetube.auth.entity.UserEntity;
-import com.wetube.auth.repository.UserRepository;
-
 @Service
 public class AuthServiceImpl implements AuthService{
 
@@ -21,12 +23,14 @@ public class AuthServiceImpl implements AuthService{
     private final PasswordEncoder passwordEncoder;
 private final AuthenticationManager authenticationManager;
 private final RefreshTokenService refreshTokenService;
+private final RabbitTemplate rabbitTemplate;
 
-public AuthServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, RefreshTokenService refreshTokenService){
+public AuthServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, RefreshTokenService refreshTokenService, RabbitTemplate rabbitTemplate){
     this.userRepository=userRepository;
     this.passwordEncoder=passwordEncoder;
     this.authenticationManager=authenticationManager;
 this.refreshTokenService=refreshTokenService;
+this.rabbitTemplate=rabbitTemplate;
 }
 
 @Override
@@ -42,6 +46,10 @@ public void register(RegisterRequest request){
     user.setAddress(request.getAddress());
     user.setPhone(request.getPhone());
     userRepository.save(user);
+    Long userId= user.getId();
+    String username=user.getUsername();
+UserRabbitDto message=new UserRabbitDto(userId, username);
+rabbitTemplate.convertAndSend(RabbitMQConfig.REGISTER_QUEUE, message);
 }
 
 @Override

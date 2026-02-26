@@ -32,6 +32,7 @@ http
                 .requestMatchers(HttpMethod.GET, "/videos/search/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/videos/feed/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/videos/interactions/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/videos/*/play").permitAll()
                 .requestMatchers("/actuator/**").permitAll()
                 .anyRequest().authenticated())
         .addFilterBefore(new JwtAuthenticationFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);

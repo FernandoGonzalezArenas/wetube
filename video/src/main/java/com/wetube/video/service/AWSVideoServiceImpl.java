@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
 
@@ -44,4 +45,23 @@ String objectName="videos/" + finalFileName;
     protected String buildFullVideoUrl(String filename){
     return "https://" + bucketName + ".s3.amazonaws.com/videos/" + filename;
     }
+
+@Override
+protected String getPlaybackUrl(String storedUrl){
+        //extraemos el nombre de el objeto
+    String key="videos/"+storedUrl.substring(storedUrl.lastIndexOf("/")+1);
+
+    try {
+        GetObjectPresignRequest getObjectPresignRequest=GetObjectPresignRequest.builder()
+                .signatureDuration(Duration.ofHours(2))
+                .getObjectRequest(req -> req.bucket(bucketName).key(key))
+                .build();
+
+        return s3Presigner.presignGetObject(getObjectPresignRequest).url().toString();
+    }catch (Exception e){
+logger.error("error generando URL de reproduccion AWS: {}", e.getMessage());
+return storedUrl; //retorna la URL original si faya
+    }
+}
+
 }

@@ -1,5 +1,6 @@
 package com.wetube.video.repository;
 
+import com.wetube.video.dto.VideoDto;
 import com.wetube.video.entity.VideoEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -13,5 +14,6 @@ public interface VideoRepository extends JpaRepository<VideoEntity, Long> {
     Page<VideoEntity> searchByTitle(String keyword, Pageable pageable);
     @Query("SELECT v FROM VideoEntity v WHERE (:lastId IS NULL OR v.id < :lastId) ORDER BY v.id DESC")
     List<VideoEntity> findNextVideos(Long lastId, Pageable pageable);
-
+List<VideoEntity> findByIdIn(List<Long> ids);
+List<VideoDto> findByUserIdInOrderByCreatedAtDesc(List<Long> channelsIds);
 }

@@ -1,5 +1,6 @@
 package com.wetube.likes.Service;
 
+import com.wetube.likes.dto.IdsDto;
 import com.wetube.likes.dto.VideoLikeStatusDto;
 
 public interface LikeService {
@@ -9,4 +10,5 @@ public interface LikeService {
 
      VideoLikeStatusDto getVideoLikeStatus(Long videoId);
 
+     IdsDto getLikesVideosByUserId(Long userId);
 }

@@ -44,8 +44,13 @@ String method=request.getMethod().name();
         path.matches("/comentarios/\\d+") ||
         path.matches("/like/\\d+/count") ||
         path.matches("/like/\\d+/status") ||
+        path.matches("/users/\\d+") ||
+        path.matches("/subs/\\d+/count") ||
+        path.matches("/subs/\\d+/status") ||
+        path.matches("/videos/\\d+/play") ||
         path.equals("/videos/feed") ||
-        path.equals("/videos/search"));
+        path.equals("/videos/search")
+);
 
 //obtener el hencabezado con el token
     String authHeader= request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
@@ -63,11 +68,13 @@ try {
         return unauthorizedResponse(exchange, "expired token");
     }
 String userId=jwtUtil.extractUserId(token);
+String username=jwtUtil.extractUsername(token).orElse("unknown");
 
     //mutar la peticion para que el token siga y agregar el userId limpio
     ServerWebExchange mutatedExchange=exchange.mutate()
         .request(exchange.getRequest().mutate()
             .header("X-User-Id", userId)
+            .header("X-UserName", username)
             .build())
         .build();
 

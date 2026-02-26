@@ -13,6 +13,8 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -32,6 +34,7 @@ private UserRepository userRepository;
 private PasswordEncoder passwordEncoder;
 private AuthenticationManager authenticationManager;
 private RefreshTokenService refreshTokenService;
+private RabbitTemplate rabbitTemplate;
 
 private AuthServiceImpl service;
 
@@ -41,7 +44,8 @@ void setUp(){
     passwordEncoder=mock(PasswordEncoder.class);
     authenticationManager=mock(AuthenticationManager.class);
     refreshTokenService=mock(RefreshTokenService.class);
-    service=new AuthServiceImpl(userRepository, passwordEncoder, authenticationManager, refreshTokenService);
+    rabbitTemplate=mock(RabbitTemplate.class);
+    service=new AuthServiceImpl(userRepository, passwordEncoder, authenticationManager, refreshTokenService, rabbitTemplate);
 }
 
 @Test
@@ -82,6 +86,9 @@ void register_OK_guardaConPasswordCodificado(){
    assertEquals("mario", saved.getUsername());
    assertEquals("ENC", saved.getPassword());
    assertEquals("mario@mail.com", saved.getEmail());
+
+   //verificamos que se llama a convertAndSent de RabbitMQ
+    verify(rabbitTemplate).convertAndSend(any(String.class), any(Object.class));
 }
 
 @Test

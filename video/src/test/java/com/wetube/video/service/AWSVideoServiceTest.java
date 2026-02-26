@@ -39,7 +39,7 @@ public class AWSVideoServiceTest {
     private PresignedPutObjectRequest presignedPutObjectRequest;
 
 private AWSVideoServiceImpl service;
-private Long userId=1L;
+private final Long userId=1L;
 
 @BeforeEach
     void setup(){

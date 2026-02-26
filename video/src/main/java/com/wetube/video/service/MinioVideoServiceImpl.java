@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -59,5 +60,23 @@ throw new RuntimeException("error al generar URL firmada"+e.getMessage());
 return minioUrl + "/" + bucketName + "/videos/" + filename;
     }
 
+@Override
+    protected String getPlaybackUrl(String storedUrl){
+        //extraemos el nombre de el objeto
+    String objectName="videos/"+storedUrl.substring(storedUrl.lastIndexOf("/")+1);
+System.out.println("el nombre de el objeto de video es: "+objectName);
+    try {
+        return minioClient.getPresignedObjectUrl(
+                GetPresignedObjectUrlArgs.builder()
+                .method(Method.GET) //metodo GET para lectura
+                .bucket(bucketName)
+                .object(objectName)
+                .expiry(2, TimeUnit.HOURS)
+                .build());
+    }catch (Exception e){
+        logger.error("error generando URL de reproduccion minio: {}", e);
+        return storedUrl;
+    }
+}
 
 }

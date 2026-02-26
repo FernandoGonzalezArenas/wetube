@@ -1,9 +1,6 @@
 package com.wetube.video.service;
 
-import com.wetube.video.dto.InteractionsDto;
-import com.wetube.video.dto.UploadUrlResponse;
-import com.wetube.video.dto.VideoDto;
-import com.wetube.video.dto.VideoDtoEntrada;
+import com.wetube.video.dto.*;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
@@ -19,5 +16,11 @@ Page<VideoDto> searchVideosByTitle(String keyword, int page, int size);
 List<VideoDto> getFeed(Long lastId, int limit);
 
  InteractionsDto getInteractions(Long videoId, Long lastId, Integer limit);
+
+ List<VideoDto> getVideosByIds(IdsDto ids);
+
+ VideoPlaybackDto getVideoForPlayback(Long videoId);
+
+ List<VideoDto> getSubscriptionsFeed();
 
 }

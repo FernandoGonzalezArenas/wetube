@@ -1,10 +1,9 @@
 package com.wetube.video.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "videos")
@@ -12,6 +11,7 @@ import lombok.Setter;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class VideoEntity {
 @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,4 +30,12 @@ private Long userId;
     private String videoUrl;
 
 private String thumbnailUrl;
+
+@Column(nullable = false)
+    private LocalDateTime createdAt;
+
+@PrePersist
+    protected void onCreate(){
+    createdAt=LocalDateTime.now();
+}
 }
