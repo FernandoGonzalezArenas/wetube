@@ -40,8 +40,8 @@ private final LikeService likeService;
 }
 
 @GetMapping("/me")
-    public ResponseEntity<IdsDto> getLikesVideosByUserId(@RequestHeader("X-User-Id") Long userId){
-    IdsDto videoIds=likeService.getLikesVideosByUserId(userId);
+    public ResponseEntity<IdsDto> getLikesVideosByUserId(){
+    IdsDto videoIds=likeService.getLikesVideosByUserId();
   return ResponseEntity.ok(videoIds);
 }
 

@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.dao.DataIntegrityViolationException;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
@@ -54,6 +56,19 @@ public class LikeRepositoryTest {
 
     //validacion
     assertEquals(2, count);
+}
+
+@Test
+    void shouldFindAllLikesByUserId(){
+    repository.save(LikeEntity.builder().userId(1L).videoId(101L).build());
+    repository.save(LikeEntity.builder().userId(1L).videoId(102L).build());
+    repository.save(LikeEntity.builder().userId(2L).videoId(103L).build());
+
+    List<LikeEntity> result=repository.findByUserId(1L);
+
+    assertEquals(2, result.size());
+    assertTrue(result.stream().anyMatch(l -> l.getVideoId().equals(101L)));
+    assertTrue(result.stream().anyMatch(l -> l.getVideoId().equals(102L)));
 }
 
 }

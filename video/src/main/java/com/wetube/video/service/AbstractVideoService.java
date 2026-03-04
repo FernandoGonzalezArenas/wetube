@@ -106,7 +106,11 @@ Long userId=(Long) SecurityContextHolder.getContext().getAuthentication().getPri
 List<Long> followedIds=interactionsService.getSubscriptionsByUser(userId);
 if (followedIds.isEmpty()) return Collections.emptyList();
 
-return videoRepository.findByUserIdInOrderByCreatedAtDesc(followedIds);
+List<VideoEntity> result=videoRepository.findByUserIdInOrderByCreatedAtDesc(followedIds);
+
+return result.stream()
+        .map(this::mapToDto)
+        .collect(Collectors.toList());
     }
 
     protected VideoDto mapToDto(VideoEntity video){

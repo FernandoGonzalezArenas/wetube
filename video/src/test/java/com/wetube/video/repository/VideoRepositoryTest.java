@@ -11,7 +11,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 @DataJpaTest
@@ -75,6 +75,29 @@ assertEquals("spring boot intro", result.getContent().get(0).getTitle());
     //validaciones
     assertEquals(2, result.size());
     assertEquals(v1.getId(), result.get(1).getId());
+}
+
+@Test
+    @DisplayName("debe buscar videos filtrando por una lista de ids")
+    void shouldFindVideosByIdIn(){
+    VideoEntity v1=repository.save(VideoEntity.builder().userId(1L).title("V1").description("d").videoUrl("U1").build());
+    VideoEntity v2=repository.save(VideoEntity.builder().userId(1L).title("V2").description("d").videoUrl("U2").build());
+
+    List<VideoEntity> result=repository.findByIdIn(List.of(v1.getId(), v2.getId()));
+
+    assertEquals(2, result.size());
+}
+
+@Test
+    @DisplayName("debe obtener el feed de canales seguidos ordenados por fecha")
+    void shouldFindByUserIdInOrderByCreatedAtDesc(){
+    repository.save(VideoEntity.builder().userId(10L).title("canal a").description("d").videoUrl("U1").build());
+    repository.save(VideoEntity.builder().userId(11L).title("canal b").description("d").videoUrl("U2").build());
+
+    //suponiendo que el usuario sigue a los id's 10 y 11
+    List<VideoEntity> result=repository.findByUserIdInOrderByCreatedAtDesc(List.of(10L, 11L));
+
+    assertEquals(2, result.size());
 }
 
 }

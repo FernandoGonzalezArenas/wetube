@@ -1,9 +1,7 @@
 package com.wetube.video.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.wetube.video.dto.InteractionsDto;
-import com.wetube.video.dto.UploadUrlResponse;
-import com.wetube.video.dto.VideoDtoEntrada;
+import com.wetube.video.dto.*;
 import com.wetube.video.service.VideoService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,7 +13,9 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Collections;
+import java.util.List;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -86,6 +86,42 @@ public class VideoControllerTest {
                 .param("limit", "5"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.likes").value(10));
+    }
+
+@Test
+    @DisplayName("GET /videos/{videoId}/play debe retornar 200 y el DTO de reproduccion")
+    @WithMockUser
+    void shouldReturnPlaybackData() throws Exception{
+    VideoPlaybackDto playback=VideoPlaybackDto.builder().videoUrl("http://signed.com").build();
+    when(videoService.getVideoForPlayback(1L)).thenReturn(playback);
+
+    mockMvc.perform(get("/videos/1/play"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.videoUrl").value("http://signed.com"));
+    }
+
+    @Test
+    @DisplayName("POST videos/list-likes debe retornar lista de videos por IDs")
+    @WithMockUser
+    void shouldGetVideosBySpecificIds() throws Exception {
+        IdsDto ids = new IdsDto(List.of(1L, 2L));
+        when(videoService.getVideosByIds(any())).thenReturn(Collections.emptyList());
+
+mockMvc.perform(post("/videos/list-likes")
+        .with(csrf())
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(mapper.writeValueAsString(ids)))
+        .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("GET /videos/my-feed-subs debe retornar feed de subscripciones")
+    @WithMockUser
+    void shouldReturnsSubsFeed() throws Exception{
+        when(videoService.getSubscriptionsFeed()).thenReturn(Collections.emptyList());
+
+        mockMvc.perform(get("/videos/my-feed-subs"))
+                .andExpect(status().isOk());
     }
 
 }

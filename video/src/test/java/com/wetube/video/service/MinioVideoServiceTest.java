@@ -3,6 +3,7 @@ package com.wetube.video.service;
 import com.wetube.video.dto.UploadUrlResponse;
 import com.wetube.video.dto.VideoDto;
 import com.wetube.video.dto.VideoDtoEntrada;
+import com.wetube.video.dto.VideoPlaybackDto;
 import com.wetube.video.entity.VideoEntity;
 import com.wetube.video.repository.VideoRepository;
 import io.minio.MinioClient;
@@ -18,9 +19,12 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -93,6 +97,44 @@ ArgumentCaptor<VideoEntity> captor=ArgumentCaptor.forClass(VideoEntity.class);
     assertNotNull(response);
     assertEquals("http://signed-url.com?signature=xyz", response.uploadUrl());
     assertTrue(response.finalFileName().contains(filename));
+}
+
+@Test
+    @DisplayName("minio: debe generar VideoPlaybackDto con URL firmada de lectura")
+    void shouldGetVideoForPlaybackMinio() throws Exception{
+    VideoEntity video=VideoEntity.builder()
+            .id(1L).title("Video Test")
+            .videoUrl("http://localhost:9000/test-bucket/videos/clip.mp4")
+            .build();
+    when(repository.findById(1L)).thenReturn(Optional.of(video));
+when(minioClient.getPresignedObjectUrl(any())).thenReturn("http://signed-playback-url.com");
+
+    VideoPlaybackDto result=service.getVideoForPlayback(1L);
+
+    //validaciones
+    assertNotNull(result);
+    assertEquals("http://signed-playback-url.com", result.getVideoUrl());
+}
+
+@Test
+    @DisplayName("debe obtener feed de subscripciones usando el usuario de el SecurityContext")
+    void shouldGetSubscriptionsFeed(){
+    //el 55L viene de el SecurityContext
+    when(interactionsService.getSubscriptionsByUser(55L)).thenReturn(List.of(10L));
+
+    VideoEntity video=VideoEntity.builder()
+                    .title("video subs")
+                            .description("desc")
+                                    .videoUrl("url")
+                                            .thumbnailUrl("thumb")
+                                                    .build();
+    when(repository.findByUserIdInOrderByCreatedAtDesc(anyList())).thenReturn(List.of(video));
+
+List<VideoDto> feed=service.getSubscriptionsFeed();
+
+//validaciones
+    assertFalse(feed.isEmpty());
+    verify(repository).findByUserIdInOrderByCreatedAtDesc(List.of(10L));
 }
 
 }

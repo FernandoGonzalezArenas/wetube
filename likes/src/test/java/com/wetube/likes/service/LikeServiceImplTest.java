@@ -1,6 +1,7 @@
 package com.wetube.likes.service;
 
 import com.wetube.likes.Service.LikeServiceImpl;
+import com.wetube.likes.dto.IdsDto;
 import com.wetube.likes.dto.VideoLikeStatusDto;
 import com.wetube.likes.entity.LikeEntity;
 import com.wetube.likes.repository.LikeRepository;
@@ -14,6 +15,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -93,6 +95,22 @@ void setupSecurityContext(){
     //validaciones
     assertEquals(15L, status.getTotalLikes());
     assertFalse(status.isLikedByUser());
+}
+
+@Test
+    void getLikesVideosByUserId_ShouldReturnIdsDto(){
+    LikeEntity like1=LikeEntity.builder().videoId(10L).build();
+    LikeEntity like2=LikeEntity.builder().videoId(20L).build();
+    when(repository.findByUserId(userId)).thenReturn(List.of(like1, like2));
+
+    IdsDto result=service.getLikesVideosByUserId();
+
+    //validaciones
+    assertNotNull(result);
+    assertEquals(2, result.getIds().size());
+assertTrue(result.getIds().contains(10L));
+assertTrue(result.getIds().contains(20L));
+verify(repository, times(1)).findByUserId(userId);
 }
 
 }

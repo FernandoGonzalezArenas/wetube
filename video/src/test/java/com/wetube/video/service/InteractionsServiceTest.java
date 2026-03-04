@@ -2,7 +2,9 @@ package com.wetube.video.service;
 
 import com.wetube.video.client.CommentsClient;
 import com.wetube.video.client.LikesClient;
+import com.wetube.video.client.SubscriptionsClient;
 import com.wetube.video.dto.CommentsDto;
+import com.wetube.video.dto.IdsDto;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,6 +27,9 @@ public class InteractionsServiceTest {
 
     @Mock
     private LikesClient likesClient;
+
+    @Mock
+    private SubscriptionsClient subscriptionsClient;
 
     @InjectMocks
     private InteractionsService service;
@@ -65,5 +70,25 @@ void shouldReturnLikesCountOnSuccess(){
         Long likes=service.fallbackForLikes(1L, new RuntimeException("error feign"));
         assertEquals(0L, likes);
 }
+
+@Test
+    @DisplayName("debe retornar lista de id's de subscripciones cuando el cliente responda OK")
+    void shouldReturnSubscriptionsOnSuccess(){
+        when(subscriptionsClient.getSubscriptionsByUser(1L))
+                .thenReturn(new IdsDto(List.of(10L, 20L)));
+
+    List<Long> result=service.getSubscriptionsByUser(1L);
+
+    //validaciones
+    assertEquals(2, result.size());
+    assertTrue(result.contains(10L));
+    }
+
+    @Test
+    @DisplayName("debe retornar lista vacía al ejecutar fallback de subscripciones")
+    void shouldReturnEmptyListOnSubscriptionFallback(){
+        List<Long> result=service.fallbackForUser(1L, new RuntimeException("error"));
+        assertTrue(result.isEmpty());
+    }
 
 }

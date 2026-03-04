@@ -78,8 +78,9 @@ public  long countLikes(Long videoId){
 }
 
 @Override
-    public IdsDto getLikesVideosByUserId(Long userId){
-//se obtienen los videos a los que el usuario dio like
+    public IdsDto getLikesVideosByUserId(){
+Long userId=(Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    //se obtienen los videos a los que el usuario dio like
     List<LikeEntity> result=likeRepository.findByUserId(userId);
 
 //se crea una lista con los videoId de la lista de entidades obtenida previamente

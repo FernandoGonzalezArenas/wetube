@@ -10,5 +10,5 @@ public interface LikeService {
 
      VideoLikeStatusDto getVideoLikeStatus(Long videoId);
 
-     IdsDto getLikesVideosByUserId(Long userId);
+     IdsDto getLikesVideosByUserId();
 }

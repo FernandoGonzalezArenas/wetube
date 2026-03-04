@@ -1,6 +1,7 @@
 package com.wetube.likes.controller;
 
 import com.wetube.likes.Service.LikeService;
+import com.wetube.likes.dto.IdsDto;
 import com.wetube.likes.dto.VideoLikeStatusDto;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +9,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
@@ -53,6 +56,19 @@ public class LikeControllerTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.totalLikes").value(10))
             .andExpect(jsonPath("$.likedByUser").value(true));
+}
+
+@Test
+    @WithMockUser
+    void getLikesVideosByUserId_ShouldReturnOk() throws Exception{
+    IdsDto ids=new IdsDto(List.of(10L, 20L));
+    when(service.getLikesVideosByUserId()).thenReturn(ids);
+
+mockMvc.perform(get("/like/me"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.ids").isArray())
+        .andExpect(jsonPath("$.ids[0]").value(10))
+        .andExpect(jsonPath("$.ids[1]").value(20));
 }
 
 }
