@@ -4,7 +4,10 @@ import com.wetube.user.dto.UserDto;
 import com.wetube.user.dto.UserDtoEntrada;
 import com.wetube.user.entity.UserEntity;
 import com.wetube.user.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -53,6 +56,25 @@ private UserDto entityToDto(UserEntity user){
             .profilePictureUrl(user.getProfilePictureUrl())
             .createdAt(user.getCreatedAt())
             .build();
+    }
+
+    @Override
+    @Transactional
+    public void banUserInternal(Long userId){
+        //obtenemos los datos de el usuario que hace la peticion
+        Authentication auth= SecurityContextHolder.getContext().getAuthentication();
+        //verificamos si es admin
+        boolean isAdmin=auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        if (!isAdmin){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "no tienes permisos de administrador para borrar la cuenta");
+        }
+
+        if (!repository.existsById(userId)){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "el usuario que se quiere banear no existe");
+        }
+        repository.deleteById(userId);
+        System.out.println("usuario baneado correctamente | microservicio user");
     }
 
 }

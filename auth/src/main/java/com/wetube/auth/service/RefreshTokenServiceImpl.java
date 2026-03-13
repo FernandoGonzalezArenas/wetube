@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -39,8 +40,13 @@ private final UserDetailsService userDetailsService;
 @Override
 public AuthResponse generateTokensForUser(String username){
     CustomUserDetails userDetails=userDetailsMethod(username);
-    String access= jwtUtil.generateToken(userDetails.getUsername(), userDetails.getUserId(), userDetails.getEmail());
-    String refresh=jwtUtil.generateRefreshToken(userDetails.getUsername(), userDetails.getUserId(), userDetails.getEmail());
+
+String role=userDetails.getAuthorities().stream()
+        .map(GrantedAuthority::getAuthority)
+        .findFirst().orElse("ROLE_USER");
+
+    String access= jwtUtil.generateToken(userDetails.getUsername(), userDetails.getUserId(), role, userDetails.getEmail());
+    String refresh=jwtUtil.generateRefreshToken(userDetails.getUsername(), userDetails.getUserId(), role, userDetails.getEmail());
     return new AuthResponse(access, refresh);
 }
 

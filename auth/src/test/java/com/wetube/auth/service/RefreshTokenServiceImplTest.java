@@ -52,8 +52,8 @@ void generateTokensForUser_OK(){
     //el UserDetailsService devuelve detalles
     when(userDetailsService.loadUserByUsername("fernando")).thenReturn(buildDetails());
     //el JwtUtil genera los tokens
-    when(jwtUtil.generateToken("fernando", "1", "fernando@mail.com")).thenReturn("ACC");
-    when(jwtUtil.generateRefreshToken("fernando", "1", "fernando@mail.com")).thenReturn("REF");
+    when(jwtUtil.generateToken("fernando", "1", "ROLE_USER", "fernando@mail.com")).thenReturn("ACC");
+    when(jwtUtil.generateRefreshToken("fernando", "1", "ROLE_USER", "fernando@mail.com")).thenReturn("REF");
 
     AuthResponse r=service.generateTokensForUser("fernando");
 

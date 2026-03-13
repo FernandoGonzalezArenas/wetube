@@ -2,6 +2,7 @@ package com.wetube.likes.service;
 
 import com.wetube.likes.Service.LikeServiceImpl;
 import com.wetube.likes.dto.IdsDto;
+import com.wetube.likes.dto.UserPrincipal;
 import com.wetube.likes.dto.VideoLikeStatusDto;
 import com.wetube.likes.entity.LikeEntity;
 import com.wetube.likes.repository.LikeRepository;
@@ -35,7 +36,8 @@ private Long userId=1L;
 @BeforeEach
 void setupSecurityContext(){
     //simulamos que Spring Security ya tiene al usuario autenticado
-    UsernamePasswordAuthenticationToken auth=new UsernamePasswordAuthenticationToken(userId, null, Collections.emptyList());
+    UserPrincipal principal=new UserPrincipal(userId, "user-likes");
+    UsernamePasswordAuthenticationToken auth=new UsernamePasswordAuthenticationToken(principal, null, Collections.emptyList());
     SecurityContextHolder.getContext().setAuthentication(auth);
 }
 

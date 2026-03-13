@@ -6,7 +6,10 @@ import com.wetube.auth.dto.LoginRequest;
 import com.wetube.auth.dto.RegisterRequest;
 import com.wetube.auth.dto.UserRabbitDto;
 import com.wetube.auth.entity.UserEntity;
+import com.wetube.auth.repository.RefreshTokenRepository;
 import com.wetube.auth.repository.UserRepository;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -17,21 +20,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 @Service
+@RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService{
 
     private final UserRepository userRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordEncoder passwordEncoder;
 private final AuthenticationManager authenticationManager;
 private final RefreshTokenService refreshTokenService;
 private final RabbitTemplate rabbitTemplate;
-
-public AuthServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager, RefreshTokenService refreshTokenService, RabbitTemplate rabbitTemplate){
-    this.userRepository=userRepository;
-    this.passwordEncoder=passwordEncoder;
-    this.authenticationManager=authenticationManager;
-this.refreshTokenService=refreshTokenService;
-this.rabbitTemplate=rabbitTemplate;
-}
 
 @Override
 public void register(RegisterRequest request){
@@ -42,6 +39,8 @@ public void register(RegisterRequest request){
     UserEntity user=new UserEntity();
     user.setUsername(request.getUsername());
     user.setPassword(passwordEncoder.encode(request.getPassword()));
+String assignedRole="ROLE_ADMIN".equals(request.getRole()) ? "ROLE_ADMIN" : "ROLE_USER";
+    user.setRole(assignedRole);
     user.setEmail(request.getEmail());
     user.setAddress(request.getAddress());
     user.setPhone(request.getPhone());
@@ -49,7 +48,7 @@ public void register(RegisterRequest request){
     Long userId= user.getId();
     String username=user.getUsername();
 UserRabbitDto message=new UserRabbitDto(userId, username);
-rabbitTemplate.convertAndSend(RabbitMQConfig.REGISTER_QUEUE, message);
+rabbitTemplate.convertAndSend(RabbitMQConfig.USER_EXCHANGE, RabbitMQConfig.USER_CREATE_RK, message);
 }
 
 @Override
@@ -70,6 +69,14 @@ refreshTokenService.registerRefresh(newTokens.getRefreshToken(), request.getUser
 }catch (Exception e){
     throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "error en la autenticacion");
 }
+}
+
+@Override
+@Transactional
+    public void banUser(Long userId){
+userRepository.deleteById(userId);
+refreshTokenRepository.deleteByUserId(userId);
+System.out.println("usuario con el id "+userId+ " baneado permanentemente");
 }
 
 }

@@ -22,6 +22,7 @@ void  findByUsername_devuelveUsuario(){
     UserEntity u=UserEntity.builder()
     .username("fernando")
     .password("{noop}123")
+            .role("ROLE_USER")
     .email("fer@mail.com")
     .build();
     repo.save(u);

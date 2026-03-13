@@ -26,6 +26,10 @@ public String extractUserId(String token){
     return validateToken(token).getClaim("userId").asString();
 }
 
+public String extractRole(String token){
+    return validateToken(token).getClaim("role").asString();
+}
+
 public Optional<String> extractUsername(String token){
     if (token==null) return Optional.empty();
     try {

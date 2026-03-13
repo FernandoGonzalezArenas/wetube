@@ -1,7 +1,6 @@
 package com.wetube.video.config;
 
-import com.wetube.video.security.JwtAuthenticationFilter;
-import com.wetube.video.security.JwtUtil;
+import com.wetube.video.security.GatewayHeaderFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -17,25 +16,20 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private final JwtUtil jwtUtil;
-
-    public SecurityConfig(JwtUtil jwtUtil){
-        this.jwtUtil=jwtUtil;
-    }
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
 http
         .csrf(csrf -> csrf.disable())
         .sessionManagement(sesion -> sesion.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/videos/internal/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.GET, "/videos/search/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/videos/feed/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/videos/interactions/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/videos/*/play").permitAll()
                 .requestMatchers("/actuator/**").permitAll()
                 .anyRequest().authenticated())
-        .addFilterBefore(new JwtAuthenticationFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
+        .addFilterBefore(new GatewayHeaderFilter(), UsernamePasswordAuthenticationFilter.class);
 return http.build();
     }
 

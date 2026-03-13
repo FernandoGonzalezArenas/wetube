@@ -1,9 +1,6 @@
 package com.wetube.video.service;
 
-import com.wetube.video.dto.UploadUrlResponse;
-import com.wetube.video.dto.VideoDto;
-import com.wetube.video.dto.VideoDtoEntrada;
-import com.wetube.video.dto.VideoPlaybackDto;
+import com.wetube.video.dto.*;
 import com.wetube.video.entity.VideoEntity;
 import com.wetube.video.repository.VideoRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,6 +27,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -54,7 +52,9 @@ private final Long userId=1L;
     void setup(){
     service=new AWSVideoServiceImpl(repository, interactionsService, s3Presigner);
     ReflectionTestUtils.setField(service, "bucketName", "aws-bucket-videos");
-    UsernamePasswordAuthenticationToken auth=new UsernamePasswordAuthenticationToken(userId, null, Collections.emptyList());
+
+    UserPrincipal principal=new UserPrincipal(userId, "user-aws");
+    UsernamePasswordAuthenticationToken auth=new UsernamePasswordAuthenticationToken(principal, null, Collections.emptyList());
     SecurityContextHolder.getContext().setAuthentication(auth);
 }
 
@@ -68,13 +68,15 @@ private final Long userId=1L;
             .thumbnailUrl("img.jpg")
             .build();
 
-ArgumentCaptor<VideoEntity> captor=ArgumentCaptor.forClass(VideoEntity.class);
-service.saveVideoMetadata(entrada);
+    service.saveVideoMetadata(entrada);
+
+    ArgumentCaptor<VideoEntity> captor=ArgumentCaptor.forClass(VideoEntity.class);
 
 //validaciones
     verify(repository).save(captor.capture());
     VideoEntity entity=captor.getValue();
 
+    assertEquals(1L, entity.getUserId());
 //validamos la logica exacta de construccion de url de AWS
     assertEquals("https://aws-bucket-videos.s3.amazonaws.com/videos/clip.mp4", entity.getVideoUrl());
 }
@@ -128,7 +130,7 @@ assertThrows(ResponseStatusException.class, () -> service.getVideoForPlayback(99
     @DisplayName("debe obtener el feed de subscripciones basado en el usuario autenticado")
     void shouldGetSubscriptionsFeedAWS(){
     List<Long> followedChannels=List.of(100L, 200L);
-when(interactionsService.getSubscriptionsByUser(userId)).thenReturn(followedChannels);
+when(interactionsService.getSubscriptionsByUser(anyLong())).thenReturn(followedChannels);
 
 VideoEntity video=VideoEntity.builder()
                 .title("video subs")
@@ -142,7 +144,7 @@ when(repository.findByUserIdInOrderByCreatedAtDesc(followedChannels))
 List<VideoDto> result=service.getSubscriptionsFeed();
 
 assertEquals(1, result.size());
-verify(interactionsService).getSubscriptionsByUser(userId);
+verify(interactionsService).getSubscriptionsByUser(anyLong());
 verify(repository).findByUserIdInOrderByCreatedAtDesc(followedChannels);
 }
 

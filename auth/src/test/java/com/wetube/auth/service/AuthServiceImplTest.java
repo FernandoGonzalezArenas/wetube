@@ -5,6 +5,8 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import com.wetube.auth.repository.RefreshTokenRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -34,6 +36,7 @@ private UserRepository userRepository;
 private PasswordEncoder passwordEncoder;
 private AuthenticationManager authenticationManager;
 private RefreshTokenService refreshTokenService;
+private RefreshTokenRepository refreshTokenRepository;
 private RabbitTemplate rabbitTemplate;
 
 private AuthServiceImpl service;
@@ -41,11 +44,12 @@ private AuthServiceImpl service;
 @BeforeEach
 void setUp(){
     userRepository=mock(UserRepository.class);
+    refreshTokenRepository=mock(RefreshTokenRepository.class);
     passwordEncoder=mock(PasswordEncoder.class);
     authenticationManager=mock(AuthenticationManager.class);
     refreshTokenService=mock(RefreshTokenService.class);
     rabbitTemplate=mock(RabbitTemplate.class);
-    service=new AuthServiceImpl(userRepository, passwordEncoder, authenticationManager, refreshTokenService, rabbitTemplate);
+    service=new AuthServiceImpl(userRepository, refreshTokenRepository, passwordEncoder, authenticationManager, refreshTokenService, rabbitTemplate);
 }
 
 @Test
@@ -88,7 +92,7 @@ void register_OK_guardaConPasswordCodificado(){
    assertEquals("mario@mail.com", saved.getEmail());
 
    //verificamos que se llama a convertAndSent de RabbitMQ
-    verify(rabbitTemplate).convertAndSend(any(String.class), any(Object.class));
+    verify(rabbitTemplate).convertAndSend(any(String.class), any(String.class), any(Object.class));
 }
 
 @Test

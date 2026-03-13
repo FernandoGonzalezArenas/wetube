@@ -68,13 +68,20 @@ try {
         return unauthorizedResponse(exchange, "expired token");
     }
 String userId=jwtUtil.extractUserId(token);
-String username=jwtUtil.extractUsername(token).orElse("unknown");
+String role=jwtUtil.extractRole(token);
+
+if (path.startsWith("/admin") && !"ROLE_ADMIN".equals(role)){
+    return unauthorizedResponse(exchange, "acceso denegado, se requieren privilegios de administrador");
+}
+
+    String username=jwtUtil.extractUsername(token).orElse("unknown");
 
     //mutar la peticion para que el token siga y agregar el userId limpio
     ServerWebExchange mutatedExchange=exchange.mutate()
         .request(exchange.getRequest().mutate()
             .header("X-User-Id", userId)
-            .header("X-UserName", username)
+            .header("X-User-Role", role)
+            .header("X-User-Name", username)
             .build())
         .build();
 
@@ -93,7 +100,8 @@ String json= String.format("{\"error\": \"%s\"}", message);
     DataBuffer buffer=response.bufferFactory().wrap(bytes);
     response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
 
-    return response.writeWith(Mono.just(buffer));
+    return response.writeWith(Mono.just(buffer))
+        .then(Mono.defer(response::setComplete));
 }
 
 @Override

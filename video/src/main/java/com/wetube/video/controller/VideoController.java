@@ -68,4 +68,16 @@ try {
         return ResponseEntity.ok(videoService.getSubscriptionsFeed());
     }
 
+    @DeleteMapping("/internal/{videoId}")
+    public ResponseEntity<String> deleteVideoInternal(@PathVariable Long videoId){
+        videoService.deleteVideoInternal(videoId);
+        return ResponseEntity.ok("video eliminado exitosamente por el administrador");
+    }
+
+    @GetMapping("/internal/details/{videoId}")
+    public ResponseEntity<VideoDto> getVideoDetails(@PathVariable Long videoId){
+VideoDto video = videoService.videoInternalDetails(videoId);
+return ResponseEntity.ok(video);
+    }
+
 }

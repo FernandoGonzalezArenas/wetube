@@ -121,12 +121,17 @@ services:
         condition: service_healthy
       consul:
         condition: service_started
+      rabbitmq:
+        condition: service_started
     environment:
       - user_db=${user_db_env}
       - password_db=${password_db_env}
       - JWT_SECRET=${jwt_secret_env}
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db-global:5432/commentdb
       - SPRING_CLOUD_CONSUL_HOST=consul
+      - RABBIT_HOST=rabbitmq-wetube
+      - RABBIT_USER=guest
+      - RABBIT_PASSWORD=guest
 
 #microservicio likes
   likes-service:
@@ -141,12 +146,17 @@ services:
         condition: service_healthy
       consul:
         condition: service_started
+      rabbitmq:
+        condition: service_started
     environment:
       - user_db=${user_db_env}
       - password_db=${password_db_env}
       - JWT_SECRET=${jwt_secret_env}
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db-global:5432/likedb
       - SPRING_CLOUD_CONSUL_HOST=consul
+      - RABBIT_HOST=rabbitmq-wetube
+      - RABBIT_USER=guest
+      - RABBIT_PASSWORD=guest
 
 #microservice user
   user-service:
@@ -173,7 +183,31 @@ services:
       - RABBIT_USER=guest
       - RABBIT_PASSWORD=guest
 
-#microservicio gateway
+#microservicio admin
+  admin-service:
+    networks:
+      - wetube-network
+    build:
+      context: ./admin
+      dockerfile: Dockerfile
+    container_name: admin-microservice
+    depends_on:
+      db-global:
+        condition: service_healthy
+      consul:
+        condition: service_started
+      rabbitmq:
+        condition: service_started
+    environment:
+      - user_db=${user_db_env}
+      - password_db=${password_db_env}
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db-global:5432/admindb
+      - SPRING_CLOUD_CONSUL_HOST=consul
+      - RABBIT_HOST=rabbitmq-wetube
+      - RABBIT_USER=guest
+      - RABBIT_PASSWORD=guest
+
+  #microservicio gateway
   gateway-service:
     networks:
       - wetube-network

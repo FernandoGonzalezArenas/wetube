@@ -23,4 +23,8 @@ List<VideoDto> getFeed(Long lastId, int limit);
 
  List<VideoDto> getSubscriptionsFeed();
 
+ void deleteVideoInternal(Long videoId);
+
+VideoDto videoInternalDetails(Long videoId);
+
 }

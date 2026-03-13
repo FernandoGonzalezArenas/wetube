@@ -2,6 +2,7 @@ package com.wetube.auth.security;
 
 import java.util.List;
 
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -24,7 +25,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         UserEntity user=userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("usuario no encontrado"));
 
-return new CustomUserDetails(user, List.of(() -> "ROLE_USER"));
+return new CustomUserDetails(user, List.of(new SimpleGrantedAuthority(user.getRole())));
     }
 
 }

@@ -16,4 +16,6 @@ public interface CommentService {
 
      CommentsDto editComment(Long id, UpdateCommentDto content);
 
+     void deleteCommentsWithVideoId(Long videoId);
+
 }

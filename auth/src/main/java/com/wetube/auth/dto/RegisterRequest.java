@@ -19,6 +19,8 @@ public class RegisterRequest {
     @Size(min = 8, max = 200, message = "la contraseña debe tener almenos 8 caracteres")
     private String password;
 
+    private String role;
+
     @NotBlank(message = "el correo es obligatorio")
 @Email(message = "debe ser un correo electronico valido")
     private String email;

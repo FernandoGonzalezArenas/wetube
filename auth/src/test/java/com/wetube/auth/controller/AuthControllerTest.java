@@ -46,6 +46,7 @@ void  register_201() throws  Exception{
     RegisterRequest req=new RegisterRequest();
     req.setUsername("fernando");
     req.setPassword("12345678");
+    req.setRole("ROLE_USER");
     req.setEmail("fer@mail.com");
 
 mvc.perform(post("/auth/register")

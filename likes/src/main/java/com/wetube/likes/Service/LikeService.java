@@ -11,4 +11,7 @@ public interface LikeService {
      VideoLikeStatusDto getVideoLikeStatus(Long videoId);
 
      IdsDto getLikesVideosByUserId();
+
+void deleteLikesVideo(Long videoId);
+
 }

@@ -36,6 +36,10 @@ public class UserEntity {
     private String password;
 
 @Column(nullable = false)
+@Builder.Default
+private String role="ROLE_USER";
+
+@Column(nullable = false)
 private String email;
 
 private String address;

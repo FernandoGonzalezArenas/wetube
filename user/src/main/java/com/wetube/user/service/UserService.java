@@ -12,4 +12,6 @@ UserDto updateProfile(Long id, UserDtoEntrada profileDetails);
 
 UserDto createInitialProfile(Long id, String username);
 
+void banUserInternal(Long userId);
+
 }

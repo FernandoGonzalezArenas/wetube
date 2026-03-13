@@ -23,6 +23,7 @@ void  findByToken_ok(){
     UserEntity u=userRepo.save(UserEntity.builder()
 .username("fernando")
 .password("x")
+                    .role("ROLE_USER")
 .email("fer@mail.com")
 .build());
     RefreshTokenEntity r=RefreshTokenEntity.builder()
@@ -45,6 +46,7 @@ void  deleteAllByExpiryDateBefore_eliminaExpirados(){
     UserEntity u=userRepo.save(UserEntity.builder()
 .username("bob")
 .password("b")
+                    .role("ROLE_USER")
 .email("bob@mail.com")
 .build());
 

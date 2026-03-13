@@ -1,10 +1,12 @@
 package com.wetube.likes.Service;
 
 import com.wetube.likes.dto.IdsDto;
+import com.wetube.likes.dto.UserPrincipal;
 import com.wetube.likes.dto.VideoLikeStatusDto;
 import com.wetube.likes.entity.LikeEntity;
 import com.wetube.likes.repository.LikeRepository;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -16,20 +18,18 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class LikeServiceImpl implements LikeService{
 
 private final LikeRepository likeRepository;
-
-@Autowired
-    public LikeServiceImpl(LikeRepository likeRepository){
-    this.likeRepository=likeRepository;
-}
 
 //agregar o eliminar like de el video
     @Override
     @Transactional
 public boolean toggleLike(Long videoId){
-Long userId= (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+UserPrincipal principal= (UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+Long userId= principal.userId();
+
         if (videoId<=0){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "videoId invalido o nulo");
         }
@@ -57,7 +57,8 @@ var auth=SecurityContextHolder.getContext().getAuthentication();
     if (auth==null || !auth.isAuthenticated() || auth.getPrincipal().equals("anonymousUser")){
         return false;
     }
-Long userId=(Long) auth.getPrincipal();
+UserPrincipal principal=(UserPrincipal) auth.getPrincipal();
+Long userId= principal.userId();
     return likeRepository.existsByUserIdAndVideoId(userId, videoId);
 }
 
@@ -79,7 +80,9 @@ public  long countLikes(Long videoId){
 
 @Override
     public IdsDto getLikesVideosByUserId(){
-Long userId=(Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+UserPrincipal principal =(UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+Long userId= principal.userId();
+
     //se obtienen los videos a los que el usuario dio like
     List<LikeEntity> result=likeRepository.findByUserId(userId);
 
@@ -90,6 +93,12 @@ Long userId=(Long) SecurityContextHolder.getContext().getAuthentication().getPri
 
     //se retorna el DTO de los id obtenidos
     return new IdsDto(videoIds);
+}
+
+@Override
+    @Transactional
+    public void deleteLikesVideo(Long videoId){
+likeRepository.deleteByVideoId(videoId);
 }
 
 }

@@ -25,7 +25,7 @@ ReflectionTestUtils.setField(jwtUtil, "refreshExpirationTime", 600_000L);
 @Test
 void generaYValidaAccesstoken(){
     //generar un accestoken
-    String token=jwtUtil.generateToken("fernando", "1", "ferna@gmail.com");
+    String token=jwtUtil.generateToken("fernando", "1", "ROLE_USER", "ferna@gmail.com");
 
 //extraer el nombre de usuario y comparar
     assertEquals("fernando", jwtUtil.extractUsername(token));
@@ -41,7 +41,7 @@ assertFalse(jwtUtil.isTokenValid(token, "mario"));
 @Test
 void generaRefreshYExpTimeDisponible(){
     //generar refreshToken
-    String refresh=jwtUtil.generateRefreshToken("fernando", "1", "fernan@gmail.com");
+    String refresh=jwtUtil.generateRefreshToken("fernando", "1", "ROLE_USER", "fernan@gmail.com");
 assertNotNull(refresh);
 
 //metodo de utilidad expuesto para la expiracion

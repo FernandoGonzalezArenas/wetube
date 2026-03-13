@@ -22,6 +22,7 @@
         <module>comments</module>
         <module>likes</module>
         <module>user</module>
+        <module>admin</module>
         <module>gateway</module>
         </modules>
 

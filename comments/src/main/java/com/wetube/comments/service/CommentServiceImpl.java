@@ -3,8 +3,10 @@ package com.wetube.comments.service;
 import com.wetube.comments.dto.CommentDtoEntrada;
 import com.wetube.comments.dto.CommentsDto;
 import com.wetube.comments.dto.UpdateCommentDto;
+import com.wetube.comments.dto.UserPrincipal;
 import com.wetube.comments.entity.CommentEntity;
 import com.wetube.comments.repository.CommentRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -29,7 +31,8 @@ public class CommentServiceImpl implements CommentService{
 //guardar un comentario
 @Override
     public CommentsDto saveComments(CommentDtoEntrada comment){
-    String username=(String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    UserPrincipal principal=(UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    String username=principal.username();
     if (comment.getVideoId() == null) {
         throw new IllegalArgumentException("el videoId es obligatorio para poder guardar un comentario correctamente");
     }
@@ -53,7 +56,9 @@ public class CommentServiceImpl implements CommentService{
     //eliminar un comentario
 @Override
     public void  deleteComment(Long id){
-String username=(String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+UserPrincipal principal=(UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+String username=principal.username();
+
     CommentEntity comment= commentRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "comentario no encontrado"));
 
@@ -68,7 +73,9 @@ String username=(String) SecurityContextHolder.getContext().getAuthentication().
     //editar un comentario
 @Override
     public CommentsDto editComment(Long id, UpdateCommentDto content){
-String username=(String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+UserPrincipal principal =(UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+String username=principal.username();
+
     CommentEntity comment=commentRepository.findById(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     if (!comment.getUsernameAuthor().equals(username)){
@@ -76,6 +83,12 @@ String username=(String) SecurityContextHolder.getContext().getAuthentication().
     }
     comment.setContent(content.getContent());
     return mapToDto(commentRepository.save(comment));
+ }
+
+ @Override
+ @Transactional
+ public void deleteCommentsWithVideoId(Long videoId){
+commentRepository.deleteByVideoId(videoId);
  }
 
  private CommentsDto mapToDto(CommentEntity comment){

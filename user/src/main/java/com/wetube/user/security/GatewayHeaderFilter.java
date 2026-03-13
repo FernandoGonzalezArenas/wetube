@@ -5,24 +5,39 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.List;
 
 public class GatewayHeaderFilter extends OncePerRequestFilter {
 
 @Override
     public void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException{
     String userId_str=request.getHeader("X-User-Id");
+String role_str=request.getHeader("X-User-Role");
+
     if (userId_str!=null && !userId_str.isEmpty()){
 try {
     Long userId = Long.parseLong(userId_str);
+
+    //convertimos el String de el role en una autoridad de spring
+    List<SimpleGrantedAuthority> authorities=Collections.emptyList();
+    if (role_str!=null && !role_str.isEmpty()){
+        System.out.println("role pasado por el hasRole: "+role_str);
+        String finalRole=role_str.startsWith("ROLE_") ? role_str : "ROLE_"+role_str;
+        System.out.println("role despues de tratarlo para que tenga el formato correcto: "+finalRole);
+
+        authorities=List.of(new SimpleGrantedAuthority(finalRole));
+    }
+
     UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
             userId,
             null,
-            Collections.emptyList()
+            authorities
     );
     SecurityContextHolder.getContext().setAuthentication(auth);
 }catch (NumberFormatException e){

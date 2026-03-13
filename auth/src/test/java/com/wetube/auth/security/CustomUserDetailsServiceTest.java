@@ -27,6 +27,7 @@ UserEntity user=UserEntity.builder()
 .id(1L)
 .username("fernando")
 .password("{noop}123")
+        .role("ROLE_USER")
 .email("fer@mail.com")
 .build();
 

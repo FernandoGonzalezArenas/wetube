@@ -1,7 +1,6 @@
 package com.wetube.likes.config;
 
-import com.wetube.likes.security.JwtAuthenticationFilter;
-import com.wetube.likes.security.JwtUtil;
+import com.wetube.likes.security.GatewayHeaderFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -17,12 +16,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private final JwtUtil jwtUtil;
-
-    public SecurityConfig(JwtUtil jwtUtil){
-        this.jwtUtil=jwtUtil;
-    }
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws  Exception {
         http
@@ -32,7 +25,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/like/**").permitAll()
                         .requestMatchers("/actuator/**").permitAll()
                         .anyRequest().authenticated())
-                .addFilterBefore(new JwtAuthenticationFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(new GatewayHeaderFilter(), UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 

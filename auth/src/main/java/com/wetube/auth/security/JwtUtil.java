@@ -23,18 +23,19 @@ public class JwtUtil {
 @Value("${jwt.refreshExpiration}")
     private long refreshExpirationTime;
 
-public String generateToken(String username, String userId, String email){
-    return createToken(username, userId, email, expirationTime);
+public String generateToken(String username, String userId, String role, String email){
+    return createToken(username, userId, role, email, expirationTime);
 }
 
-public String generateRefreshToken(String username, String userId, String email){
-    return createToken(username, userId, email, refreshExpirationTime);
+public String generateRefreshToken(String username, String userId, String role, String email){
+    return createToken(username, userId, role, email, refreshExpirationTime);
 }
 
-private String createToken(String username, String userId, String email, long expiration){
+private String createToken(String username, String userId, String role, String email, long expiration){
 return JWT.create()
         .withSubject(username)
         .withClaim("userId", userId)
+        .withClaim("role", role)
         .withClaim("email", email)
         .withIssuedAt(new Date())
         .withExpiresAt(new Date(System.currentTimeMillis() + expiration))

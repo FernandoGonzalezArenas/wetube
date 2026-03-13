@@ -3,6 +3,7 @@ package com.wetube.comments.service;
 import com.wetube.comments.dto.CommentDtoEntrada;
 import com.wetube.comments.dto.CommentsDto;
 import com.wetube.comments.dto.UpdateCommentDto;
+import com.wetube.comments.dto.UserPrincipal;
 import com.wetube.comments.entity.CommentEntity;
 import com.wetube.comments.repository.CommentRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,11 +34,13 @@ public class CommentServiceImplTest {
 @InjectMocks
     private CommentServiceImpl service;
 
+private Long userId=1L;
 private String username="fernando";
 
 @BeforeEach
 void setupSecurityContext(){
-    UsernamePasswordAuthenticationToken auth=new UsernamePasswordAuthenticationToken(username, null, Collections.emptyList());
+    UserPrincipal principal=new UserPrincipal(userId, username);
+    UsernamePasswordAuthenticationToken auth=new UsernamePasswordAuthenticationToken(principal, null, Collections.emptyList());
     SecurityContextHolder.getContext().setAuthentication(auth);
 }
 

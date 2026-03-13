@@ -3,12 +3,15 @@ package com.wetube.video.service;
 import com.wetube.video.dto.*;
 import com.wetube.video.entity.VideoEntity;
 import com.wetube.video.repository.VideoRepository;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -16,17 +19,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@RequiredArgsConstructor
 public abstract  class AbstractVideoService implements VideoService{
 
     protected final VideoRepository videoRepository;
 protected final  InteractionsService interactionsService;
     protected static final Logger logger= LoggerFactory.getLogger(MinioVideoServiceImpl.class);
-
-    @Autowired
-    public AbstractVideoService(VideoRepository videoRepository, InteractionsService interactionsService){
-        this.videoRepository=videoRepository;
-this.interactionsService=interactionsService;
-    }
 
     public abstract UploadUrlResponse generateUploadUrl(String filename);
 
@@ -34,7 +32,9 @@ this.interactionsService=interactionsService;
     @Override
     public VideoDto saveVideoMetadata(VideoDtoEntrada entrada){
         String videoUrl = buildFullVideoUrl(entrada.getFilename());
-Long userId=(Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+UserPrincipal principal=(UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+Long userId=principal.userId();
+
         VideoEntity video = new VideoEntity();
             video.setUserId(userId);
             video.setTitle(entrada.getTitle());
@@ -102,7 +102,9 @@ return result.map(this::mapToDto);
 
     @Override
     public List<VideoDto> getSubscriptionsFeed(){
-Long userId=(Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+UserPrincipal principal=(UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+Long userId=principal.userId();
+
 List<Long> followedIds=interactionsService.getSubscriptionsByUser(userId);
 if (followedIds.isEmpty()) return Collections.emptyList();
 
@@ -111,6 +113,45 @@ List<VideoEntity> result=videoRepository.findByUserIdInOrderByCreatedAtDesc(foll
 return result.stream()
         .map(this::mapToDto)
         .collect(Collectors.toList());
+    }
+
+@Override
+@Transactional
+public void deleteVideoInternal(Long videoId){
+    Authentication auth=SecurityContextHolder.getContext().getAuthentication();
+
+    boolean isAdmin=auth.getAuthorities().stream()
+            .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+if (!isAdmin){
+    throw new ResponseStatusException(HttpStatus.FORBIDDEN, "acceso denegado, no tienes derechos de administrador para borrar el video");
+}
+
+if (!videoRepository.existsById(videoId)){
+    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "ocurrio un error, el video que se quiere eliminar no existe");
+}
+videoRepository.deleteById(videoId);
+System.out.println("video eliminado correctamente | microservicio video");
+    }
+
+    @Override
+    public VideoDto videoInternalDetails(Long videoId){
+Authentication auth=SecurityContextHolder.getContext().getAuthentication();
+
+boolean isAdmin=auth.getAuthorities().stream()
+        .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+if (!isAdmin){
+    throw new ResponseStatusException(HttpStatus.FORBIDDEN, "acceso denegado, se requieren permisos de administrador para borrar el video");
+}
+
+        VideoEntity video=videoRepository.findById(videoId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "video no encontrado"));
+
+        VideoPlaybackDto playbackDto=getVideoForPlayback(videoId);
+        VideoDto dto=mapToDto(video);
+
+        dto.setVideoUrl(playbackDto.getVideoUrl());
+
+return dto;
     }
 
     protected VideoDto mapToDto(VideoEntity video){

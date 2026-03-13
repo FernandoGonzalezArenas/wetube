@@ -10,4 +10,6 @@ public interface AuthService {
 
     public AuthResponse login(LoginRequest request);
 
+    void banUser(Long userId);
+
 }

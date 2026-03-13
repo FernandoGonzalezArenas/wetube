@@ -1,9 +1,6 @@
 package com.wetube.video.service;
 
-import com.wetube.video.dto.UploadUrlResponse;
-import com.wetube.video.dto.VideoDto;
-import com.wetube.video.dto.VideoDtoEntrada;
-import com.wetube.video.dto.VideoPlaybackDto;
+import com.wetube.video.dto.*;
 import com.wetube.video.entity.VideoEntity;
 import com.wetube.video.repository.VideoRepository;
 import io.minio.MinioClient;
@@ -50,8 +47,9 @@ private Long userId=55L;
     ReflectionTestUtils.setField(service, "bucketName", "test-bucket");
     ReflectionTestUtils.setField(service, "minioUrl", "http://localhost:9000");
 
-    //agregamos el userId a el contexto de spring
-    UsernamePasswordAuthenticationToken auth=new UsernamePasswordAuthenticationToken(userId, null, Collections.emptyList());
+    //agregamos el principal a el contexto de spring
+    UserPrincipal principal=new UserPrincipal(userId, "user-minio");
+    UsernamePasswordAuthenticationToken auth=new UsernamePasswordAuthenticationToken(principal, null, Collections.emptyList());
     SecurityContextHolder.getContext().setAuthentication(auth);
 }
 
