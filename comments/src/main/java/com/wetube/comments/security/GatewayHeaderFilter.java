@@ -1,18 +1,20 @@
 package com.wetube.comments.security;
 
-import com.wetube.comments.dto.UserPrincipal;
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
+import com.wetube.comments.dto.UserPrincipal;
+
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 public class GatewayHeaderFilter extends OncePerRequestFilter {
 
@@ -27,9 +29,7 @@ Long userId=Long.parseLong(userId_str);
     UserPrincipal principal=new UserPrincipal(userId, username);
     List<SimpleGrantedAuthority> authorities=Collections.emptyList();
     if (role_str!=null && !role_str.isEmpty()){
-        System.out.println("role pasado por el hasRole: "+role_str);
         String finalRole=role_str.startsWith("ROLE_") ? role_str : "ROLE_"+role_str;
-        System.out.println("role despues de tratarlo para que tenga el formato correcto: "+finalRole);
 
         authorities=List.of(new SimpleGrantedAuthority(finalRole));
     }

@@ -3,4 +3,5 @@ CREATE DATABASE videodb;
 CREATE DATABASE commentdb;
 CREATE DATABASE likedb;
 CREATE DATABASE userdb;
+CREATE DATABASE subscriptiondb;
 CREATE DATABASE admindb;

@@ -1,4 +1,4 @@
 package com.wetube.subscription.dto;
 
-public record UserPrincipal() {
+public record UserPrincipal(Long userId, String username) {
 }

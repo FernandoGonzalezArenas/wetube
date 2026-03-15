@@ -98,7 +98,6 @@ services:
     environment:
       - user_db=${user_db_env}
       - password_db=${password_db_env}
-      - JWT_SECRET=${jwt_secret_env}
       - MINIO_ACCESS_KEY=${minio_accessKey_env}
       - MINIO_SECRET_KEY=${minio_secretKey_env}
       - AWS_ACCESS_KEY=${aws_accessKey_env}
@@ -126,7 +125,6 @@ services:
     environment:
       - user_db=${user_db_env}
       - password_db=${password_db_env}
-      - JWT_SECRET=${jwt_secret_env}
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db-global:5432/commentdb
       - SPRING_CLOUD_CONSUL_HOST=consul
       - RABBIT_HOST=rabbitmq-wetube
@@ -151,7 +149,6 @@ services:
     environment:
       - user_db=${user_db_env}
       - password_db=${password_db_env}
-      - JWT_SECRET=${jwt_secret_env}
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db-global:5432/likedb
       - SPRING_CLOUD_CONSUL_HOST=consul
       - RABBIT_HOST=rabbitmq-wetube
@@ -176,14 +173,37 @@ services:
     environment:
       - user_db=${user_db_env}
       - password_db=${password_db_env}
-      - JWT_SECRET=${jwt_secret_env}
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db-global:5432/userdb
       - SPRING_CLOUD_CONSUL_HOST=consul
       - RABBIT_HOST=rabbitmq-wetube
       - RABBIT_USER=guest
       - RABBIT_PASSWORD=guest
 
-#microservicio admin
+#microservicio subscription
+  subscription-service:
+    networks:
+      - wetube-network
+    build:
+      context: ./subscription
+      dockerfile: Dockerfile
+    container_name: subscription-microservice
+    depends_on:
+      db-global:
+        condition: service_healthy
+      consul:
+        condition: service_started
+      rabbitmq:
+        condition: service_started
+    environment:
+      - user_db=${user_db_env}
+      - password_db=${password_db_env}
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db-global:5432/subscriptiondb
+      - SPRING_CLOUD_CONSUL_HOST=consul
+      - RABBIT_HOST=rabbitmq-wetube
+      - RABBIT_USER=guest
+      - RABBIT_PASSWORD=guest
+
+  #microservicio admin
   admin-service:
     networks:
       - wetube-network

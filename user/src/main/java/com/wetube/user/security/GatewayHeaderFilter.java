@@ -27,9 +27,7 @@ try {
     //convertimos el String de el role en una autoridad de spring
     List<SimpleGrantedAuthority> authorities=Collections.emptyList();
     if (role_str!=null && !role_str.isEmpty()){
-        System.out.println("role pasado por el hasRole: "+role_str);
         String finalRole=role_str.startsWith("ROLE_") ? role_str : "ROLE_"+role_str;
-        System.out.println("role despues de tratarlo para que tenga el formato correcto: "+finalRole);
 
         authorities=List.of(new SimpleGrantedAuthority(finalRole));
     }

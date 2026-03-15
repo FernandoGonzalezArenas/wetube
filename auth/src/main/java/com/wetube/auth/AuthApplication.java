@@ -13,7 +13,6 @@ public class AuthApplication {
 	public static void main(String[] args)
     {
 		SpringApplication.run(AuthApplication.class, args);
-        System.out.println("**prueba de diagnostico: log V4");
 	}
 
 }

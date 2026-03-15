@@ -1,13 +1,13 @@
-package com.wetube.gateway;
+package com.wetube.subscription;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class GatewayApplication {
+public class SubscriptionApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(GatewayApplication.class, args);
+		SpringApplication.run(SubscriptionApplication.class, args);
 	}
 
 }

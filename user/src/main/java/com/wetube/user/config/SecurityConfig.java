@@ -1,7 +1,6 @@
 package com.wetube.user.config;
 
 import com.wetube.user.security.GatewayHeaderFilter;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -24,7 +23,6 @@ public class SecurityConfig {
             .addFilterBefore(new GatewayHeaderFilter(), UsernamePasswordAuthenticationFilter.class)
             .authorizeHttpRequests(auth -> auth
                     .requestMatchers(HttpMethod.GET, "/users/**").permitAll()
-                    .requestMatchers(HttpMethod.GET, "/subs/**").permitAll()
                     .requestMatchers("/actuator/**").permitAll()
                     .anyRequest().authenticated())
             .sessionManagement(sesion -> sesion.sessionCreationPolicy(SessionCreationPolicy.STATELESS));

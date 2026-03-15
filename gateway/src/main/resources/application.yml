@@ -37,7 +37,13 @@ spring:
         - id: user
           uri: lb://user
           predicates:
-            - Path=/users/**,/subs/**
+            - Path=/users/**
+
+#ruta para microservicio subscriptions
+        - id: subscription
+          uri: lb://subscription
+          predicates:
+            - Path=/subs/**
 
         #ruta para microservicio video
         - id: video

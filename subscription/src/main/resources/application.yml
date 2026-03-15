@@ -1,11 +1,11 @@
 server:
-  port: 8085
+  port: 8087
 
 spring:
   application:
-    name: user
+    name: subscription
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/userdb}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/subscriptiondb}
     username: ${user_db}
     password: ${password_db}
     driverClassName: org.postgresql.Driver
@@ -27,6 +27,7 @@ spring:
         prefer-ip-address: true
   config:
     import: "optional:consul:"
+
 
   rabbitmq:
     host: ${RABBIT_HOST:localhost}
