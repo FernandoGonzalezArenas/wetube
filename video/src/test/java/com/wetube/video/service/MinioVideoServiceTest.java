@@ -11,17 +11,22 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -75,7 +80,7 @@ ArgumentCaptor<VideoEntity> captor=ArgumentCaptor.forClass(VideoEntity.class);
     assertEquals("mi video", savedEntity.getTitle());
     assertEquals(55L, savedEntity.getUserId());
     //verificamos la logica de url
-    assertEquals("http://localhost:9000/test-bucket/videos/video.mp4", savedEntity.getVideoUrl());
+    assertEquals("video.mp4", savedEntity.getVideoUrl());
     //verificamos el retorno DTO
     assertEquals("mi video", result.getTitle());
 }
@@ -98,11 +103,51 @@ ArgumentCaptor<VideoEntity> captor=ArgumentCaptor.forClass(VideoEntity.class);
 }
 
 @Test
+@DisplayName("debe generar una URL firmada para la subida de la miniatura")
+void shouldGenerateUploadUrlThumb() throws Exception{
+    String filename="portada.jpg";
+    when(minioClient.getPresignedObjectUrl(any())).thenReturn("http://minio:9000/thumbnails/uuid-portada.png");
+
+    UploadUrlResponse response=service.generateUploadUrlThumb(filename);
+
+    assertNotNull(response);
+    assertEquals("http://minio:9000/thumbnails/uuid-portada.png", response.uploadUrl());
+    verify(minioClient).getPresignedObjectUrl(any());
+}
+
+@Test
+@DisplayName("debe buscar videos por titulo")
+void shouldSearchVideosByTitle(){
+    String keyword="java";
+    VideoEntity entity=VideoEntity.builder().userId(1L).title("tutorial java").build();
+    Page<VideoEntity> page=new PageImpl<>(List.of(entity));
+
+    when(repository.searchByTitle(eq(keyword), any(PageRequest.class))).thenReturn(page);
+
+    Page<VideoDto> result=service.searchVideosByTitle(keyword, 0, 10);
+
+    assertEquals(1, result.getTotalElements());
+    assertEquals("tutorial java", result.getContent().get(0).getTitle());
+}
+
+@Test
+@DisplayName("debe mostrar correctamente el feed con la busqueda por cursor")
+void shouldGetFeedCorrectly(){
+    VideoEntity v1=VideoEntity.builder().id(4L).userId(2L).title("v1").build();
+    when(repository.findNextVideos(anyLong(), any(PageRequest.class))).thenReturn(List.of(v1));
+
+    List<VideoDto> result=service.getFeed(10L, 5);
+
+    assertEquals(1, result.size());
+    verify(repository).findNextVideos(eq(10L), any(PageRequest.class));
+}
+
+@Test
     @DisplayName("minio: debe generar VideoPlaybackDto con URL firmada de lectura")
     void shouldGetVideoForPlaybackMinio() throws Exception{
     VideoEntity video=VideoEntity.builder()
             .id(1L).title("Video Test")
-            .videoUrl("http://localhost:9000/test-bucket/videos/clip.mp4")
+            .videoUrl("clip.mp4")
             .build();
     when(repository.findById(1L)).thenReturn(Optional.of(video));
 when(minioClient.getPresignedObjectUrl(any())).thenReturn("http://signed-playback-url.com");
@@ -133,6 +178,82 @@ List<VideoDto> feed=service.getSubscriptionsFeed();
 //validaciones
     assertFalse(feed.isEmpty());
     verify(repository).findByUserIdInOrderByCreatedAtDesc(List.of(10L));
+}
+
+@Test
+    @DisplayName("ADMIN: debe eliminar el video si el usuario tiene ROLE_ADMIN")
+    void deleteVideoInternal_ShouldDelete_WhenUserIsAdmin(){
+    Long videoId=1L;
+
+    //simulamos usuario con role admin
+    UserPrincipal principal=new UserPrincipal(99L, "userAdmin");
+    var auth=new UsernamePasswordAuthenticationToken(
+            principal,
+            null,
+            List.of(new SimpleGrantedAuthority("ROLE_ADMIN")));
+    SecurityContextHolder.getContext().setAuthentication(auth);
+when(repository.existsById(videoId)).thenReturn(true);
+
+assertDoesNotThrow(() -> service.deleteVideoInternal(videoId));
+verify(repository).deleteById(videoId);
+}
+
+@Test
+    @DisplayName("ADMIN: debe lanzar 403 al intentar borrar si el usuario no es admin")
+    void deleteVideoInternal_ShouldThrowForbidden_WhenUserNotIsAdmin(){
+    UserPrincipal principal=new UserPrincipal(1L, "user");
+    var auth=new UsernamePasswordAuthenticationToken(principal, null, Collections.emptyList());
+    SecurityContextHolder.getContext().setAuthentication(auth);
+
+    ResponseStatusException ex=assertThrows(ResponseStatusException.class, () -> service.deleteVideoInternal(1L));
+    assertEquals(HttpStatus.FORBIDDEN, ex.getStatusCode());
+}
+
+@Test
+    @DisplayName("ADMIN: debe retornar detalles completos de el video para el admin")
+    void videoInternalDetails_ShouldReturnDetails_WhenUserIsAdmin() throws Exception{
+Long videoId=1L;
+UserPrincipal principal=new UserPrincipal(99L, "userAdmin");
+var auth=new UsernamePasswordAuthenticationToken(
+        principal,
+        null,
+        List.of(new SimpleGrantedAuthority("ROLE_ADMIN")));
+SecurityContextHolder.getContext().setAuthentication(auth);
+
+VideoEntity video=VideoEntity.builder()
+        .id(videoId).title("Video Admin").videoUrl("URL-Original").build();
+when(repository.findById(videoId)).thenReturn(Optional.of(video));
+when(minioClient.getPresignedObjectUrl(any())).thenReturn("http://url-firmada.com");
+
+VideoDto results=service.videoInternalDetails(videoId);
+
+assertNotNull(results);
+assertEquals("Video Admin", results.getTitle());
+assertEquals("http://url-firmada.com", results.getVideoUrl());
+}
+
+@Test
+    @DisplayName("ADMIN: debe retornar 404 si el video no existe")
+    void videoInternalDetails_ShouldThrowNotFound_WhenVideoNotExist(){
+    UserPrincipal principal=new UserPrincipal(99L, "userAdmin");
+    var auth=new UsernamePasswordAuthenticationToken(
+            principal,
+            null,
+            List.of(new SimpleGrantedAuthority("ROLE_ADMIN")));
+    SecurityContextHolder.getContext().setAuthentication(auth);
+
+    when(repository.findById(88L)).thenReturn(Optional.empty());
+
+ResponseStatusException ex=assertThrows(ResponseStatusException.class, () -> service.videoInternalDetails(88L));
+assertEquals(HttpStatus.NOT_FOUND, ex.getStatusCode());
+}
+
+@Test
+@DisplayName("debe verificar el mensaje de error si el servicio de almacenamiento minio faya")
+    void shouldThrowExceptionWhenMinioFails() throws Exception{
+    when(minioClient.getPresignedObjectUrl(any())).thenThrow(new RuntimeException("minio down"));
+
+    assertThrows(RuntimeException.class, () -> service.generateUploadUrl("video.mp4"));
 }
 
 }

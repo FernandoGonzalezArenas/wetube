@@ -1,5 +1,6 @@
 package com.wetube.user.controller;
 
+import com.wetube.user.dto.UploadUrlResponse;
 import com.wetube.user.dto.UserDto;
 import com.wetube.user.dto.UserDtoEntrada;
 import com.wetube.user.service.UserService;
@@ -22,9 +23,15 @@ public class UserController {
         return ResponseEntity.ok(service.getProfile(id));
     }
 
+    @GetMapping("/upload-ppu")
+    public ResponseEntity<UploadUrlResponse> getUploadUrl(@RequestParam String filename){
+        UploadUrlResponse response=service.getUploadUrl(filename);
+        return ResponseEntity.ok(response);
+    }
+
     @PutMapping("/me")
-    public ResponseEntity<UserDto> updateMyProfile(@RequestHeader("X-User-Id") Long userId, @RequestBody UserDtoEntrada profile){
-        return ResponseEntity.ok(service.updateProfile(userId, profile));
+    public ResponseEntity<UserDto> updateMyProfile(@RequestBody UserDtoEntrada profile){
+        return ResponseEntity.ok(service.updateProfile(profile));
     }
 
     @DeleteMapping("/internal/{id}")

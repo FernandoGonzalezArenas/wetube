@@ -7,6 +7,7 @@ import com.wetube.comments.dto.UserPrincipal;
 import com.wetube.comments.entity.CommentEntity;
 import com.wetube.comments.repository.CommentRepository;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -84,6 +85,13 @@ service.deleteComment(commentId);
     assertThrows(ResponseStatusException.class, () -> {
         service.editComment(99L, new UpdateCommentDto("nuevo"));
     });
+}
+
+@Test
+    @DisplayName("debe borrar los comentarios de un video")
+    void shouldDeleteCommentsByVideoId(){
+    assertDoesNotThrow(() -> service.deleteCommentsWithVideoId(1L));
+    verify(repository).deleteByVideoId(1L);
 }
 
 }

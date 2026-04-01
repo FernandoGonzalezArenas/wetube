@@ -27,7 +27,14 @@ private final VideoService videoService;
     return ResponseEntity.ok(response);
     }
 
-//controlador para guardar los metadatos de el video despues de la subida
+    //controlador para generar una URL firmada para subir una miniatura a S3
+    @GetMapping("/upload-tu")
+    public ResponseEntity<UploadUrlResponse> getUploadUrlThumb(@RequestParam String filename){
+        UploadUrlResponse  response= videoService.generateUploadUrlThumb(filename);
+        return ResponseEntity.ok(response);
+    }
+
+    //controlador para guardar los metadatos de el video despues de la subida
     @PostMapping("/save-metadata")
     public ResponseEntity<VideoDto> saveVideoMetadata(@Valid @RequestBody VideoDtoEntrada entrada){
     VideoDto saveVideo= videoService.saveVideoMetadata(entrada);

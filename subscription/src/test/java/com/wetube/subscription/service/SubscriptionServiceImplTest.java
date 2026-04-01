@@ -4,6 +4,7 @@ import com.wetube.subscription.dto.UserPrincipal;
 import com.wetube.subscription.entity.SubscriptionEntity;
 import com.wetube.subscription.repository.SubscriptionRepository;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -92,6 +93,14 @@ public class SubscriptionServiceImplTest {
     @Test
     void shouldReturnThrows_WhenChannelIdIsInvalid(){
         assertThrows(ResponseStatusException.class, () -> service.countSubscriptions(0L));
+    }
+
+    @Test
+    @DisplayName("debe borrar las subscripciones y subscriptores de un usuario")
+    void shouldDeleteSubscriptionsOfUser(){
+assertDoesNotThrow(() -> service.deleteSubscriptionsOfUser(1L));
+verify(repository).deleteSubscriptionsByChannelId(1L);
+verify(repository).deleteSubscriptorsOfChannelId(1L);
     }
 
 }

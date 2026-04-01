@@ -2,19 +2,15 @@ package com.wetube.auth.service;
 
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-
 import com.wetube.auth.repository.RefreshTokenRepository;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.http.HttpStatus;
@@ -151,5 +147,14 @@ req.setPassword("oops");
 ResponseStatusException ex=assertThrows(ResponseStatusException.class, () -> service.login(req));
 assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, ex.getStatusCode());
 }
+
+@Test
+    @DisplayName("debe borrar a el usuario y a sus tokens de la base de datos")
+    void banUser_ShouldDeleteUserAndTokens(){
+    assertDoesNotThrow(() -> service.banUser(1L));
+    verify(refreshTokenRepository, times(1)).deleteByUserId(1L);
+    verify(userRepository, times(1)).deleteById(1L);
+    }
+
 
 }

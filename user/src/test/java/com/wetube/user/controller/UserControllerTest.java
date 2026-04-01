@@ -1,20 +1,22 @@
 package com.wetube.user.controller;
 
+import com.wetube.user.dto.UploadUrlResponse;
 import com.wetube.user.dto.UserDto;
 import com.wetube.user.dto.UserDtoEntrada;
 import com.wetube.user.service.UserService;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 
 @WebMvcTest(UserController.class)
@@ -46,15 +48,35 @@ mockMvc.perform(get("/users/1"))
             .username("raul")
             .bio("nueva bio")
             .build();
-    when(userService.updateProfile(anyLong(), any())).thenReturn(update);
+    when(userService.updateProfile(any())).thenReturn(update);
 
 mockMvc.perform(put("/users/me")
-        .header("X-User-Id", 1L)
         .contentType("application/json")
         .content("{\"bio\": \"nueva bio\", \"profilePictureUrl\": \"http://foto.jpg\"}"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.bio").value("nueva bio"));
-verify(userService, times(1)).updateProfile(eq(1L), any(UserDtoEntrada.class));
+verify(userService, times(1)).updateProfile(any(UserDtoEntrada.class));
+}
+
+@Test
+    @DisplayName("debe retornar 200 cuando se elimine la cuenta de el usuario")
+@WithMockUser(roles = "ADMIN")
+    void shouldReturnOk_WhenUserWillBeDeleted() throws Exception{
+mockMvc.perform(delete("/users/internal/1")
+        .with(csrf()))
+        .andExpect(status().isOk())
+        .andExpect(content().string("la cuenta fue borrada correctamente por un administrador"));
+}
+
+@Test
+    @DisplayName("debe generar la solicitud GET y resultar como respuesta la URL firmada de la foto de perfil y el nombre unico de el archivo")
+    void shouldGenerateRequestForUploadUrlForProfilePicture() throws Exception{
+    when(userService.getUploadUrl(anyString())).thenReturn(new UploadUrlResponse("http://storage/profile.jpg", "UUID-profile-jpg"));
+
+    mockMvc.perform(get("/users/upload-ppu")
+            .param("filename", "profile.jpg"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.uploadUrl").value("http://storage/profile.jpg"));
 }
 
 }

@@ -170,14 +170,22 @@ services:
         condition: service_started
       rabbitmq:
         condition: service_started
+      minio:
+        condition: service_started
     environment:
       - user_db=${user_db_env}
       - password_db=${password_db_env}
+      - MINIO_ACCESS_KEY=${minio_accessKey_env}
+      - MINIO_SECRET_KEY=${minio_secretKey_env}
+      - AWS_ACCESS_KEY=${aws_accessKey_env}
+      - AWS_SECRET_KEY=${aws_secretKey_env}
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db-global:5432/userdb
       - SPRING_CLOUD_CONSUL_HOST=consul
       - RABBIT_HOST=rabbitmq-wetube
       - RABBIT_USER=guest
       - RABBIT_PASSWORD=guest
+      - MINIO_URL=http://minio:9000
+      - STORAGE_TYPE=minio
 
 #microservicio subscription
   subscription-service:

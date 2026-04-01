@@ -43,13 +43,13 @@ public InteractionsService(CommentsClient commentsClient, LikesClient likesClien
         return 0;
     }
 
-    @CircuitBreaker(name = "user", fallbackMethod = "fallbackForUser")
+    @CircuitBreaker(name = "subscription", fallbackMethod = "fallbackForSubscription")
     public List<Long> getSubscriptionsByUser(Long userId){
 return subscriptionsClient.getSubscriptionsByUser(userId).getIds();
     }
 
-    public List<Long> fallbackForUser(Long userId, Throwable throwable){
-    return Collections.emptyList();
+    public List<Long> fallbackForSubscription(Long userId, Throwable throwable){
+    return List.of(0L);
     }
 
 }

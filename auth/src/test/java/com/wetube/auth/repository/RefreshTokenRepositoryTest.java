@@ -1,7 +1,11 @@
 package com.wetube.auth.repository;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -9,6 +13,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 import com.wetube.auth.entity.RefreshTokenEntity;
 import com.wetube.auth.entity.UserEntity;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace=AutoConfigureTestDatabase.Replace.ANY)
@@ -68,6 +73,25 @@ void  deleteAllByExpiryDateBefore_eliminaExpirados(){
     //comprobamos que OLD fue borrado y NEW aun existe
     assertThat(refreshRepo.findByToken("OLD")).isEmpty();
     assertThat(refreshRepo.findByToken("NEW")).isPresent();
+}
+
+@Test
+    @DisplayName("borrar los tokens de un usuario baneado")
+    void shouldDeleteTokensOfBannedUser(){
+    UserEntity user=userRepo.save(UserEntity.builder()
+            .username("fer").password("mi-password").role("USER").email("yo@email.com").build());
+    Long userId=user.getId();
+
+    RefreshTokenEntity token=refreshRepo.save(RefreshTokenEntity.builder()
+            .token("ref")
+            .user(user)
+            .expiryDate(Instant.now()).build());
+    Long id=token.getId();
+
+    refreshRepo.deleteByUserId(userId);
+    Optional<RefreshTokenEntity> deleted=refreshRepo.findById(id);
+
+assertTrue(deleted.isEmpty());
 }
 
 }

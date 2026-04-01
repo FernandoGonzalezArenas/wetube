@@ -85,10 +85,11 @@ void shouldReturnLikesCountOnSuccess(){
     }
 
     @Test
-    @DisplayName("debe retornar lista vacía al ejecutar fallback de subscripciones")
+    @DisplayName("debe retornar lista con un 0 al ejecutar fallback de subscripciones")
     void shouldReturnEmptyListOnSubscriptionFallback(){
-        List<Long> result=service.fallbackForUser(1L, new RuntimeException("error"));
-        assertTrue(result.isEmpty());
+        List<Long> result=service.fallbackForSubscription(1L, new RuntimeException("error"));
+        assertEquals(1, result.size());
+assertEquals(0L, result.get(0));
     }
 
 }

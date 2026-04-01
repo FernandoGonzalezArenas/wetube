@@ -1,5 +1,6 @@
 package com.wetube.user.security;
 
+import com.wetube.user.dto.UserPrincipal;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,6 +24,7 @@ String role_str=request.getHeader("X-User-Role");
     if (userId_str!=null && !userId_str.isEmpty()){
 try {
     Long userId = Long.parseLong(userId_str);
+    UserPrincipal principal=new UserPrincipal(userId, null);
 
     //convertimos el String de el role en una autoridad de spring
     List<SimpleGrantedAuthority> authorities=Collections.emptyList();
@@ -33,7 +35,7 @@ try {
     }
 
     UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
-            userId,
+            principal,
             null,
             authorities
     );

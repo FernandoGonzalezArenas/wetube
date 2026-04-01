@@ -4,7 +4,9 @@ import com.wetube.video.dto.UploadUrlResponse;
 import com.wetube.video.repository.VideoRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
@@ -19,7 +21,7 @@ public class AWSVideoServiceImpl extends AbstractVideoService {
 
     private final S3Presigner s3Presigner;
 
-@Value("${aws.s3.bucket-name}")
+@Value("${aws.s3.bucket-videos}")
     private String bucketName;
 
     public AWSVideoServiceImpl(VideoRepository videoRepository, InteractionsService interactionsService, S3Presigner s3Presigner){
@@ -46,10 +48,29 @@ String objectName="videos/" + finalFileName;
     return "https://" + bucketName + ".s3.amazonaws.com/videos/" + filename;
     }
 
-@Override
-protected String getPlaybackUrl(String storedUrl){
+    //metodo para obtener la URL prefirmada de AWS S3 para miniaturas
+    @Override
+    public UploadUrlResponse generateUploadUrlThumb(String filename){
+        String finalFileName=UUID.randomUUID().toString() + "-" + filename;
+        String objectName="thumbnails/" + finalFileName;
+        PutObjectPresignRequest presignRequest=PutObjectPresignRequest.builder()
+                .signatureDuration(Duration.ZERO.ofMinutes(15))
+                .putObjectRequest(req -> req.bucket(bucketName).key(objectName))
+                .build();
+
+        PresignedPutObjectRequest presignedRequest= s3Presigner.presignPutObject(presignRequest);
+        return new UploadUrlResponse(presignedRequest.url().toString(), finalFileName);
+    }
+
+    @Override
+    protected String buildFullThumbnailUrl(String filename){
+        return "https://" + bucketName + ".s3.amazonaws.com/thumbnails/" + filename;
+    }
+
+    @Override
+protected String getPlaybackUrl(String filename){
         //extraemos el nombre de el objeto
-    String key="videos/"+storedUrl.substring(storedUrl.lastIndexOf("/")+1);
+    String key="videos/"+filename;
 
     try {
         GetObjectPresignRequest getObjectPresignRequest=GetObjectPresignRequest.builder()
@@ -60,7 +81,7 @@ protected String getPlaybackUrl(String storedUrl){
         return s3Presigner.presignGetObject(getObjectPresignRequest).url().toString();
     }catch (Exception e){
 logger.error("error generando URL de reproduccion AWS: {}", e.getMessage());
-return storedUrl; //retorna la URL original si faya
+throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "el servicio esta temporalmente no disponible");
     }
 }
 

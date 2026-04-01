@@ -9,6 +9,8 @@ public interface VideoService {
 
     UploadUrlResponse generateUploadUrl(String filename);
 
+    UploadUrlResponse generateUploadUrlThumb(String filename);
+
  VideoDto saveVideoMetadata(VideoDtoEntrada entrada);
 
 Page<VideoDto> searchVideosByTitle(String keyword, int page, int size);
@@ -20,6 +22,7 @@ List<VideoDto> getFeed(Long lastId, int limit);
  List<VideoDto> getVideosByIds(IdsDto ids);
 
  VideoPlaybackDto getVideoForPlayback(Long videoId);
+
 
  List<VideoDto> getSubscriptionsFeed();
 

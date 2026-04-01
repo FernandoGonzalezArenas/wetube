@@ -28,10 +28,11 @@ protected final  InteractionsService interactionsService;
 
     public abstract UploadUrlResponse generateUploadUrl(String filename);
 
+    public abstract UploadUrlResponse generateUploadUrlThumb(String filename);
+
     //metodo para guardar los metadatos de el video
     @Override
     public VideoDto saveVideoMetadata(VideoDtoEntrada entrada){
-        String videoUrl = buildFullVideoUrl(entrada.getFilename());
 UserPrincipal principal=(UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 Long userId=principal.userId();
 
@@ -39,7 +40,7 @@ Long userId=principal.userId();
             video.setUserId(userId);
             video.setTitle(entrada.getTitle());
             video.setDescription(entrada.getDescription());
-            video.setVideoUrl(videoUrl);
+            video.setVideoUrl(entrada.getFilename());
             video.setThumbnailUrl(entrada.getThumbnailUrl());
             videoRepository.save(video);
 
@@ -86,6 +87,7 @@ return result.map(this::mapToDto);
 
         //generamos la URL de acceso
         String urlFinal=getPlaybackUrl(video.getVideoUrl());
+String thumbUrl=buildFullThumbnailUrl(video.getThumbnailUrl());
 
         //retornamos el DTO
         return VideoPlaybackDto.builder()
@@ -93,12 +95,13 @@ return result.map(this::mapToDto);
                 .title(video.getTitle())
                 .description(video.getDescription())
                 .videoUrl(urlFinal)
-                .thumbnailUrl(video.getThumbnailUrl())
+                .thumbnailUrl(thumbUrl)
                 .build();
     }
 
     //metodo abstracto para construir la URL personalizada con cada servicio de almacenamiento
     protected abstract String getPlaybackUrl(String storedUrl);
+
 
     @Override
     public List<VideoDto> getSubscriptionsFeed(){
@@ -130,7 +133,6 @@ if (!videoRepository.existsById(videoId)){
     throw new ResponseStatusException(HttpStatus.NOT_FOUND, "ocurrio un error, el video que se quiere eliminar no existe");
 }
 videoRepository.deleteById(videoId);
-System.out.println("video eliminado correctamente | microservicio video");
     }
 
     @Override
@@ -159,5 +161,7 @@ return dto;
     }
 
     protected abstract String buildFullVideoUrl(String filename);
+
+    protected abstract String buildFullThumbnailUrl(String filename);
 
 }

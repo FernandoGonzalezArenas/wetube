@@ -74,8 +74,8 @@ refreshTokenService.registerRefresh(newTokens.getRefreshToken(), request.getUser
 @Override
 @Transactional
     public void banUser(Long userId){
+    refreshTokenRepository.deleteByUserId(userId);
 userRepository.deleteById(userId);
-refreshTokenRepository.deleteByUserId(userId);
 System.out.println("usuario con el id "+userId+ " baneado permanentemente");
 }
 

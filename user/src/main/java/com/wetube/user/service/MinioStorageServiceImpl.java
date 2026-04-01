@@ -1,0 +1,50 @@
+package com.wetube.user.service;
+
+import com.wetube.user.dto.UploadUrlResponse;
+import io.minio.GetPresignedObjectUrlArgs;
+import io.minio.MinioClient;
+import io.minio.http.Method;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Service;
+
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
+@Service
+@ConditionalOnProperty(name = "storage.type", havingValue = "minio")
+@RequiredArgsConstructor
+public class MinioStorageServiceImpl implements  StorageService{
+
+private final MinioClient minioClient;
+
+@Value("${minio.bucket-users}")
+    private String bucketName;
+
+@Value("${minio.url}")
+    private String miniourl;
+
+@Override
+    public UploadUrlResponse generateUploadUrl(String filename){
+    String finalFilename=UUID.randomUUID()+"-"+filename;
+    String objectName="profiles/"+ finalFilename;
+    try {
+        String urlFirmada= minioClient.getPresignedObjectUrl(GetPresignedObjectUrlArgs.builder()
+                .method(Method.PUT)
+                .bucket(bucketName)
+                .object(objectName)
+                        .expiry(15, TimeUnit.MINUTES)
+                .build());
+        return new UploadUrlResponse(urlFirmada, finalFilename);
+    }catch (Exception e){
+throw new RuntimeException("error en minio user: " +e.getMessage());
+    }
+}
+
+@Override
+    public String getPublicUrl(String objectName){
+    return miniourl+"/"+bucketName+"/profiles/"+objectName;
+}
+
+}

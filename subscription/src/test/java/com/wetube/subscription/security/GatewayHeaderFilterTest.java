@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.Authentication;
@@ -21,6 +22,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 public class GatewayHeaderFilterTest {
 
+@InjectMocks
     private GatewayHeaderFilter filter;
 
     @Mock
@@ -34,22 +36,20 @@ public class GatewayHeaderFilterTest {
 
     @BeforeEach
     void setup(){
-        filter=new GatewayHeaderFilter();
-
-        //limpeamos el contexto de seguridad despues de cada test
         SecurityContextHolder.clearContext();
     }
 
     @Test
     void doFilter_WithValidIdHeader_ShouldSetAuthentication() throws ServletException, IOException{
         when(request.getHeader("X-User-Id")).thenReturn("123");
-        UserPrincipal principal=new UserPrincipal(123L, null);
 
         filter.doFilterInternal(request, response, filterChain);
 
         Authentication auth=SecurityContextHolder.getContext().getAuthentication();
         assertNotNull(auth);
-        assertEquals(principal, auth.getPrincipal());
+
+        UserPrincipal principal=(UserPrincipal) auth.getPrincipal();
+        assertEquals(123L, principal.userId());
 
         //verificamos que se llame a filterChain para que la cadena continue
         verify(filterChain, times(1)).doFilter(request, response);

@@ -1,12 +1,15 @@
 package com.wetube.likes.repository;
 
 import com.wetube.likes.entity.LikeEntity;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.dao.DataIntegrityViolationException;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -15,6 +18,9 @@ public class LikeRepositoryTest {
 
 @Autowired
     private LikeRepository repository;
+
+@Autowired
+private TestEntityManager entityManager;
 
 @Test
     void shouldSaveLikeSuccessfully(){
@@ -69,6 +75,23 @@ public class LikeRepositoryTest {
     assertEquals(2, result.size());
     assertTrue(result.stream().anyMatch(l -> l.getVideoId().equals(101L)));
     assertTrue(result.stream().anyMatch(l -> l.getVideoId().equals(102L)));
+}
+
+@Test
+    @DisplayName("debe borrar los likes fisicamente de la base de datos con respecto a el video")
+    void shouldDeleteLikesByVideoId(){
+    LikeEntity like=repository.save(LikeEntity.builder()
+            .videoId(1L).userId(10L).build());
+    Long id=like.getId();
+
+entityManager.flush();
+
+repository.deleteByVideoId(1L);
+
+entityManager.clear();
+    Optional<LikeEntity> deleted=repository.findById(id);
+
+    assertTrue(deleted.isEmpty());
 }
 
 }

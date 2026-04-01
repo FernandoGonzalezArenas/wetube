@@ -8,6 +8,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
@@ -15,14 +17,12 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.Collections;
 import java.util.List;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
 @WebMvcTest(VideoController.class)
 public class VideoControllerTest {
 
@@ -124,4 +124,51 @@ mockMvc.perform(post("/videos/list-likes")
                 .andExpect(status().isOk());
     }
 
+    @Test
+    @DisplayName("DELETE /videos/internal/{id}, debe retornar 200 al eliminar")
+    @WithMockUser(roles = "ADMIN")
+    void shouldReturnOkOnInternalDelete() throws Exception{
+mockMvc.perform(delete("/videos/internal/1")
+        .with(csrf()))
+        .andExpect(status().isOk())
+        .andExpect(content().string("video eliminado exitosamente por el administrador"));
+    }
+
+    @Test
+    @DisplayName("GET /videos/internal/details/{id}, debe retornar detalles de el video")
+    @WithMockUser(roles = "ADMIN")
+    void shouldReturnVideoDetailsForAdmin() throws Exception{
+        VideoDto dto=VideoDto.builder()
+                .title("Admin View").build();
+        when(videoService.videoInternalDetails(1L)).thenReturn(dto);
+
+        mockMvc.perform(get("/videos/internal/details/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.title").value("Admin View"));
+    }
+
+    @Test
+    @WithMockUser
+    void shouldGetUploadUrlThumb() throws Exception{
+        when(videoService.generateUploadUrlThumb(anyString())).thenReturn(new UploadUrlResponse("http://storage/thumb", "uuid-thumb.jpg"));
+
+        mockMvc.perform(get("/videos/upload-tu")
+                .param("filename", "portada.jpg"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.uploadUrl").value("http://storage/thumb"));
+    }
+
+    @Test
+    @WithMockUser
+    void
+shouldSearchVideos() throws  Exception{
+        Page<VideoDto> emptyPage=new PageImpl<>(Collections.emptyList());
+        when(videoService.searchVideosByTitle(anyString(), anyInt(), anyInt())).thenReturn(emptyPage);
+
+        mockMvc.perform(get("/videos/search")
+                .param("keyword", "spring")
+                .param("page", "0")
+                .param("size", "10"))
+                .andExpect(status().isOk());
+    }
 }

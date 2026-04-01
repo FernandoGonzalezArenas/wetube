@@ -10,8 +10,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 @DataJpaTest
@@ -38,6 +40,8 @@ repository.save(VideoEntity.builder().userId(2L)
     Page<VideoEntity> result=repository.searchByTitle("spring", PageRequest.of(0, 10));
 assertEquals(1, result.getTotalElements());
 assertEquals("spring boot intro", result.getContent().get(0).getTitle());
+assertTrue(result.getContent().stream()
+        .noneMatch(v -> v.getTitle().contains("java")));
 }
 
 @Test
@@ -98,6 +102,19 @@ assertEquals("spring boot intro", result.getContent().get(0).getTitle());
     List<VideoEntity> result=repository.findByUserIdInOrderByCreatedAtDesc(List.of(10L, 11L));
 
     assertEquals(2, result.size());
+}
+
+@Test
+    @DisplayName("debe borrar un video fisicamente de la base de datos")
+    void shouldDeleteVideoFromDatabase(){
+    VideoEntity video=repository.save(VideoEntity.builder()
+            .userId(7L).title("To Delete").description("d").videoUrl("u").build());
+    Long id=video.getId();
+
+    repository.deleteById(id);
+    Optional<VideoEntity> deleted=repository.findById(id);
+
+    assertTrue(deleted.isEmpty());
 }
 
 }

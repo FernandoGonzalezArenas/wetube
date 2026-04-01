@@ -1,12 +1,11 @@
-package com.wetube.video.security;
+package com.wetube.admin.security;
 
-import com.wetube.video.dto.UserPrincipal;
+import com.wetube.admin.dto.UserPrincipal;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -14,9 +13,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import java.io.IOException;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import java.io.IOException;
 
 @ExtendWith(MockitoExtension.class)
 public class GatewayHeaderFilterTest {
@@ -31,19 +30,18 @@ public class GatewayHeaderFilterTest {
     private FilterChain filterChain;
 
 @BeforeEach
-    void setup(){
+void setup(){
     SecurityContextHolder.clearContext();
 }
 
 @Test
-    @DisplayName("debe pasar el filtro con los datos correctos")
     void doFilter_WithValidHeaders_ShouldSetAuthentication() throws ServletException, IOException{
 when(request.getHeader("X-User-Id")).thenReturn("123");
 when(request.getHeader("X-User-Role")).thenReturn("ADMIN");
 
 filter.doFilterInternal(request, response, filterChain);
 
-var auth=SecurityContextHolder.getContext().getAuthentication();
+var auth= SecurityContextHolder.getContext().getAuthentication();
 assertNotNull(auth);
 
     UserPrincipal principal=(UserPrincipal) auth.getPrincipal();
@@ -55,7 +53,6 @@ assertNotNull(auth);
 }
 
 @Test
-    @DisplayName("debe resultar sin autenticacion por userId nulo")
     void doFilter_WithoutHeaders_ShouldNotSetAuthentication() throws ServletException, IOException{
     when(request.getHeader("X-User-Id")).thenReturn(null);
 
@@ -63,21 +60,19 @@ assertNotNull(auth);
 
     var auth=SecurityContextHolder.getContext().getAuthentication();
     assertNull(auth);
-
-    verify(filterChain).doFilter(request, response);
+    verify(filterChain, times(1)).doFilter(request, response);
 }
 
 @Test
-    @DisplayName("debe resultar sin autenticacion en el contexto por hencabezado invalido")
-    void doFilter_WithInvalidHeaders_ShouldNotSetAuthentication() throws ServletException, IOException{
+void doFilter_WithInvalidFormat_ShouldNotSetAuthentication() throws ServletException, IOException{
     when(request.getHeader("X-User-Id")).thenReturn("abc");
 
     filter.doFilterInternal(request, response, filterChain);
 
     var auth=SecurityContextHolder.getContext().getAuthentication();
-    assertNull(auth);
 
-    verify(filterChain).doFilter(request, response);
+    assertNull(auth);
+    verify(filterChain, times(1)).doFilter(request, response);
 }
 
 }

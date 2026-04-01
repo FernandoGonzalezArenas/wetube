@@ -22,7 +22,7 @@ public class MinioVideoServiceImpl extends AbstractVideoService{
 private final MinioClient minioClient;
 private static final Logger logger= LoggerFactory.getLogger(MinioVideoServiceImpl.class);
 
-@Value("${minio.bucket-name}")
+@Value("${minio.bucket-videos}")
     private String bucketName;
 
 @Value("${minio.url}")
@@ -33,26 +33,48 @@ private String minioUrl;
     this.minioClient=minioClient;
 }
 
-//metodo para generar una URL firmada para subir videos a MinIO
+    //metodo para generar una URL firmada para subir videos a MinIO
     @Override
     public UploadUrlResponse generateUploadUrl(String filename){
         String finalFileName=UUID.randomUUID().toString()+"-"+filename;
         String objectName="videos/"+finalFileName;
-    try {
-        //configurar la solicitud de URL firmada
-String presignedUrl =minioClient.getPresignedObjectUrl(
-        GetPresignedObjectUrlArgs.builder()
-                .bucket(bucketName)
-                .object(objectName)
-                .method(Method.PUT)
-                .expiry(15, TimeUnit.MINUTES)
-                .build()
-);
-return new UploadUrlResponse(presignedUrl, finalFileName);
-    }catch (Exception e){
-        e.printStackTrace();
-throw new RuntimeException("error al generar URL firmada"+e.getMessage());
+        try {
+            //configurar la solicitud de URL firmada
+            String presignedUrl =minioClient.getPresignedObjectUrl(
+                    GetPresignedObjectUrlArgs.builder()
+                            .bucket(bucketName)
+                            .object(objectName)
+                            .method(Method.PUT)
+                            .expiry(15, TimeUnit.MINUTES)
+                            .build()
+            );
+            return new UploadUrlResponse(presignedUrl, finalFileName);
+        }catch (Exception e){
+            e.printStackTrace();
+            throw new RuntimeException("error al generar URL firmada"+e.getMessage());
+        }
     }
+
+    //metodo para generar una URL firmada para subir miniaturas a MinIO
+    @Override
+    public UploadUrlResponse generateUploadUrlThumb(String filename){
+        String finalFileName=UUID.randomUUID().toString()+"-"+filename;
+        String objectName="thumbnails/"+finalFileName;
+        try {
+            //configurar la solicitud de URL firmada
+            String presignedUrl =minioClient.getPresignedObjectUrl(
+                    GetPresignedObjectUrlArgs.builder()
+                            .bucket(bucketName)
+                            .object(objectName)
+                            .method(Method.PUT)
+                            .expiry(15, TimeUnit.MINUTES)
+                            .build()
+            );
+            return new UploadUrlResponse(presignedUrl, finalFileName);
+        }catch (Exception e){
+            e.printStackTrace();
+            throw new RuntimeException("error al generar URL firmada"+e.getMessage());
+        }
     }
 
     @Override
@@ -60,11 +82,15 @@ throw new RuntimeException("error al generar URL firmada"+e.getMessage());
 return minioUrl + "/" + bucketName + "/videos/" + filename;
     }
 
-@Override
-    protected String getPlaybackUrl(String storedUrl){
+    @Override
+    protected String buildFullThumbnailUrl(String filename){
+        return minioUrl + "/" + bucketName + "/thumbnails/" + filename;
+    }
+
+    @Override
+    protected String getPlaybackUrl(String filename){
         //extraemos el nombre de el objeto
-    String objectName="videos/"+storedUrl.substring(storedUrl.lastIndexOf("/")+1);
-System.out.println("el nombre de el objeto de video es: "+objectName);
+    String objectName="videos/"+filename;
     try {
         return minioClient.getPresignedObjectUrl(
                 GetPresignedObjectUrlArgs.builder()
@@ -75,7 +101,7 @@ System.out.println("el nombre de el objeto de video es: "+objectName);
                 .build());
     }catch (Exception e){
         logger.error("error generando URL de reproduccion minio: {}", e);
-        return storedUrl;
+        return filename;
     }
 }
 

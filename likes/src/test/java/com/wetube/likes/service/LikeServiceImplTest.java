@@ -7,6 +7,7 @@ import com.wetube.likes.dto.VideoLikeStatusDto;
 import com.wetube.likes.entity.LikeEntity;
 import com.wetube.likes.repository.LikeRepository;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -113,6 +114,13 @@ void setupSecurityContext(){
 assertTrue(result.getIds().contains(10L));
 assertTrue(result.getIds().contains(20L));
 verify(repository, times(1)).findByUserId(userId);
+}
+
+@Test
+    @DisplayName("debe eliminar los likes de un video")
+    void shouldDeleteLikesByVideoId(){
+    assertDoesNotThrow(() -> service.deleteLikesVideo(1L));
+    verify(repository).deleteByVideoId(1L);
 }
 
 }

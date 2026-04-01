@@ -1,10 +1,13 @@
 package com.wetube.user.service;
 
+import com.wetube.user.dto.UploadUrlResponse;
 import com.wetube.user.dto.UserDto;
 import com.wetube.user.dto.UserDtoEntrada;
+import com.wetube.user.dto.UserPrincipal;
 import com.wetube.user.entity.UserEntity;
 import com.wetube.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -14,13 +17,11 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDateTime;
 
 @Service
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
     private final UserRepository repository;
-
-    public UserServiceImpl(UserRepository repository){
-        this.repository=repository;
-    }
+private final StorageService storageService;
 
     @Override
 public UserDto getProfile(Long id){
@@ -29,8 +30,16 @@ UserEntity user = repository.findById(id)
 return entityToDto(user);
     }
 
+    @Override
+    public UploadUrlResponse getUploadUrl(String filename){
+        return storageService.generateUploadUrl(filename);
+    }
+
 @Override
-public UserDto updateProfile(Long id, UserDtoEntrada profileDetails){
+public UserDto updateProfile( UserDtoEntrada profileDetails){
+    UserPrincipal principal=(UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    Long id=principal.userId();
+
     UserEntity user = repository.findById(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "usuario no encontrado"));
     user.setBio(profileDetails.getBio());
@@ -50,10 +59,12 @@ public UserDto createInitialProfile(Long id, String username){
 }
 
 private UserDto entityToDto(UserEntity user){
+        String foto=user.getProfilePictureUrl();
+        String finalUrl=(foto!=null) ?storageService.getPublicUrl(foto) : null;
     return UserDto.builder()
             .username(user.getUsername())
             .bio(user.getBio())
-            .profilePictureUrl(user.getProfilePictureUrl())
+            .profilePictureUrl(finalUrl)
             .createdAt(user.getCreatedAt())
             .build();
     }
@@ -74,7 +85,6 @@ private UserDto entityToDto(UserEntity user){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "el usuario que se quiere banear no existe");
         }
         repository.deleteById(userId);
-        System.out.println("usuario baneado correctamente | microservicio user");
     }
 
 }

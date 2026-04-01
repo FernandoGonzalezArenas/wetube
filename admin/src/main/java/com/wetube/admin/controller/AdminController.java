@@ -46,9 +46,9 @@ private final AdminService adminService;
 
 @PatchMapping("/reports/{reportId}/dismiss")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> dismiss(@PathVariable Long reportId){
+    public ResponseEntity<String> dismiss(@PathVariable Long reportId){
     adminService.dismissReport(reportId);
-    return ResponseEntity.noContent().build();
+    return ResponseEntity.ok("reporte descartado por el administrador");
 }
 
 }

@@ -10,10 +10,16 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.server.ResponseStatusException;
+import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
@@ -26,10 +32,8 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class AWSVideoServiceTest {
@@ -59,7 +63,7 @@ private final Long userId=1L;
 }
 
 @Test
-    @DisplayName("AWS: debe guardar metadata y construir la url prefirmada correctamente")
+    @DisplayName("AWS: debe guardar metadata")
     void shouldSaveMetadataAndBuildUrlAWS(){
     VideoDtoEntrada entrada=VideoDtoEntrada.builder()
             .title("video AWS")
@@ -78,7 +82,7 @@ private final Long userId=1L;
 
     assertEquals(1L, entity.getUserId());
 //validamos la logica exacta de construccion de url de AWS
-    assertEquals("https://aws-bucket-videos.s3.amazonaws.com/videos/clip.mp4", entity.getVideoUrl());
+    assertEquals("clip.mp4", entity.getVideoUrl());
 }
 
 @Test
@@ -98,12 +102,52 @@ assertTrue(response.finalFileName().contains(filename));
 }
 
 @Test
+void shouldGenerateUploadUrlThumb() throws Exception{
+    String filename="portada.jpg";
+    String fakeUrl = "https://aws-bucket.s3.amazonaws.com/thumbnails/uuid-thumb.jpg?sig=123";
+
+    when(s3Presigner.presignPutObject(any(PutObjectPresignRequest.class))).thenReturn(presignedPutObjectRequest);
+    when(presignedPutObjectRequest.url()).thenReturn(new URL(fakeUrl));
+
+    UploadUrlResponse response=service.generateUploadUrlThumb(filename);
+
+    assertNotNull(response);
+    assertTrue(response.uploadUrl().contains("thumbnails"));
+    assertTrue(response.finalFileName().contains(filename));
+}
+
+@Test
+void shouldSearchVideosByTitle(){
+    String keyword="java";
+    VideoEntity entity=VideoEntity.builder().userId(2L).title("video java").build();
+    Page<VideoEntity> page=new PageImpl<>(List.of(entity));
+
+    when(repository.searchByTitle(eq(keyword), any(PageRequest.class))).thenReturn(page);
+
+    Page<VideoDto> results=service.searchVideosByTitle(keyword, 0, 10);
+
+    assertEquals(1, results.getTotalElements());
+    assertEquals("video java", results.getContent().get(0).getTitle());
+}
+
+@Test
+void shouldGetFeedCorrectly(){
+    VideoEntity v1=VideoEntity.builder().id(5L).userId(2L).title("v1").build();
+
+    when(repository.findNextVideos(anyLong(), any(PageRequest.class))).thenReturn(List.of(v1));
+    List<VideoDto> results=service.getFeed(10L, 5);
+
+    assertEquals(1, results.size());
+    verify(repository).findNextVideos(eq(10L), any(PageRequest.class));
+}
+
+@Test
     @DisplayName("aws: debe retornar VideoPlaybackDto con URL firmada de GetObject")
     void shouldGetVideoForPlaybackAWS() throws Exception{
 VideoEntity video=VideoEntity.builder()
         .id(10L)
         .title("video AWS")
-        .videoUrl("https://s3.aws.com/videos/clip-123.mp4")
+        .videoUrl("clip-123.mp4")
         .build();
     String fakeSignedUrl = "https://aws-bucket.s3.amazonaws.com/videos/clip-123.mp4?X-Amz-Signature=xyz";
 
@@ -146,6 +190,113 @@ List<VideoDto> result=service.getSubscriptionsFeed();
 assertEquals(1, result.size());
 verify(interactionsService).getSubscriptionsByUser(anyLong());
 verify(repository).findByUserIdInOrderByCreatedAtDesc(followedChannels);
+}
+
+@Test
+    @DisplayName("ADMIN: debe eliminar el video si el usuario tiene ROLE_ADMIN")
+    void deleteVideoInternal_ShouldDelete_WhenUserIsAdmin(){
+    Long videoId=1L;
+    UserPrincipal principal=new UserPrincipal(99L, "userAdmin");
+    var auth=new UsernamePasswordAuthenticationToken(principal,
+            null,
+            List.of(new SimpleGrantedAuthority("ROLE_ADMIN")));
+    SecurityContextHolder.getContext().setAuthentication(auth);
+    when(repository.existsById(videoId)).thenReturn(true);
+
+    assertDoesNotThrow(() -> service.deleteVideoInternal(videoId));
+    verify(repository).deleteById(videoId);
+}
+
+@Test
+    @DisplayName("ADMIN: debe lanzar 403 al intentar borrar si el usuario no es admin")
+    void deleteVideoInternal_ShouldThrowForbidden_WhenUserNotIsAdmin(){
+    UserPrincipal principal=new UserPrincipal(1L, "user");
+    var auth=new UsernamePasswordAuthenticationToken(principal, null, Collections.emptyList());
+    SecurityContextHolder.getContext().setAuthentication(auth);
+
+ResponseStatusException ex=assertThrows(ResponseStatusException.class, () -> service.deleteVideoInternal(1L));
+assertEquals(HttpStatus.FORBIDDEN, ex.getStatusCode());
+}
+
+@Test
+    @DisplayName("ADMIN: debe retornar detalles completos de el video para el admin")
+    void videoInternalDetails_ShouldReturnDetails_WhenUserIsAdmin() throws Exception{
+    Long videoId=1L;
+    UserPrincipal principal=new UserPrincipal(99L, "userAdmin");
+    var auth=new UsernamePasswordAuthenticationToken(principal,
+            null,
+            List.of(new SimpleGrantedAuthority("ROLE_ADMIN")));
+    SecurityContextHolder.getContext().setAuthentication(auth);
+
+    VideoEntity video=VideoEntity.builder()
+            .id(1L).title("Video Admin").videoUrl("URL-Original").build();
+
+    when(repository.findById(videoId)).thenReturn(Optional.of(video));
+when(s3Presigner.presignGetObject(any(GetObjectPresignRequest.class))).thenReturn(presignedGetObjectRequest);
+when(presignedGetObjectRequest.url()).thenReturn(new URL("http://url-firmada-aws.com"));
+
+    VideoDto results=service.videoInternalDetails(videoId);
+
+assertNotNull(results);
+assertEquals("Video Admin", results.getTitle());
+assertEquals("http://url-firmada-aws.com", results.getVideoUrl());
+}
+
+@Test
+    @DisplayName("ADMIN: debe retornar 404 si el video no existe")
+    void videoInternalDetails_ShouldThrowNotFound_WhenVideoNotExist(){
+    UserPrincipal principal=new UserPrincipal(99L, "userAdmin");
+    var auth=new UsernamePasswordAuthenticationToken(
+            principal,
+            null,
+            List.of(new SimpleGrantedAuthority("ROLE_ADMIN")));
+    SecurityContextHolder.getContext().setAuthentication(auth);
+
+    when(repository.findById(99L)).thenReturn(Optional.empty());
+
+    ResponseStatusException ex=assertThrows(ResponseStatusException.class, () -> service.videoInternalDetails(99L));
+    assertEquals(HttpStatus.NOT_FOUND, ex.getStatusCode());
+}
+
+@Test
+    void shouldHandleEmptySubscriptions(){
+    when(interactionsService.getSubscriptionsByUser(anyLong())).thenReturn(Collections.emptyList());
+
+    List<VideoDto> results=service.getSubscriptionsFeed();
+
+    assertTrue(results.isEmpty());
+    verify(repository, never()).findByUserIdInOrderByCreatedAtDesc(anyList());
+}
+
+@Test
+    @DisplayName("debe lanzar una excepcion si el servicio de almacenamiento AWS faya al generar URL de subida")
+    void shouldThrowExceptionWhenAWSFailsUpload() throws Exception{
+when(s3Presigner.presignPutObject(any(PutObjectPresignRequest.class)))
+        .thenThrow(SdkClientException.create("AWS service Unavailable"));
+
+assertThrows(SdkClientException.class, () ->{
+    service.generateUploadUrl("error-video.mp4");
+});
+
+
+//verificamos que no se intento realizar ninguna operacion mas
+    verify(presignedPutObjectRequest, never()).url();
+}
+
+@Test
+    @DisplayName("debe manejar el error cuando faye la generacion de URL de reproduccion")
+    void shouldHandleErrorWhenPlaybackFails(){
+    VideoEntity video=VideoEntity.builder()
+            .id(1L)
+            .userId(1L)
+            .videoUrl("video-key.mp4")
+            .build();
+    when(repository.findById(1L)).thenReturn(Optional.of(video));
+
+    //simulamos error en el presigner de lectura
+    when(s3Presigner.presignGetObject(any(GetObjectPresignRequest.class))).thenThrow(new RuntimeException("error en el servicio AWS"));
+
+    assertThrows(ResponseStatusException.class, () -> service.getVideoForPlayback(1L));
 }
 
 }
