@@ -11,7 +11,7 @@ import java.util.List;
 @Configuration
 public class SecurityConfig {
 
-@Bean
+    @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http){
     return http
             .cors(cors -> cors.configurationSource(request -> {
@@ -23,7 +23,8 @@ return config;
             }))
             .csrf(ServerHttpSecurity.CsrfSpec::disable)
             .authorizeExchange(auth -> auth
-                    .anyExchange().permitAll())
+                .pathMatchers("/*/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/webjars/**").permitAll()
+                .anyExchange().permitAll())
             .build();
 }
 }

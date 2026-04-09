@@ -59,3 +59,10 @@ management:
   endpoint:
     health:
       show-details: always
+
+#configuracion de documentacion
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /users/v3/api-docs

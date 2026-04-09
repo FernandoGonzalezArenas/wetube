@@ -1,5 +1,6 @@
 package com.wetube.auth.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,5 +13,6 @@ import lombok.Setter;
 public class UserRabbitDto {
 
 private Long userId;
-private String username;
+
+    private String username;
 }

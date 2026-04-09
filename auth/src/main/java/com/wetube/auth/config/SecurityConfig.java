@@ -1,7 +1,8 @@
 package com.wetube.auth.config;
 
-import java.util.List;
-
+import com.wetube.auth.security.CustomUserDetailsService;
+import com.wetube.auth.security.JwtFilter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -11,25 +12,19 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.cors.CorsConfiguration;
-
-import com.wetube.auth.security.CustomUserDetailsService;
-import com.wetube.auth.security.JwtFilter;
 
 @Configuration
+@RequiredArgsConstructor
 public class SecurityConfig {
 
     private final JwtFilter jwtFilter;
 
-    public SecurityConfig(JwtFilter jwtFilter){
-        this.jwtFilter=jwtFilter;
-    }
-
-@Bean
+    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception{
     return http
     .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
+                    .requestMatchers("/auth/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/webjars/**").permitAll()
                     .requestMatchers("/actuator/**", "/auth/register", "/auth/login", "/auth/refresh").permitAll()
                     .anyRequest().authenticated())
             .authenticationManager(authenticationManager)

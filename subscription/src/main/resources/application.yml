@@ -40,7 +40,15 @@ management:
   endpoints:
     web:
       exposure:
-        include: health, info
+        include: health,info,circuitbreakers
   endpoint:
     health:
       show-details: always
+
+
+#configuracion de documentacion
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /subs/v3/api-docs

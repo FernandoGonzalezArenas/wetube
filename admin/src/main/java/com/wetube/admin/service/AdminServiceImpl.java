@@ -44,7 +44,6 @@ public class AdminServiceImpl implements AdminService {
 
         //borrar el video fisicamente de forma sincrona con feignClient
         videoClient.deleteVideoInternal(videoId);
-System.out.println("operacion de eliminacion de video realizada correctamente | microservicio admin");
 
         //auditoría: registrar en la base de datos quien realiza la accion de borrado
         AdminEntity action=AdminEntity.builder()
@@ -73,7 +72,6 @@ System.out.println("operacion de eliminacion de video realizada correctamente | 
         Long adminId=principal.userId();
 
         userClient.banUserInternal(userId);
-System.out.println("operacion de baneo de usuario realizada correctamente | microservicio admin");
 
         AdminEntity action=AdminEntity.builder()
                 .adminId(adminId)

@@ -22,6 +22,7 @@ http
         .csrf(csrf -> csrf.disable())
         .sessionManagement(sesion -> sesion.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/videos/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/webjars/**").permitAll()
                 .requestMatchers("/videos/internal/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.GET, "/videos/search/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/videos/feed/**").permitAll()

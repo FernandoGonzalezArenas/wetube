@@ -7,7 +7,7 @@ import com.wetube.comments.dto.UserPrincipal;
 import com.wetube.comments.entity.CommentEntity;
 import com.wetube.comments.repository.CommentRepository;
 import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -19,23 +19,16 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class CommentServiceImpl implements CommentService{
 
     private final CommentRepository commentRepository;
-
-@Autowired
-    public CommentServiceImpl(CommentRepository commentRepository){
-    this.commentRepository=commentRepository;
-}
 
 //guardar un comentario
 @Override
     public CommentsDto saveComments(CommentDtoEntrada comment){
     UserPrincipal principal=(UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     String username=principal.username();
-    if (comment.getVideoId() == null) {
-        throw new IllegalArgumentException("el videoId es obligatorio para poder guardar un comentario correctamente");
-    }
     CommentEntity comentario=new CommentEntity();
     comentario.setUsernameAuthor(username);
     comentario.setVideoId(comment.getVideoId());

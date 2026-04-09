@@ -64,3 +64,22 @@ spring:
 #seguridad JWT
 jwt:
   secret: ${JWT_SECRET}
+
+  #configuracion de documentacion
+springdoc:
+  swagger-ui:
+    urls:
+      - name: "Servicio de auth"
+        url: "/auth/v3/api-docs"
+      - name: "Servicio de admin"
+        url: "/admin/v3/api-docs"
+      - name: "Servicio de user"
+        url: "/users/v3/api-docs"
+      - name: "Servicio de video"
+        url: "/videos/v3/api-docs"
+      - name: "Servicio de subscripcion"
+        url: "/subs/v3/api-docs"
+      - name: "Servicio de comentarios"
+        url: "/comentarios/v3/api-docs"
+      - name: "Servicio de likes"
+        url: "/like/v3/api-docs"

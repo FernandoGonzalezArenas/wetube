@@ -52,6 +52,13 @@ resilience4j:
         wait-duration-in-open-state: 10s
         permitted-number-of-calls-in-half-open-state: 3
 
+#configuracion de documentacion
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /admin/v3/api-docs
+
 feign:
   client:
     config:
@@ -64,7 +71,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health, info
+        include: health,info,circuitbreakers
   endpoint:
     health:
       show-details: ALWAYS

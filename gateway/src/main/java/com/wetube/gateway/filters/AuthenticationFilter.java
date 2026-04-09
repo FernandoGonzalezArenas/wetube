@@ -35,7 +35,14 @@ String path=request.getURI().getPath();
 String method=request.getMethod().name();
 
 //rutas permitidas sin token
-    if (path.startsWith("/auth/register") || path.startsWith("/auth/login") || path.startsWith("/auth/refresh") || path.startsWith("/actuator")){
+    if (
+        path.startsWith("/auth/register") ||
+            path.startsWith("/auth/login") ||
+            path.startsWith("/auth/refresh") ||
+            path.startsWith("/actuator") ||
+    path.contains("/v3/api-docs") ||
+    path.contains("/swagger-ui") ||
+    path.contains("/webjars")){
         return chain.filter(exchange);
     }
 

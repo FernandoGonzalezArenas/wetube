@@ -1,5 +1,6 @@
 package com.wetube.subscription.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
 import java.util.List;
@@ -11,6 +12,7 @@ import java.util.List;
 @Builder
 public class IdsDto {
 
+    @Schema(description = "lista de ID's de canales a los que esta subscrito un usuario", example = "[6,17,47,81,386]")
     private List<Long> Ids;
 
 }

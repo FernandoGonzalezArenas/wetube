@@ -1,5 +1,6 @@
 package com.wetube.video.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,6 +13,8 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class IdsDto {
+
+    @Schema(description = "lista de ID's de videos gustados por el usuario", example = "[1,5,7,28,36]")
 private List<Long> Ids;
 
 }

@@ -1,5 +1,6 @@
 package com.wetube.auth.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -8,7 +9,11 @@ import lombok.Setter;
 @Getter
 @AllArgsConstructor
 public class AuthResponse {
-private String accessToken;
-private String refreshToken;
+
+    @Schema(description = "token de acceso", example = "eisjliheoi39834hehedghrfjkgdfjf...")
+    private String accessToken;
+
+    @Schema(description = "token de refresco", example = "eijskfnwihjknfh8484...")
+    private String refreshToken;
 
 }
