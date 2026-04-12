@@ -55,7 +55,7 @@ Thumbs.db
 !application.properties
 !application.yml
 
-#archivos multimedia pesados
+# --- SECCIÓN DE MULTIMEDIA Y ARCHIVOS PESADOS ---
 **/test-data/
 *.mp4
 *.mkv
@@ -64,11 +64,48 @@ Thumbs.db
 *.jpg
 *.png
 
-#otros
-#ignorar todos los archivos txt en todos los niveles
+# EXCEPCIONES: Permitir imágenes necesarias para la UI del frontend
+!**/frontend/public/**/*.png
+!**/frontend/public/**/*.jpg
+!**/frontend/public/**/*.svg
+!**/frontend/public/**/*.ico
+
+# --- SECCIÓN DE DOCUMENTOS Y TEXTO ---
 **/*.txt
 **/*.http
 **/.editorconfig
 
-#credenciales
+# EXCEPCIÓN: Permitir archivos de configuración específicos
+!**/frontend/public/robots.txt
+!**/frontend/public/manifest.json
+!HELP.md
+
+# --- CREDENCIALES ---
 .env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# --- NEXT.JS / FRONTEND (wetube/frontend/) ---
+
+# Dependencias (Evita subir miles de archivos de node)
+**/frontend/node_modules/
+
+# Compilación de Next.js
+**/frontend/.next/
+**/frontend/out/
+**/frontend/build/
+
+# Logs de npm/yarn
+**/frontend/npm-debug.log*
+**/frontend/yarn-debug.log*
+**/frontend/yarn-error.log*
+
+# Variables de entorno locales (SEGURIDAD)
+**/frontend/.env*.local
+**/frontend/.env
+
+# Caché de herramientas
+**/frontend/.eslintcache
+**/frontend/.next/cache/
