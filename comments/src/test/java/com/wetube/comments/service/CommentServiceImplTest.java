@@ -88,6 +88,17 @@ service.deleteComment(commentId);
 }
 
 @Test
+@DisplayName("debe contar los comentarios de un video")
+void shouldCountCommentsInVideo(){
+    when(repository.countByVideoId(1L)).thenReturn(67L);
+
+    Long count=service.countCommentsInVideo(1L);
+
+    //validacion
+    assertEquals(67L, count);
+}
+
+@Test
     @DisplayName("debe borrar los comentarios de un video")
     void shouldDeleteCommentsByVideoId(){
     assertDoesNotThrow(() -> service.deleteCommentsWithVideoId(1L));

@@ -64,10 +64,10 @@ private Long userId=55L;
     VideoDtoEntrada entrada=VideoDtoEntrada.builder()
             .title("mi video")
             .description("descripcion valida")
+            .duration(257L)
             .filename("video.mp4")
             .thumbnailUrl("/thumb.jpg")
             .build();
-
 
 //capturamos lo que se envia al repositorio para verificarlo
 ArgumentCaptor<VideoEntity> captor=ArgumentCaptor.forClass(VideoEntity.class);
@@ -106,12 +106,12 @@ ArgumentCaptor<VideoEntity> captor=ArgumentCaptor.forClass(VideoEntity.class);
 @DisplayName("debe generar una URL firmada para la subida de la miniatura")
 void shouldGenerateUploadUrlThumb() throws Exception{
     String filename="portada.jpg";
-    when(minioClient.getPresignedObjectUrl(any())).thenReturn("http://minio:9000/thumbnails/uuid-portada.png");
+    when(minioClient.getPresignedObjectUrl(any())).thenReturn("http://localhost:8080/storage/thumbnails/uuid-portada.png");
 
     UploadUrlResponse response=service.generateUploadUrlThumb(filename);
 
     assertNotNull(response);
-    assertEquals("http://minio:9000/thumbnails/uuid-portada.png", response.uploadUrl());
+    assertEquals("http://localhost:8080/storage/thumbnails/uuid-portada.png", response.uploadUrl());
     verify(minioClient).getPresignedObjectUrl(any());
 }
 
@@ -119,7 +119,7 @@ void shouldGenerateUploadUrlThumb() throws Exception{
 @DisplayName("debe buscar videos por titulo")
 void shouldSearchVideosByTitle(){
     String keyword="java";
-    VideoEntity entity=VideoEntity.builder().userId(1L).title("tutorial java").build();
+    VideoEntity entity=VideoEntity.builder().userId(1L).title("tutorial java").duration(58L).build();
     Page<VideoEntity> page=new PageImpl<>(List.of(entity));
 
     when(repository.searchByTitle(eq(keyword), any(PageRequest.class))).thenReturn(page);
@@ -133,7 +133,7 @@ void shouldSearchVideosByTitle(){
 @Test
 @DisplayName("debe mostrar correctamente el feed con la busqueda por cursor")
 void shouldGetFeedCorrectly(){
-    VideoEntity v1=VideoEntity.builder().id(4L).userId(2L).title("v1").build();
+    VideoEntity v1=VideoEntity.builder().id(4L).userId(2L).title("v1").duration(83L).build();
     when(repository.findNextVideos(anyLong(), any(PageRequest.class))).thenReturn(List.of(v1));
 
     List<VideoDto> result=service.getFeed(10L, 5);
@@ -147,6 +147,7 @@ void shouldGetFeedCorrectly(){
     void shouldGetVideoForPlaybackMinio() throws Exception{
     VideoEntity video=VideoEntity.builder()
             .id(1L).title("Video Test")
+            .duration(35L)
             .videoUrl("clip.mp4")
             .build();
     when(repository.findById(1L)).thenReturn(Optional.of(video));
@@ -168,6 +169,7 @@ when(minioClient.getPresignedObjectUrl(any())).thenReturn("http://signed-playbac
     VideoEntity video=VideoEntity.builder()
                     .title("video subs")
                             .description("desc")
+            .duration(36L)
                                     .videoUrl("url")
                                             .thumbnailUrl("thumb")
                                                     .build();
@@ -221,7 +223,7 @@ var auth=new UsernamePasswordAuthenticationToken(
 SecurityContextHolder.getContext().setAuthentication(auth);
 
 VideoEntity video=VideoEntity.builder()
-        .id(videoId).title("Video Admin").videoUrl("URL-Original").build();
+        .id(videoId).title("Video Admin").duration(38L).videoUrl("URL-Original").build();
 when(repository.findById(videoId)).thenReturn(Optional.of(video));
 when(minioClient.getPresignedObjectUrl(any())).thenReturn("http://url-firmada.com");
 

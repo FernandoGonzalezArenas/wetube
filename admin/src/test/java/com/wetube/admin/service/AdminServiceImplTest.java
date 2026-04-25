@@ -105,6 +105,7 @@ verify(userClient, times(1)).banUserInternal(targetId);
 @Test
     void shouldGetPendingReports(){
     VideoMetadataDto videoMetadataDto=VideoMetadataDto.builder()
+            .id(2L)
                     .title("mi video")
                             .description("la descripcion")
                                     .videoUrl("url_del_video")

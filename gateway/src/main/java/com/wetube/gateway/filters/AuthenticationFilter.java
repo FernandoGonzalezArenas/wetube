@@ -8,6 +8,7 @@ import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -34,6 +35,11 @@ private final JwtUtil jwtUtil;
 String path=request.getURI().getPath();
 String method=request.getMethod().name();
 
+//si es options dejar pasar directamente para que el CORS responda
+    if (HttpMethod.OPTIONS.equals(request.getMethod())){
+        return chain.filter(exchange);
+    }
+
 //rutas permitidas sin token
     if (
         path.startsWith("/auth/register") ||
@@ -42,7 +48,8 @@ String method=request.getMethod().name();
             path.startsWith("/actuator") ||
     path.contains("/v3/api-docs") ||
     path.contains("/swagger-ui") ||
-    path.contains("/webjars")){
+    path.contains("/webjars") ||
+    path.startsWith("/storage")){
         return chain.filter(exchange);
     }
 

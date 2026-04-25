@@ -46,6 +46,14 @@ public class CommentServiceImpl implements CommentService{
         return comments.stream().map(this::mapToDto).collect(Collectors.toList());
     }
 
+    //contar los comentarios de un video
+    public  Long countCommentsInVideo(Long videoId){
+    if (videoId<=0){
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "videoId invalido");
+    }
+    return commentRepository.countByVideoId(videoId);
+    }
+
     //eliminar un comentario
 @Override
     public void  deleteComment(Long id){

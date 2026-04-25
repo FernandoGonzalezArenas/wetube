@@ -51,6 +51,17 @@ private final CommentService commentService;
     return ResponseEntity.ok(commentService.getCommentsByVideo(videoId, lastId, limit));
     }
 
+    @Operation(summary = "cuenta los comentarios de el video",
+    description = "cuenta los comentarios de un video para mostrarlo al usuario en el frontend")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "obtencion exitosa de el numero de comentarios de el video"),
+            @ApiResponse(responseCode = "400", description = "solicitud fallida por videoId invalido")
+    })
+    @GetMapping("/{videoId}/count")
+    public ResponseEntity<Long> countCommentsInVideo(@PathVariable Long videoId){
+    return ResponseEntity.ok(commentService.countCommentsInVideo(videoId));
+    }
+
     //eliminar un comentario
     @Operation(summary = "eliminar un comentario",
             description = "se elimina un comentario deseado por el autor de el mismo")

@@ -36,7 +36,9 @@ private final MinioClient minioClient;
                 .object(objectName)
                         .expiry(15, TimeUnit.MINUTES)
                 .build());
-        return new UploadUrlResponse(urlFirmada, finalFilename);
+
+        String url=urlFirmada.replace("http://minio:9000", "http://localhost:8080/storage");
+        return new UploadUrlResponse(url, finalFilename);
     }catch (Exception e){
 throw new RuntimeException("error en minio user: " +e.getMessage());
     }
@@ -44,7 +46,9 @@ throw new RuntimeException("error en minio user: " +e.getMessage());
 
 @Override
     public String getPublicUrl(String objectName){
-    return miniourl+"/"+bucketName+"/profiles/"+objectName;
+
+    String url= miniourl+"/"+bucketName+"/profiles/"+objectName;
+    return url;
 }
 
 }

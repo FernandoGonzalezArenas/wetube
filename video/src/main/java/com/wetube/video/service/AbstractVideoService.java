@@ -7,7 +7,6 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -40,6 +39,7 @@ Long userId=principal.userId();
             video.setUserId(userId);
             video.setTitle(entrada.getTitle());
             video.setDescription(entrada.getDescription());
+            video.setDuration(entrada.getDuration());
             video.setVideoUrl(entrada.getFilename());
             video.setThumbnailUrl(entrada.getThumbnailUrl());
             videoRepository.save(video);
@@ -64,9 +64,10 @@ return result.map(this::mapToDto);
     @Override
     public InteractionsDto getInteractions(Long videoId, Long lastId, Integer limit){
          List<CommentsDto> comments=interactionsService.getCommentsByVideo(videoId, lastId, limit);
-            long likes=interactionsService.countLikes(videoId);
+         Long totalComments = interactionsService.countCommentsInVideo(videoId);
+            LikeStatus status=interactionsService.likeStatusInVideo(videoId);
 
-        return new InteractionsDto(comments, likes);
+        return new InteractionsDto(comments, totalComments, status);
     }
 
     @Override
@@ -92,10 +93,13 @@ String thumbUrl=buildFullThumbnailUrl(video.getThumbnailUrl());
         //retornamos el DTO
         return VideoPlaybackDto.builder()
                 .id(video.getId())
+                .userId(video.getUserId())
                 .title(video.getTitle())
                 .description(video.getDescription())
+                .duration(video.getDuration())
                 .videoUrl(urlFinal)
                 .thumbnailUrl(thumbUrl)
+                .createdAt(video.getCreatedAt())
                 .build();
     }
 
@@ -157,7 +161,8 @@ return dto;
     }
 
     protected VideoDto mapToDto(VideoEntity video){
-        return new VideoDto(video.getTitle(), video.getDescription(), video.getVideoUrl(), video.getThumbnailUrl());
+        String thumbUrl=buildFullThumbnailUrl(video.getThumbnailUrl());
+        return new VideoDto(video.getId(), video.getUserId(), video.getTitle(), video.getDescription(), video.getDuration(), video.getVideoUrl(), thumbUrl, video.getCreatedAt());
     }
 
     protected abstract String buildFullVideoUrl(String filename);

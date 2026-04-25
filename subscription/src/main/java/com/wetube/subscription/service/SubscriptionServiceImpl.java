@@ -7,6 +7,7 @@ import com.wetube.subscription.entity.SubscriptionEntity;
 import com.wetube.subscription.repository.SubscriptionRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -36,12 +37,16 @@ public class SubscriptionServiceImpl implements SubscriptionService {
             subscriptionRepository.delete(existingSubscription.get());
             return false;
         }else {
-            SubscriptionEntity newSub= SubscriptionEntity.builder()
-                    .subscriberId(subscriberId)
-                    .channelId(channelId)
-                    .build();
-            subscriptionRepository.save(newSub);
-            return true;
+            try {
+                SubscriptionEntity newSub = SubscriptionEntity.builder()
+                        .subscriberId(subscriberId)
+                        .channelId(channelId)
+                        .build();
+                subscriptionRepository.save(newSub);
+                return true;
+            }catch (DataIntegrityViolationException e){
+                return true;
+            }
         }
     }
 

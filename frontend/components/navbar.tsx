@@ -30,6 +30,8 @@ localStorage.removeItem('refreshToken');
 
 router.refresh();
 router.push('/login');
+
+//window.location.href = '/login';
 }
 
 return (

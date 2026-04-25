@@ -68,6 +68,7 @@ private final Long userId=1L;
     VideoDtoEntrada entrada=VideoDtoEntrada.builder()
             .title("video AWS")
             .description("descripcion valida")
+            .duration(57L)
             .filename("clip.mp4")
             .thumbnailUrl("img.jpg")
             .build();
@@ -119,7 +120,7 @@ void shouldGenerateUploadUrlThumb() throws Exception{
 @Test
 void shouldSearchVideosByTitle(){
     String keyword="java";
-    VideoEntity entity=VideoEntity.builder().userId(2L).title("video java").build();
+    VideoEntity entity=VideoEntity.builder().userId(2L).title("video java").duration(37L).build();
     Page<VideoEntity> page=new PageImpl<>(List.of(entity));
 
     when(repository.searchByTitle(eq(keyword), any(PageRequest.class))).thenReturn(page);
@@ -132,7 +133,7 @@ void shouldSearchVideosByTitle(){
 
 @Test
 void shouldGetFeedCorrectly(){
-    VideoEntity v1=VideoEntity.builder().id(5L).userId(2L).title("v1").build();
+    VideoEntity v1=VideoEntity.builder().id(5L).userId(2L).title("v1").duration(84L).build();
 
     when(repository.findNextVideos(anyLong(), any(PageRequest.class))).thenReturn(List.of(v1));
     List<VideoDto> results=service.getFeed(10L, 5);
@@ -147,6 +148,7 @@ void shouldGetFeedCorrectly(){
 VideoEntity video=VideoEntity.builder()
         .id(10L)
         .title("video AWS")
+        .duration(84L)
         .videoUrl("clip-123.mp4")
         .build();
     String fakeSignedUrl = "https://aws-bucket.s3.amazonaws.com/videos/clip-123.mp4?X-Amz-Signature=xyz";
@@ -179,6 +181,7 @@ when(interactionsService.getSubscriptionsByUser(anyLong())).thenReturn(followedC
 VideoEntity video=VideoEntity.builder()
                 .title("video subs")
                         .description("desc")
+        .duration(38L)
                                 .videoUrl("url")
                                         .thumbnailUrl("thumb")
                                                 .build();
@@ -290,6 +293,7 @@ assertThrows(SdkClientException.class, () ->{
             .id(1L)
             .userId(1L)
             .videoUrl("video-key.mp4")
+            .duration(38L)
             .build();
     when(repository.findById(1L)).thenReturn(Optional.of(video));
 

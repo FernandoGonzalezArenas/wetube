@@ -4,25 +4,20 @@ import com.wetube.video.client.CommentsClient;
 import com.wetube.video.client.LikesClient;
 import com.wetube.video.client.SubscriptionsClient;
 import com.wetube.video.dto.CommentsDto;
-import com.wetube.video.dto.IdsDto;
+import com.wetube.video.dto.LikeStatus;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class InteractionsService {
 
 private  final CommentsClient commentsClient;
 private final LikesClient likesClient;
 private final SubscriptionsClient subscriptionsClient;
-
-public InteractionsService(CommentsClient commentsClient, LikesClient likesClient, SubscriptionsClient subscriptionsClient){
-    this.commentsClient=commentsClient;
-    this.likesClient=likesClient;
-    this.subscriptionsClient=subscriptionsClient;
-}
 
     //metodos circuitbreaker para controlar las fayas de microservicios a los que se llama
     @CircuitBreaker(name = "comments", fallbackMethod = "fallbackForComments")
@@ -34,13 +29,22 @@ public InteractionsService(CommentsClient commentsClient, LikesClient likesClien
         return List.of(CommentsDto.builder().usernameAuthor("sistema").content("comentarios temporalmente no disponibles... ").build());
     }
 
-    @CircuitBreaker(name = "likes", fallbackMethod = "fallbackForLikes")
-    public long countLikes(Long videoId){
-        return likesClient.countLikes(videoId);
+    @CircuitBreaker(name = "comments", fallbackMethod = "fallbackCountComments")
+    public Long countCommentsInVideo(Long videoId){
+        return commentsClient.countCommentsInVideo(videoId);
     }
 
-    public  long fallbackForLikes(Long videoId, Throwable throwable){
-        return 0;
+    public Long fallbackCountComments(Long videoId, Throwable throwable){
+        return 0L;
+    }
+
+    @CircuitBreaker(name = "likes", fallbackMethod = "fallbackForLikes")
+    public LikeStatus likeStatusInVideo(Long videoId){
+        return likesClient.likeStatusInVideo(videoId);
+    }
+
+    public LikeStatus fallbackForLikes(Long videoId, Throwable throwable){
+        return new LikeStatus(0L, false);
     }
 
     @CircuitBreaker(name = "subscription", fallbackMethod = "fallbackForSubscription")

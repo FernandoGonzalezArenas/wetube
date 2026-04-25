@@ -13,7 +13,7 @@ services:
       POSTGRES_USER: ${user_db_env}
       POSTGRES_PASSWORD: ${password_db_env}
     volumes:
-      - ./init-db:/docker-entrypoint-initdb.d
+      - ./init-scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5432:5432"
     healthcheck:
@@ -45,6 +45,20 @@ services:
       - "9000:9000"
       - "9001:9001"
     command: server /data --console-address ":9001"
+
+  minio-provisioner:
+    image: minio/mc
+    depends_on:
+      - minio
+    networks:
+      - wetube-network
+    volumes:
+      - ./init-scripts/setup-minio.sh:/setup-minio.sh
+    entrypoint: /bin/sh
+    command: /setup-minio.sh
+    environment:
+      - MINIO_ROOT_USER=${minio_accessKey_env}
+      - MINIO_ROOT_PASSWORD=${minio_secretKey_env}
 
   rabbitmq:
     networks:

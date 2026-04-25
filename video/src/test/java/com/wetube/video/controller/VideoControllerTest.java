@@ -43,6 +43,7 @@ public class VideoControllerTest {
         VideoDtoEntrada entradaInvalida=VideoDtoEntrada.builder()
                 .title("")
                 .description("descripcion valida")
+                .duration(38L)
                 .build();
 
         mockMvc.perform(post("/videos/save-metadata")
@@ -78,21 +79,27 @@ public class VideoControllerTest {
     @DisplayName("GET /interactions/{videoId} debe retornar interacciones con paginacion")
     @WithMockUser(username = "1")
     void shouldGetInteractionsWithPagination() throws Exception{
+        InteractionsDto interacciones = InteractionsDto.builder()
+                        .comments(Collections.emptyList())
+                                .totalComments(37L)
+                                        .status(new LikeStatus(5L, true))
+                                                .build();
+
         when(videoService.getInteractions(1L, 100L, 5))
-                .thenReturn(new InteractionsDto(Collections.emptyList(), 10L));
+                .thenReturn(interacciones);
 
         mockMvc.perform(get("/videos/interactions/1")
                 .param("lastId", "100")
                 .param("limit", "5"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.likes").value(10));
+                .andExpect(jsonPath("$.totalComments").value(37));
     }
 
 @Test
     @DisplayName("GET /videos/{videoId}/play debe retornar 200 y el DTO de reproduccion")
     @WithMockUser
     void shouldReturnPlaybackData() throws Exception{
-    VideoPlaybackDto playback=VideoPlaybackDto.builder().videoUrl("http://signed.com").build();
+    VideoPlaybackDto playback=VideoPlaybackDto.builder().videoUrl("http://signed.com").duration(83L).build();
     when(videoService.getVideoForPlayback(1L)).thenReturn(playback);
 
     mockMvc.perform(get("/videos/1/play"))
@@ -139,7 +146,7 @@ mockMvc.perform(delete("/videos/internal/1")
     @WithMockUser(roles = "ADMIN")
     void shouldReturnVideoDetailsForAdmin() throws Exception{
         VideoDto dto=VideoDto.builder()
-                .title("Admin View").build();
+                .title("Admin View").duration(59L).build();
         when(videoService.videoInternalDetails(1L)).thenReturn(dto);
 
         mockMvc.perform(get("/videos/internal/details/1"))
@@ -160,8 +167,7 @@ mockMvc.perform(delete("/videos/internal/1")
 
     @Test
     @WithMockUser
-    void
-shouldSearchVideos() throws  Exception{
+    void  shouldSearchVideos() throws  Exception{
         Page<VideoDto> emptyPage=new PageImpl<>(Collections.emptyList());
         when(videoService.searchVideosByTitle(anyString(), anyInt(), anyInt())).thenReturn(emptyPage);
 

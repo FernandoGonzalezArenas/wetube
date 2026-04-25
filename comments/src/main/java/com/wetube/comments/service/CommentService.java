@@ -12,6 +12,8 @@ public interface CommentService {
 
      List<CommentsDto> getCommentsByVideo(Long videoId, Long lastId, Integer limit);
 
+     Long countCommentsInVideo(Long videoId);
+
      void  deleteComment(Long id);
 
      CommentsDto editComment(Long id, UpdateCommentDto content);

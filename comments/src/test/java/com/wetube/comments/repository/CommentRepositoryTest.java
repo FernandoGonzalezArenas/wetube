@@ -24,23 +24,28 @@ private TestEntityManager entityManager;
 
 @Test
     void findNextComments_ShouldReturnOnlyCommentsWithLowerId(){
-saveComments(1L, "usuario1", "comentario 1");
-saveComments(1L, "usuario1", "comentario 2");
-saveComments(1L, "usuario1", "comentario 3");
-    List<CommentEntity> result=repository.findNextComments(1L, 3L, PageRequest.of(0, 10));
+    repository.save(CommentEntity.builder().videoId(1L).usernameAuthor("usuario1").content("comentario 1").build());
+    repository.save(CommentEntity.builder().videoId(1L).usernameAuthor("usuario1").content("comentario 2").build());
+    CommentEntity ref=repository.save(CommentEntity.builder().videoId(1L).usernameAuthor("usuario1").content("comentario 3").build());
+
+    Long lastId=ref.getId();
+
+    List<CommentEntity> result=repository.findNextComments(1L, lastId, PageRequest.of(0, 10));
 
 //validaciones
     assertEquals(2, result.size());
-    assertTrue(result.get(0).getId() < 3);
-    assertEquals(2L, result.get(0).getId());
+    assertTrue(result.get(0).getId() < lastId);
 }
 
-private void saveComments(Long videoId, String author, String content){
-    CommentEntity c=new CommentEntity();
-    c.setVideoId(videoId);
-    c.setUsernameAuthor(author);
-    c.setContent(content);
-    repository.save(c);
+    @Test
+void shouldCountCommentsByVideoId(){
+repository.save(CommentEntity.builder().videoId(1L).usernameAuthor("usuario1").content("comentario 1").build());
+        repository.save(CommentEntity.builder().videoId(1L).usernameAuthor("usuario1").content("comentario 2").build());
+
+    Long count =repository.countByVideoId(1L);
+
+    //validacion
+    assertEquals(2, count);
 }
 
 @Test

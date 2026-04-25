@@ -62,6 +62,7 @@ private UserDto entityToDto(UserEntity user){
         String foto=user.getProfilePictureUrl();
         String finalUrl=(foto!=null) ?storageService.getPublicUrl(foto) : null;
     return UserDto.builder()
+            .id(user.getId())
             .username(user.getUsername())
             .bio(user.getBio())
             .profilePictureUrl(finalUrl)

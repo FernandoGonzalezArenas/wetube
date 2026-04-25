@@ -14,4 +14,7 @@ public interface CommentsClient {
 
 @GetMapping("/comentarios/{videoId}")
     List<CommentsDto> getCommentsByVideo(@PathVariable("videoId") Long videoId, @RequestParam("lastId") Long lastId, @RequestParam("limit") Integer limit);
+
+@GetMapping("/comentarios/{videoId}/count")
+    Long countCommentsInVideo(@PathVariable Long videoId);
 }

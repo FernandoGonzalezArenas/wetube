@@ -46,9 +46,9 @@ private String minioUrl;
                             .object(objectName)
                             .method(Method.PUT)
                             .expiry(15, TimeUnit.MINUTES)
-                            .build()
-            );
-            return new UploadUrlResponse(presignedUrl, finalFileName);
+                            .build());
+            String url=presignedUrl.replace("http://minio:9000", "http://localhost:8080/storage");
+            return new UploadUrlResponse(url, finalFileName);
         }catch (Exception e){
             e.printStackTrace();
             throw new RuntimeException("error al generar URL firmada"+e.getMessage());
@@ -68,11 +68,10 @@ private String minioUrl;
                             .object(objectName)
                             .method(Method.PUT)
                             .expiry(15, TimeUnit.MINUTES)
-                            .build()
-            );
-            return new UploadUrlResponse(presignedUrl, finalFileName);
+                            .build());
+            String url=presignedUrl.replace("http://minio:9000", "http://localhost:8080/storage");
+            return new UploadUrlResponse(url, finalFileName);
         }catch (Exception e){
-            e.printStackTrace();
             throw new RuntimeException("error al generar URL firmada"+e.getMessage());
         }
     }
@@ -84,7 +83,8 @@ return minioUrl + "/" + bucketName + "/videos/" + filename;
 
     @Override
     protected String buildFullThumbnailUrl(String filename){
-        return minioUrl + "/" + bucketName + "/thumbnails/" + filename;
+        String url = minioUrl + "/" + bucketName + "/thumbnails/" + filename;
+        return url.replace("http://minio:9000", "http://localhost:8080/storage");
     }
 
     @Override
@@ -92,13 +92,15 @@ return minioUrl + "/" + bucketName + "/videos/" + filename;
         //extraemos el nombre de el objeto
     String objectName="videos/"+filename;
     try {
-        return minioClient.getPresignedObjectUrl(
+        String url = minioClient.getPresignedObjectUrl(
                 GetPresignedObjectUrlArgs.builder()
                 .method(Method.GET) //metodo GET para lectura
                 .bucket(bucketName)
                 .object(objectName)
                 .expiry(2, TimeUnit.HOURS)
                 .build());
+
+        return url.replace("http://minio:9000", "http://localhost:8080/storage");
     }catch (Exception e){
         logger.error("error generando URL de reproduccion minio: {}", e);
         return filename;

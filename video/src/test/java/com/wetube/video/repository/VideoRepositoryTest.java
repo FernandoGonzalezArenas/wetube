@@ -29,11 +29,13 @@ public class VideoRepositoryTest {
             .userId(1L)
             .title("spring boot intro")
             .description("desc")
+                    .duration(48L)
             .videoUrl("url")
             .build());
 repository.save(VideoEntity.builder().userId(2L)
         .title("advanced java")
         .description("desc")
+                .duration(74L)
         .videoUrl("url")
         .build());
 
@@ -52,6 +54,7 @@ assertTrue(result.getContent().stream()
             .userId(101L)
             .title("video 1")
             .description("d")
+                    .duration(37L)
             .videoUrl("u")
             .thumbnailUrl("t")
             .build());
@@ -59,6 +62,7 @@ assertTrue(result.getContent().stream()
             .userId(101L)
             .title("video 2")
             .description("d")
+                    .duration(48L)
             .videoUrl("u")
             .thumbnailUrl("t")
             .build());
@@ -66,6 +70,7 @@ assertTrue(result.getContent().stream()
             .userId(101L)
             .title("video 3")
             .description("d")
+                    .duration(58L)
             .videoUrl("u")
             .thumbnailUrl("t")
             .build());
@@ -84,8 +89,8 @@ assertTrue(result.getContent().stream()
 @Test
     @DisplayName("debe buscar videos filtrando por una lista de ids")
     void shouldFindVideosByIdIn(){
-    VideoEntity v1=repository.save(VideoEntity.builder().userId(1L).title("V1").description("d").videoUrl("U1").build());
-    VideoEntity v2=repository.save(VideoEntity.builder().userId(1L).title("V2").description("d").videoUrl("U2").build());
+    VideoEntity v1=repository.save(VideoEntity.builder().userId(1L).title("V1").description("d").duration(46L).videoUrl("U1").build());
+    VideoEntity v2=repository.save(VideoEntity.builder().userId(1L).title("V2").description("d").duration(58L).videoUrl("U2").build());
 
     List<VideoEntity> result=repository.findByIdIn(List.of(v1.getId(), v2.getId()));
 
@@ -95,8 +100,8 @@ assertTrue(result.getContent().stream()
 @Test
     @DisplayName("debe obtener el feed de canales seguidos ordenados por fecha")
     void shouldFindByUserIdInOrderByCreatedAtDesc(){
-    repository.save(VideoEntity.builder().userId(10L).title("canal a").description("d").videoUrl("U1").build());
-    repository.save(VideoEntity.builder().userId(11L).title("canal b").description("d").videoUrl("U2").build());
+    repository.save(VideoEntity.builder().userId(10L).title("canal a").description("d").duration(48L).videoUrl("U1").build());
+    repository.save(VideoEntity.builder().userId(11L).title("canal b").description("d").duration(48L).videoUrl("U2").build());
 
     //suponiendo que el usuario sigue a los id's 10 y 11
     List<VideoEntity> result=repository.findByUserIdInOrderByCreatedAtDesc(List.of(10L, 11L));
@@ -108,7 +113,7 @@ assertTrue(result.getContent().stream()
     @DisplayName("debe borrar un video fisicamente de la base de datos")
     void shouldDeleteVideoFromDatabase(){
     VideoEntity video=repository.save(VideoEntity.builder()
-            .userId(7L).title("To Delete").description("d").videoUrl("u").build());
+            .userId(7L).title("To Delete").description("d").duration(48L).videoUrl("u").build());
     Long id=video.getId();
 
     repository.deleteById(id);

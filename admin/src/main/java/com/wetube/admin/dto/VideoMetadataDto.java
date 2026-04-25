@@ -12,6 +12,9 @@ import lombok.NoArgsConstructor;
 @Builder
 public class VideoMetadataDto {
 
+    @Schema(description = "identificador unico de el video reportado", example = "26")
+    private Long id;
+
     @Schema(description = "titulo de el video reportado", example = "mi video")
 private String title;
 

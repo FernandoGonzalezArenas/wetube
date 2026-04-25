@@ -74,6 +74,16 @@ void setupSecurityContext(){
 }
 
 @Test
+void shouldReturnNumberOfLikes(){
+    when(repository.countByVideoId(1L)).thenReturn(44L);
+
+    Long likes=service.countLikes(1L);
+
+    //validacion
+    assertEquals(44L, likes);
+}
+
+@Test
     void getVideoLikeStatus_ShouldReturnCorrectStatus_ForAuthenticatedUser(){
     when(repository.countByVideoId(videoId)).thenReturn(15L);
     when(repository.existsByUserIdAndVideoId(userId, videoId)).thenReturn(true);

@@ -1,13 +1,13 @@
 package com.wetube.video.client;
 
+import com.wetube.video.dto.LikeStatus;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
 
 @FeignClient(name = "likes")
 public interface LikesClient {
 
-    @GetMapping("/like/{videoId}/count")
-    long countLikes(@PathVariable("videoId") Long videoId);
+    @GetMapping("/like/{videoId}/status")
+    LikeStatus likeStatusInVideo(@PathVariable("videoId") Long videoId);
 }

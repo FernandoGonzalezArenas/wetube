@@ -27,6 +27,9 @@ private Long userId;
     private String description;
 
 @Column(nullable = false)
+private Long duration;
+
+@Column(nullable = false)
     private String videoUrl;
 
 private String thumbnailUrl;

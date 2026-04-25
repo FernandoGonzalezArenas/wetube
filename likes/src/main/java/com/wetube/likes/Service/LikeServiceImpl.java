@@ -8,6 +8,7 @@ import com.wetube.likes.repository.LikeRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -34,18 +35,23 @@ Long userId= principal.userId();
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "videoId invalido o nulo");
         }
 
-    Optional<LikeEntity> existingLike=likeRepository.findByUserIdAndVideoId(userId, videoId);
-if (existingLike.isPresent()){
-    likeRepository.delete(existingLike.get());
-    return false;
-}else{
-    LikeEntity nuevoLike=LikeEntity.builder()
-            .videoId(videoId)
-            .userId(userId)
-            .build();
-    likeRepository.save(nuevoLike);
-    return true;
-}
+            Optional<LikeEntity> existingLike = likeRepository.findByUserIdAndVideoId(userId, videoId);
+            if (existingLike.isPresent()) {
+                likeRepository.delete(existingLike.get());
+                return false;
+            } else {
+                try {
+                    LikeEntity nuevoLike = LikeEntity.builder()
+                            .videoId(videoId)
+                            .userId(userId)
+                            .build();
+                    likeRepository.save(nuevoLike);
+                    return true;
+                }catch (DataIntegrityViolationException e){
+                    //solo retornamos true porque el like ya esta registrado
+                    return true;
+                }
+            }
 }
 
 @Override

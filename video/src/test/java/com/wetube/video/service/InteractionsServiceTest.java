@@ -5,6 +5,7 @@ import com.wetube.video.client.LikesClient;
 import com.wetube.video.client.SubscriptionsClient;
 import com.wetube.video.dto.CommentsDto;
 import com.wetube.video.dto.IdsDto;
+import com.wetube.video.dto.LikeStatus;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -59,16 +60,17 @@ assertTrue(result.get(0).getContent().contains("temporalmente no disponibles"));
 @Test
 @DisplayName("debe retornar conteo de likes cuando el cliente responde OK")
 void shouldReturnLikesCountOnSuccess(){
-        when(likesClient.countLikes(1L)).thenReturn(50L);
-        Long likes=service.countLikes(1L);
-        assertEquals(50L, likes);
+    LikeStatus status=new LikeStatus(44L, true);
+        when(likesClient.likeStatusInVideo(1L)).thenReturn(status);
+        LikeStatus likes=service.likeStatusInVideo(1L);
+        assertEquals(44L, likes.getTotalLikes());
 }
 
 @Test
     @DisplayName("debe retornar 0 likes al ejecutar fallback por error")
     void shouldReturnZeroLikesOnFallback(){
-        Long likes=service.fallbackForLikes(1L, new RuntimeException("error feign"));
-        assertEquals(0L, likes);
+        LikeStatus likes=service.fallbackForLikes(1L, new RuntimeException("error feign"));
+        assertEquals(0L, likes.getTotalLikes());
 }
 
 @Test

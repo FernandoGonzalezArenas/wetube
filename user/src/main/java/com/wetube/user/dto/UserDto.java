@@ -12,6 +12,9 @@ import java.time.LocalDateTime;
 @Builder
 public class UserDto {
 
+    @Schema(description = "ID unico de el usuario", example = "76")
+    private Long id;
+
     @Schema(description = "nombre unico de usuario", example = "fernando_dev")
     private String username;
 

@@ -31,7 +31,7 @@ async (error) => {
     const originalRequest=error.config;
 
     //si el error es 401 y no hemos intentado refrescar ya
-    if(error.response?.status === 401 && !originalRequest._retry){
+    if(error.response?.status === 401 && !originalRequest.url.includes('/auth/refresh') && !originalRequest._retry){
         originalRequest._retry=true;
 
         try{
@@ -60,6 +60,12 @@ window.location.href = '/login';
 return Promise.reject(refreshError);
         }
     }
+
+//si faya el refresh o cualquier otra cosa despues de el reintento
+if (error.response?.status === 401) {
+    localStorage.clear();
+    if(typeof window!== 'undefined') window.location.href = '/login';
+}
 
 return Promise.reject(error);
 })

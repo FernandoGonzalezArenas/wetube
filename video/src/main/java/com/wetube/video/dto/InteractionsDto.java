@@ -15,6 +15,9 @@ public class InteractionsDto {
     @Schema(description = "lista de comentarios de un video")
 private List<CommentsDto> comments;
 
-    @Schema(description = "numero de likes de un video", example = "128")
-private long likes;
+    @Schema(description = "numero de comentarios de un video", example = "86")
+    private Long totalComments;
+
+    @Schema(description = "numero y estatus de los likes en el video")
+private LikeStatus status;
 }

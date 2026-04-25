@@ -20,6 +20,19 @@ spring:
         health-check-interval: 10s
         prefer-ip-address: true
     gateway:
+      globalcors:
+        add-to-chain: true
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "http://localhost:3000"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+            allow-credentials: true
+      default-filters:
+        - name: DedupeResponseHeader
+          args:
+            name: Access-Control-Allow-Origin Access-Control-Allow-Credentials
+            strategy: RETAIN_FIRST
       routes:
         #ruta para microservicio auth
         - id: auth
@@ -32,6 +45,14 @@ spring:
           uri: lb://admin
           predicates:
             - Path=/admin/**
+
+#servicio local de almacenamiento minio
+        - id: minio_route
+          uri: http://minio:9000
+          predicates:
+            - Path=/storage/**
+          filters:
+            - RewritePath=/storage/(?<segment>.*), /${segment}
 
         #ruta para microservicio user
         - id: user

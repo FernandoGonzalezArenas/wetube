@@ -11,6 +11,7 @@ import java.util.List;
 
 public interface CommentRepository extends JpaRepository<CommentEntity, Long> {
     List<CommentEntity> findByVideoId(Long videoId);
+    Long countByVideoId(Long videoId);
     List<CommentEntity> findByUsernameAuthor(String usernameAuthor);
 @Query("SELECT c FROM CommentEntity c WHERE c.videoId = :videoId AND (:lastId IS NULL OR c.id < :lastId) ORDER BY c.id DESC")
     List<CommentEntity> findNextComments(Long videoId, Long lastId, Pageable pageable);

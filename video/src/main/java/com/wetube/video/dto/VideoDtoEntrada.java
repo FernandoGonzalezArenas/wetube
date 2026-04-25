@@ -2,6 +2,7 @@ package com.wetube.video.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
@@ -17,11 +18,14 @@ public class VideoDtoEntrada {
     @Size(min = 1, max = 100)
     private String title;
 
-
     @Schema(description = "descripcion que el dueño de el video quiera ponerle", example = "este es mi video de prueba")
     @NotBlank(message = "escribe una descripcion de el video")
     @Size(min = 1, max = 1000)
     private String description;
+
+    @Schema(description = "duracion de el video en segundos", example = "247")
+@NotNull(message = "falta la duracion del video")
+    private Long duration;
 
     @Schema(description = "nombre unico de el archivo de el video", example = "65wjekthejhtui4tjke-video.mp4")
     private String filename;
