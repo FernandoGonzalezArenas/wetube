@@ -2,14 +2,27 @@
 aqui se guardan los tokens en el almacenamiento local de el frontend
 */
 
-import { useState, useEffect, useCallback } from "react";
+'use client'
+import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
 import { authApi } from "../api/auth";
-import { RegisterRequest, LoginRequest } from "../types/auth";
+import { RegisterRequest, LoginRequest, CustomJwtPayload } from "../types/auth";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
-import { CustomJwtPayload } from "../types/auth";
 
-export const useAuth = () => {
+interface AuthContextType {
+    user: CustomJwtPayload | null;
+    isLoading: boolean;
+    error: string | null;
+    login: (data: LoginRequest) => Promise<boolean>;
+        logout: () => void;
+    register: (data: RegisterRequest) => Promise<boolean>;
+        isOwner: (resourceUserId: string | number) => boolean;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+//este es el provedor que envolvera toda la aplicacion
+export function AuthProvider({ children }: {children: ReactNode}) {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 const [user, setUser ] = useState<CustomJwtPayload | null>(null);
@@ -33,7 +46,7 @@ if (decoded.exp*1000 < Date.now()) {
 
 setUser(decoded);
 return decoded;
-}catch(error) {
+}catch {
     setUser(null);
     return null;
 }
@@ -69,7 +82,7 @@ return false;
     } finally {
 setIsLoading(false);
     }
-    }
+    };
 
 const register = async(data: RegisterRequest) => {
  setIsLoading(true);
@@ -88,18 +101,23 @@ return false;
  }finally{
 setIsLoading(false);
  }
+};
+
+const isOwner = (resourceUserId: string | number) => {
+return user?.userId === String(resourceUserId);
+};
+
+return ( 
+<AuthContext.Provider value={{ user, isLoading, error, login, logout, register, isOwner}}>
+{children}
+</AuthContext.Provider>
+);
 }
 
-return {
-    user,
-    logout,
-    register, 
-    login, 
-    isLoading, 
-    error,
-//helper para saber si un usuario es el dueño
- isOwner: (resourceUserId: string | number) => {
-    return user?.userId === String(resourceUserId);
- }
-};
+export const useAuth = () => {
+const context = useContext(AuthContext);
+if (!context) {
+    throw new Error("useAuth debe sser usado dentro de un AuthProvider");
+}
+return context;
 }
