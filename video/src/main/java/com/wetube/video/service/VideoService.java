@@ -13,18 +13,21 @@ public interface VideoService {
 
  VideoDto saveVideoMetadata(VideoDtoEntrada entrada);
 
-Page<VideoDto> searchVideosByTitle(String keyword, int page, int size);
+Page<VideoDto> searchVideosByTitle(String keyword, String type, int page, int size);
 
-List<VideoDto> getFeed(Long lastId, int limit);
+List<VideoDto> getShortsFeed(Long lastId, int limit);
+
+    List<VideoDto> getLongsFeed(Long lastId, int limit);
 
  InteractionsDto getInteractions(Long videoId, Long lastId, Integer limit);
 
- List<VideoDto> getVideosByIds(IdsDto ids);
+ List<VideoDto> getVideosByIds(Long userId, Long lastId, int limit);
 
  VideoPlaybackDto getVideoForPlayback(Long videoId);
 
+ List<VideoDto> getSubscriptionsFeed(Long userId, Long lastId, int limit);
 
- List<VideoDto> getSubscriptionsFeed();
+ List<VideoDto> getVideosByUser(Long userId, Long lastId, int limit);
 
  void deleteVideoInternal(Long videoId);
 

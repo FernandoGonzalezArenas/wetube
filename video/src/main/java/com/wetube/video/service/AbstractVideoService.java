@@ -23,6 +23,9 @@ public abstract  class AbstractVideoService implements VideoService{
 
     protected final VideoRepository videoRepository;
 protected final  InteractionsService interactionsService;
+    protected final LikeService likeService;
+protected final SubscriptionService subscriptionService;
+protected final UserService userService;
     protected static final Logger logger= LoggerFactory.getLogger(MinioVideoServiceImpl.class);
 
     public abstract UploadUrlResponse generateUploadUrl(String filename);
@@ -48,16 +51,32 @@ Long userId=principal.userId();
         }
 
     @Override
-    public Page<VideoDto> searchVideosByTitle(String keyword, int page, int size){
+    public Page<VideoDto> searchVideosByTitle(String keyword, String type, int page, int size){
         PageRequest pageable=PageRequest.of(page, size);
-        Page<VideoEntity> result= videoRepository.searchByTitle(keyword, pageable);
+        Page<VideoEntity> result;
+
+        if ("shorts".equalsIgnoreCase(type)){
+            result = videoRepository.searchShortsByTitle(keyword, pageable);
+        } else if ("videos".equalsIgnoreCase(type)) {
+            result = videoRepository.searchLongVideosByTitle(keyword, pageable);
+        } else {
+            result = videoRepository.searchByTitle(keyword, pageable);
+        }
+
 return result.map(this::mapToDto);
     }
 
     @Override
-    public List<VideoDto> getFeed(Long lastId, int limit){
+    public List<VideoDto> getShortsFeed(Long lastId, int limit){
         PageRequest pageable=PageRequest.of(0, limit);
-        List<VideoEntity> videos= videoRepository.findNextVideos(lastId, pageable);
+        List<VideoEntity> videos= videoRepository.findNextShortVideos(lastId, pageable);
+        return videos.stream().map(this::mapToDto).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<VideoDto> getLongsFeed(Long lastId, int limit){
+        PageRequest pageable=PageRequest.of(0, limit);
+        List<VideoEntity> videos= videoRepository.findNextLongVideos(lastId, pageable);
         return videos.stream().map(this::mapToDto).collect(Collectors.toList());
     }
 
@@ -71,8 +90,21 @@ return result.map(this::mapToDto);
     }
 
     @Override
-    public List<VideoDto> getVideosByIds(IdsDto ids){
-        List<VideoEntity> results=videoRepository.findByIdIn(ids.getIds());
+    public List<VideoDto> getVideosByIds(Long userId, Long lastId, int limit){
+        UserPrincipal principal=(UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Long currentUser=principal.userId();
+
+        if (!userId.equals(currentUser)) {
+            UserDto perfil = userService.getProfile(userId);
+            if (!perfil.getPrivacyLikes()) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "acceso denegado, esta lista es privada");
+            }
+        }
+
+        List<Long> ids=likeService.getLikedVideos(userId);
+
+        PageRequest pageRequest=PageRequest.of(0, limit);
+        List<VideoEntity> results=videoRepository.findByIdIn(ids, lastId, pageRequest);
 
         //convertimos la lista de entidades a lista de DTO correctamente y la retornamos
         return results.stream()
@@ -106,20 +138,40 @@ String thumbUrl=buildFullThumbnailUrl(video.getThumbnailUrl());
     //metodo abstracto para construir la URL personalizada con cada servicio de almacenamiento
     protected abstract String getPlaybackUrl(String storedUrl);
 
-
     @Override
-    public List<VideoDto> getSubscriptionsFeed(){
-UserPrincipal principal=(UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-Long userId=principal.userId();
+    public List<VideoDto> getSubscriptionsFeed(Long userId, Long lastId, int limit){
+        UserPrincipal principal=(UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Long currentUser=principal.userId();
 
-List<Long> followedIds=interactionsService.getSubscriptionsByUser(userId);
+        if (!userId.equals(currentUser)) {
+            UserDto perfil = userService.getProfile(userId);
+            if (!perfil.getPrivacySubs()) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "acceso denegado, lista privada");
+            }
+        }
+
+List<Long> followedIds=subscriptionService.getSubscriptionsByUser(userId);
 if (followedIds.isEmpty()) return Collections.emptyList();
 
-List<VideoEntity> result=videoRepository.findByUserIdInOrderByCreatedAtDesc(followedIds);
+PageRequest pageRequest = PageRequest.of(0, limit);
+List<VideoEntity> result=videoRepository.findByUserIdInOrderByCreatedAtDesc(followedIds, lastId, pageRequest);
 
 return result.stream()
         .map(this::mapToDto)
         .collect(Collectors.toList());
+    }
+
+    //obtener los videos subidos por un usuario especifico
+    @Override
+    public List<VideoDto> getVideosByUser(Long userId, Long lastId, int limit){
+        PageRequest pageRequest=PageRequest.of(0, limit);
+        List<VideoEntity> videosUsuario = videoRepository.findByUserId(userId, lastId, pageRequest);
+
+        if (videosUsuario.isEmpty()) return Collections.emptyList();
+
+        return videosUsuario.stream()
+                .map(this::mapToDto)
+                .collect(Collectors.toList());
     }
 
 @Override

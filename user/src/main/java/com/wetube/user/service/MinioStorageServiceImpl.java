@@ -48,7 +48,7 @@ throw new RuntimeException("error en minio user: " +e.getMessage());
     public String getPublicUrl(String objectName){
 
     String url= miniourl+"/"+bucketName+"/profiles/"+objectName;
-    return url;
+    return url.replace("http://minio:9000", "http://localhost:8080/storage");
 }
 
 }

@@ -73,25 +73,4 @@ void shouldReturnLikesCountOnSuccess(){
         assertEquals(0L, likes.getTotalLikes());
 }
 
-@Test
-    @DisplayName("debe retornar lista de id's de subscripciones cuando el cliente responda OK")
-    void shouldReturnSubscriptionsOnSuccess(){
-        when(subscriptionsClient.getSubscriptionsByUser(1L))
-                .thenReturn(new IdsDto(List.of(10L, 20L)));
-
-    List<Long> result=service.getSubscriptionsByUser(1L);
-
-    //validaciones
-    assertEquals(2, result.size());
-    assertTrue(result.contains(10L));
-    }
-
-    @Test
-    @DisplayName("debe retornar lista con un 0 al ejecutar fallback de subscripciones")
-    void shouldReturnEmptyListOnSubscriptionFallback(){
-        List<Long> result=service.fallbackForSubscription(1L, new RuntimeException("error"));
-        assertEquals(1, result.size());
-assertEquals(0L, result.get(0));
-    }
-
 }

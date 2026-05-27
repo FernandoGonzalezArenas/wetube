@@ -42,6 +42,16 @@ public class AWSVideoServiceTest {
     private VideoRepository repository;
 @Mock
     private InteractionsService interactionsService;
+
+@Mock
+private LikeService likeService;
+
+@Mock
+private SubscriptionService subscriptionService;
+
+@Mock
+private UserService userService;
+
 @Mock
     private S3Presigner s3Presigner;
 @Mock
@@ -54,7 +64,7 @@ private final Long userId=1L;
 
 @BeforeEach
     void setup(){
-    service=new AWSVideoServiceImpl(repository, interactionsService, s3Presigner);
+    service=new AWSVideoServiceImpl(repository, interactionsService, likeService, subscriptionService, userService, s3Presigner);
     ReflectionTestUtils.setField(service, "bucketName", "aws-bucket-videos");
 
     UserPrincipal principal=new UserPrincipal(userId, "user-aws");
@@ -120,12 +130,13 @@ void shouldGenerateUploadUrlThumb() throws Exception{
 @Test
 void shouldSearchVideosByTitle(){
     String keyword="java";
+    String type="";
     VideoEntity entity=VideoEntity.builder().userId(2L).title("video java").duration(37L).build();
     Page<VideoEntity> page=new PageImpl<>(List.of(entity));
 
     when(repository.searchByTitle(eq(keyword), any(PageRequest.class))).thenReturn(page);
 
-    Page<VideoDto> results=service.searchVideosByTitle(keyword, 0, 10);
+    Page<VideoDto> results=service.searchVideosByTitle(keyword, type, 0, 10);
 
     assertEquals(1, results.getTotalElements());
     assertEquals("video java", results.getContent().get(0).getTitle());
@@ -135,11 +146,11 @@ void shouldSearchVideosByTitle(){
 void shouldGetFeedCorrectly(){
     VideoEntity v1=VideoEntity.builder().id(5L).userId(2L).title("v1").duration(84L).build();
 
-    when(repository.findNextVideos(anyLong(), any(PageRequest.class))).thenReturn(List.of(v1));
-    List<VideoDto> results=service.getFeed(10L, 5);
+    when(repository.findNextLongVideos(anyLong(), any(PageRequest.class))).thenReturn(List.of(v1));
+    List<VideoDto> results=service.getLongsFeed(10L, 5);
 
     assertEquals(1, results.size());
-    verify(repository).findNextVideos(eq(10L), any(PageRequest.class));
+    verify(repository).findNextLongVideos(eq(10L), any(PageRequest.class));
 }
 
 @Test
@@ -175,8 +186,12 @@ assertThrows(ResponseStatusException.class, () -> service.getVideoForPlayback(99
 @Test
     @DisplayName("debe obtener el feed de subscripciones basado en el usuario autenticado")
     void shouldGetSubscriptionsFeedAWS(){
+    UserDto user=UserDto.builder().id(2L).username("fernando").privacySubs(true).build();
+
+    when(userService.getProfile(2L)).thenReturn(user);
+
     List<Long> followedChannels=List.of(100L, 200L);
-when(interactionsService.getSubscriptionsByUser(anyLong())).thenReturn(followedChannels);
+when(subscriptionService.getSubscriptionsByUser(anyLong())).thenReturn(followedChannels);
 
 VideoEntity video=VideoEntity.builder()
                 .title("video subs")
@@ -185,14 +200,14 @@ VideoEntity video=VideoEntity.builder()
                                 .videoUrl("url")
                                         .thumbnailUrl("thumb")
                                                 .build();
-when(repository.findByUserIdInOrderByCreatedAtDesc(followedChannels))
+when(repository.findByUserIdInOrderByCreatedAtDesc(followedChannels, null, PageRequest.of(0,5)))
         .thenReturn(List.of(video));
 
-List<VideoDto> result=service.getSubscriptionsFeed();
+List<VideoDto> result=service.getSubscriptionsFeed(2L, null, 5);
 
 assertEquals(1, result.size());
-verify(interactionsService).getSubscriptionsByUser(anyLong());
-verify(repository).findByUserIdInOrderByCreatedAtDesc(followedChannels);
+verify(subscriptionService).getSubscriptionsByUser(anyLong());
+verify(repository).findByUserIdInOrderByCreatedAtDesc(followedChannels, null, PageRequest.of(0, 5));
 }
 
 @Test
@@ -263,12 +278,12 @@ assertEquals("http://url-firmada-aws.com", results.getVideoUrl());
 
 @Test
     void shouldHandleEmptySubscriptions(){
-    when(interactionsService.getSubscriptionsByUser(anyLong())).thenReturn(Collections.emptyList());
+    when(subscriptionService.getSubscriptionsByUser(anyLong())).thenReturn(Collections.emptyList());
 
-    List<VideoDto> results=service.getSubscriptionsFeed();
+    List<VideoDto> results=service.getSubscriptionsFeed(1L, null, 5);
 
     assertTrue(results.isEmpty());
-    verify(repository, never()).findByUserIdInOrderByCreatedAtDesc(anyList());
+    verify(repository, never()).findByUserIdInOrderByCreatedAtDesc(Collections.emptyList(), null, PageRequest.of(0, 5));
 }
 
 @Test

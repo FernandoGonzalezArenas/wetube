@@ -1,4 +1,5 @@
 export interface Comments {
+    id: number;
     usernameAuthor: string;
     content: string;
     createdAt: string;

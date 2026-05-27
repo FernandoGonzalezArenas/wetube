@@ -44,6 +44,8 @@ public UserDto updateProfile( UserDtoEntrada profileDetails){
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "usuario no encontrado"));
     user.setBio(profileDetails.getBio());
     user.setProfilePictureUrl(profileDetails.getProfilePictureUrl());
+    user.setPrivacyLikes(profileDetails.getPrivacyLikes());
+    user.setPrivacySubs(profileDetails.getPrivacySubs());
      repository.save(user);
      return entityToDto(user);
     }
@@ -66,6 +68,8 @@ private UserDto entityToDto(UserEntity user){
             .username(user.getUsername())
             .bio(user.getBio())
             .profilePictureUrl(finalUrl)
+            .privacyLikes(user.getPrivacyLikes())
+            .privacySubs(user.getPrivacySubs())
             .createdAt(user.getCreatedAt())
             .build();
     }

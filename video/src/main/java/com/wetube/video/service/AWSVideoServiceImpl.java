@@ -24,8 +24,8 @@ public class AWSVideoServiceImpl extends AbstractVideoService {
 @Value("${aws.s3.bucket-videos}")
     private String bucketName;
 
-    public AWSVideoServiceImpl(VideoRepository videoRepository, InteractionsService interactionsService, S3Presigner s3Presigner){
-    super(videoRepository, interactionsService);
+    public AWSVideoServiceImpl(VideoRepository videoRepository, InteractionsService interactionsService, LikeService likeService, SubscriptionService subscriptionService, UserService userService, S3Presigner s3Presigner){
+    super(videoRepository, interactionsService, likeService, subscriptionService, userService);
     this.s3Presigner=s3Presigner;
 }
 

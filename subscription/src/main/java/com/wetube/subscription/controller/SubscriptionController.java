@@ -69,9 +69,9 @@ public class SubscriptionController {
             @ApiResponse(responseCode = "200", description = "ID's de los canales obtenidos exitosamente",
                     content = @Content(schema = @Schema(implementation = IdsDto.class)))
                     })
-    @GetMapping("/my-subscriptions")
-    public ResponseEntity<IdsDto> getSubscriptionsByUser(){
-        return ResponseEntity.ok(subscriptionService.getSubscriptionsByUser());
+    @GetMapping("/user-subs/{userId}")
+    public ResponseEntity<IdsDto> getSubscriptionsByUser(@PathVariable Long userId){
+        return ResponseEntity.ok(subscriptionService.getSubscriptionsByUser(userId));
     }
 
 }

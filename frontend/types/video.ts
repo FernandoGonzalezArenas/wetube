@@ -29,6 +29,15 @@ export interface VideoPlayback {
     createdAt: string;
 }
 
+export interface Page<T> {
+content: T[];
+totalPages: number;
+totalElements: number;
+size: number;
+last: number;
+number: number;
+}
+
 export interface UpluadUrlResponse {
 uploadUrl: string;
 finalFileName: string;

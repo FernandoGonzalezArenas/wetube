@@ -30,6 +30,13 @@ apiClient.interceptors.response.use(
 async (error) => {
     const originalRequest=error.config;
 
+//si fayo el logout con 401 no intentamos refrescar, limmpeamos y redirigimos
+if (originalRequest.url.includes('/auth/logout')) {
+    localStorage.clear();
+    if(typeof window !== 'undefined') window.location.href ='/login';
+    return Promise.reject(error);
+}
+
     //si el error es 401 y no hemos intentado refrescar ya
     if(error.response?.status === 401 && !originalRequest.url.includes('/auth/refresh') && !originalRequest._retry){
         originalRequest._retry=true;

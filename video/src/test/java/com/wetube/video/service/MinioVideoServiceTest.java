@@ -37,6 +37,16 @@ public class MinioVideoServiceTest {
     private VideoRepository repository;
 @Mock
     private InteractionsService interactionsService;
+
+@Mock
+private LikeService likeService;
+
+@Mock
+private SubscriptionService subscriptionService;
+
+@Mock
+private UserService userService;
+
 @Mock
     private MinioClient minioClient;
 private MinioVideoServiceImpl service;
@@ -46,7 +56,7 @@ private Long userId=55L;
 @BeforeEach
     void setup(){
     //instanciamos la verdadera implementacion de la clase
-    service=new MinioVideoServiceImpl(repository, interactionsService, minioClient);
+    service=new MinioVideoServiceImpl(repository, interactionsService, likeService, subscriptionService, userService, minioClient);
 
     //inyectamos valores de value con ReflectionTestUtils
     ReflectionTestUtils.setField(service, "bucketName", "test-bucket");
@@ -119,12 +129,13 @@ void shouldGenerateUploadUrlThumb() throws Exception{
 @DisplayName("debe buscar videos por titulo")
 void shouldSearchVideosByTitle(){
     String keyword="java";
+    String type="shorts";
     VideoEntity entity=VideoEntity.builder().userId(1L).title("tutorial java").duration(58L).build();
     Page<VideoEntity> page=new PageImpl<>(List.of(entity));
 
-    when(repository.searchByTitle(eq(keyword), any(PageRequest.class))).thenReturn(page);
+    when(repository.searchShortsByTitle(eq(keyword), any(PageRequest.class))).thenReturn(page);
 
-    Page<VideoDto> result=service.searchVideosByTitle(keyword, 0, 10);
+    Page<VideoDto> result=service.searchVideosByTitle(keyword, type, 0, 10);
 
     assertEquals(1, result.getTotalElements());
     assertEquals("tutorial java", result.getContent().get(0).getTitle());
@@ -133,13 +144,13 @@ void shouldSearchVideosByTitle(){
 @Test
 @DisplayName("debe mostrar correctamente el feed con la busqueda por cursor")
 void shouldGetFeedCorrectly(){
-    VideoEntity v1=VideoEntity.builder().id(4L).userId(2L).title("v1").duration(83L).build();
-    when(repository.findNextVideos(anyLong(), any(PageRequest.class))).thenReturn(List.of(v1));
+    VideoEntity v1=VideoEntity.builder().id(4L).userId(2L).title("v1").duration(43L).build();
+    when(repository.findNextShortVideos(anyLong(), any(PageRequest.class))).thenReturn(List.of(v1));
 
-    List<VideoDto> result=service.getFeed(10L, 5);
+    List<VideoDto> result=service.getShortsFeed(10L, 5);
 
     assertEquals(1, result.size());
-    verify(repository).findNextVideos(eq(10L), any(PageRequest.class));
+    verify(repository).findNextShortVideos(eq(10L), any(PageRequest.class));
 }
 
 @Test
@@ -161,25 +172,28 @@ when(minioClient.getPresignedObjectUrl(any())).thenReturn("http://signed-playbac
 }
 
 @Test
-    @DisplayName("debe obtener feed de subscripciones usando el usuario de el SecurityContext")
-    void shouldGetSubscriptionsFeed(){
-    //el 55L viene de el SecurityContext
-    when(interactionsService.getSubscriptionsByUser(55L)).thenReturn(List.of(10L));
+    @DisplayName("debe obtener los videos gustados de el usuario")
+    void shouldGetLikedVideos(){
+    //usuario simulado
+    UserDto user = UserDto.builder().id(1L).username("fernando").privacyLikes(true).build();
+
+    when(userService.getProfile(1L)).thenReturn(user);
+    when(likeService.getLikedVideos(anyLong())).thenReturn(List.of(10L));
 
     VideoEntity video=VideoEntity.builder()
-                    .title("video subs")
+                    .title("video liked")
                             .description("desc")
             .duration(36L)
                                     .videoUrl("url")
                                             .thumbnailUrl("thumb")
                                                     .build();
-    when(repository.findByUserIdInOrderByCreatedAtDesc(anyList())).thenReturn(List.of(video));
+    when(repository.findByIdIn(List.of(10L), null, PageRequest.of(0, 5))).thenReturn(List.of(video));
 
-List<VideoDto> feed=service.getSubscriptionsFeed();
+List<VideoDto> feed=service.getVideosByIds(1L, null, 5);
 
 //validaciones
     assertFalse(feed.isEmpty());
-    verify(repository).findByUserIdInOrderByCreatedAtDesc(List.of(10L));
+    verify(repository).findByIdIn(List.of(10L), null, PageRequest.of(0, 5));
 }
 
 @Test

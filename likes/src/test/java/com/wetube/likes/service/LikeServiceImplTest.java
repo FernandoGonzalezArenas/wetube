@@ -114,9 +114,9 @@ void shouldReturnNumberOfLikes(){
     void getLikesVideosByUserId_ShouldReturnIdsDto(){
     LikeEntity like1=LikeEntity.builder().videoId(10L).build();
     LikeEntity like2=LikeEntity.builder().videoId(20L).build();
-    when(repository.findByUserId(userId)).thenReturn(List.of(like1, like2));
+    when(repository.findByUserId(1L)).thenReturn(List.of(like1, like2));
 
-    IdsDto result=service.getLikesVideosByUserId();
+    IdsDto result=service.getLikesVideosByUserId(1L);
 
     //validaciones
     assertNotNull(result);

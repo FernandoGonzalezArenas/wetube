@@ -112,12 +112,12 @@ public class VideoControllerTest {
     @WithMockUser
     void shouldGetVideosBySpecificIds() throws Exception {
         IdsDto ids = new IdsDto(List.of(1L, 2L));
-        when(videoService.getVideosByIds(any())).thenReturn(Collections.emptyList());
+        when(videoService.getVideosByIds(1L, 100L, 5)).thenReturn(Collections.emptyList());
 
-mockMvc.perform(post("/videos/list-likes")
+mockMvc.perform(get("/videos/list-likes/1")
         .with(csrf())
-        .contentType(MediaType.APPLICATION_JSON)
-        .content(mapper.writeValueAsString(ids)))
+                .param("lastId", "100")
+                .param("limit", "5"))
         .andExpect(status().isOk());
     }
 
@@ -125,9 +125,11 @@ mockMvc.perform(post("/videos/list-likes")
     @DisplayName("GET /videos/my-feed-subs debe retornar feed de subscripciones")
     @WithMockUser
     void shouldReturnsSubsFeed() throws Exception{
-        when(videoService.getSubscriptionsFeed()).thenReturn(Collections.emptyList());
+        when(videoService.getSubscriptionsFeed(1L, 100L, 5)).thenReturn(Collections.emptyList());
 
-        mockMvc.perform(get("/videos/my-feed-subs"))
+        mockMvc.perform(get("/videos/my-feed-subs/1")
+                        .param("lastId", "100")
+                        .param("limit", "5"))
                 .andExpect(status().isOk());
     }
 
@@ -169,7 +171,7 @@ mockMvc.perform(delete("/videos/internal/1")
     @WithMockUser
     void  shouldSearchVideos() throws  Exception{
         Page<VideoDto> emptyPage=new PageImpl<>(Collections.emptyList());
-        when(videoService.searchVideosByTitle(anyString(), anyInt(), anyInt())).thenReturn(emptyPage);
+        when(videoService.searchVideosByTitle(anyString(), anyString(), anyInt(), anyInt())).thenReturn(emptyPage);
 
         mockMvc.perform(get("/videos/search")
                 .param("keyword", "spring")

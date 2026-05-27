@@ -19,6 +19,12 @@ public class UserEntity {
     private Long id;
 private String username;
 private String bio;
+
+@Builder.Default
+private Boolean privacyLikes=false;
+
+    @Builder.Default
+    private  Boolean privacySubs=false;
 private String profilePictureUrl;
 private LocalDateTime createdAt;
 

@@ -3,22 +3,23 @@ servicio para el AuthController, conecta los endpoints de el backend con el fron
 */
 
 import axios from "axios";
+import apiClient from "./client";
 import { RegisterRequest, LoginRequest, RefreshTokenRequest, AuthResponse } from '../types/auth';
 
-const api = axios.create({
+const publicApi = axios.create({
     baseURL: 'http://localhost:8080/auth',
 })
 
 export const authApi = {
 register: (data: RegisterRequest) =>
-    api.post<string>('/register', data),
+    publicApi.post<string>('/register', data),
 
 login: (data: LoginRequest) =>
-    api.post<AuthResponse>('/login', data),
+    publicApi.post<AuthResponse>('/login', data),
 
 refresh: (data: RefreshTokenRequest) =>
-    api.post<AuthResponse>('/refresh', data),
+    apiClient.post<AuthResponse>('/auth/refresh', data),
 
 logout: (data: RefreshTokenRequest) =>
-    api.post<string>('/logout', data),
+    apiClient.post<string>('/auth/logout', data),
 }

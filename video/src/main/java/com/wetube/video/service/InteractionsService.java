@@ -47,13 +47,5 @@ private final SubscriptionsClient subscriptionsClient;
         return new LikeStatus(0L, false);
     }
 
-    @CircuitBreaker(name = "subscription", fallbackMethod = "fallbackForSubscription")
-    public List<Long> getSubscriptionsByUser(Long userId){
-return subscriptionsClient.getSubscriptionsByUser(userId).getIds();
-    }
 
-    public List<Long> fallbackForSubscription(Long userId, Throwable throwable){
-    return List.of(0L);
     }
-
-}

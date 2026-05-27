@@ -3,12 +3,13 @@ package com.wetube.video.client;
 import com.wetube.video.dto.IdsDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
 
 @FeignClient(name = "subscription")
 public interface SubscriptionsClient {
 
-@GetMapping("/subs/my-subscriptions")
-    IdsDto getSubscriptionsByUser(@RequestHeader("X-User-Id") Long subscriberId);
+@GetMapping("/subs/user-subs/{userId}")
+    IdsDto getSubscriptionsByUser(@PathVariable("userId") Long userId);
 
 }

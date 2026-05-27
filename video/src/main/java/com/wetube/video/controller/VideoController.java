@@ -68,28 +68,39 @@ description = "se guardan los datos de el video con el nombre unico de el video 
     }
 
     @Operation(summary = "buscar videos en el buscador",
-    description = "se buscan los videos escribiendo lo que se quiere encontrar")
+    description = "se buscan los videos escribiendo lo que se quiere encontrar aplicando filtros como videos cortos, largos, o todos los resultados")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "busqueda exitosa",
             content = @Content(schema = @Schema(implementation = VideoDto.class)))
     })
 @GetMapping("/search")
-public ResponseEntity<Page<VideoDto>> searchVideos(@RequestParam String keyword, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size){
-    return ResponseEntity.ok(videoService.searchVideosByTitle(keyword, page, size));
+public ResponseEntity<Page<VideoDto>> searchVideos(@RequestParam String keyword, @RequestParam(required = false) String type, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size){
+    return ResponseEntity.ok(videoService.searchVideosByTitle(keyword, type, page, size));
 }
 
-@Operation(summary = "obtener los videos en scrol infinito",
-description = "se obtienen los videos en scrol infinito tomando como referencia el ultimo ID")
+@Operation(summary = "obtener los videos cortos en scrol infinito",
+description = "se obtienen los videos de menos de 60 segundos de duracion en scrol infinito tomando como referencia el ultimo ID")
 @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "videos obtenidos exitosamente",
         content = @Content(schema = @Schema(implementation = VideoDto.class)))
 })
-@GetMapping("/feed")
-public ResponseEntity<List<VideoDto>> getFeed(@RequestParam(required = false) Long lastId, @RequestParam(defaultValue = "10") int limit){
-    return ResponseEntity.ok(videoService.getFeed(lastId, limit));
+@GetMapping("/shorts-feed")
+public ResponseEntity<List<VideoDto>> getShortsFeed(@RequestParam(required = false) Long lastId, @RequestParam(defaultValue = "10") int limit){
+    return ResponseEntity.ok(videoService.getShortsFeed(lastId, limit));
 }
 
-@Operation(summary = "obtener los comentarios y likes de el video",
+    @Operation(summary = "obtener los videos largos en scrol infinito",
+            description = "se obtienen los videos con duracion mayor a 60 segundos en scrol infinito tomando como referencia el ultimo ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "videos obtenidos exitosamente",
+                    content = @Content(schema = @Schema(implementation = VideoDto.class)))
+    })
+    @GetMapping("/long-feed")
+    public ResponseEntity<List<VideoDto>> getLongsFeed(@RequestParam(required = false) Long lastId, @RequestParam(defaultValue = "10") int limit){
+        return ResponseEntity.ok(videoService.getLongsFeed(lastId, limit));
+    }
+
+    @Operation(summary = "obtener los comentarios y likes de el video",
 description = "se obtienen los comentarios y likes de el video llamando a los microservicios correspondientes para que envien los datos de dicho video")
 @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "datos obtenidos... posibilidad de datos parciales por faya de algun servicio",
@@ -111,9 +122,9 @@ try {
             @ApiResponse(responseCode = "200", description = "informacion obtenida exitosamente",
             content = @Content(schema = @Schema(implementation = VideoDto.class)))
     })
-    @PostMapping("/list-likes")
-    public ResponseEntity<List<VideoDto>> getVideosByIds(@RequestBody IdsDto ids){
-        return ResponseEntity.ok(videoService.getVideosByIds(ids));
+    @GetMapping("/list-likes/{userId}")
+    public ResponseEntity<List<VideoDto>> getVideosByIds(@PathVariable Long userId, @RequestParam(required = false) Long lastId, @RequestParam(defaultValue = "10") int limit){
+        return ResponseEntity.ok(videoService.getVideosByIds(userId, lastId, limit));
     }
 
     @Operation(summary = "obtener la URL para reproducir el video",
@@ -129,15 +140,26 @@ try {
         return ResponseEntity.ok(videoService.getVideoForPlayback(videoId));
     }
 
+    @Operation(summary = "obtener los videos que ha subido el usuario",
+    description = "se obtiene la informacion de los videos que ha subido el usuario para mostrarlos en la pagina de el frontend")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "se obtiene exitosamente la informacion de los videos solicitados",
+            content = @Content(schema = @Schema(implementation = VideoDto.class)))
+    })
+    @GetMapping("/{userId}")
+    public ResponseEntity<List<VideoDto>> getVideosOfUser(@PathVariable Long userId, @RequestParam(required = false) Long lastId, @RequestParam(defaultValue = "10") int limit){
+    return ResponseEntity.ok(videoService.getVideosByUser(userId, lastId, limit));
+    }
+
     @Operation(summary = "obtener la informacion de los videos de los canales a los que el usuario esta subscrito",
     description = "se obtiene la informacion de los videos de los canales a los que esta subscrito el usuario llamando internamente a el microservicio de subscripciones")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "informacion de los videos obtenida correctamente",
             content = @Content(schema = @Schema(implementation = VideoDto.class)))
     })
-    @GetMapping("/my-feed-subs")
-    public ResponseEntity<List<VideoDto>> getSubscriptionsFeed(){
-        return ResponseEntity.ok(videoService.getSubscriptionsFeed());
+    @GetMapping("/my-feed-subs/{userId}")
+    public ResponseEntity<List<VideoDto>> getSubscriptionsFeed(@PathVariable Long userId, @RequestParam(required = false) Long lastId, @RequestParam(defaultValue = "10") int limit){
+        return ResponseEntity.ok(videoService.getSubscriptionsFeed(userId, lastId, limit));
     }
 
     @Operation(summary = "eliminar un video desde administracion",

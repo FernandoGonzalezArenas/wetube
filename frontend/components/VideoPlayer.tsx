@@ -6,7 +6,11 @@ import CommentsPanel from "./CommentsPanel";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { videoApi } from "@/api/video";
 import { likesApi } from "@/api/likes";
-import { createPortal } from "react-dom";
+import SubscribeButton from "./SubscribeButton";
+import Link from "next/link";
+import { userApi } from "@/api/user";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
 
     interface Props {
         video: VideoPlayback;
@@ -20,6 +24,7 @@ import { createPortal } from "react-dom";
     const [isPlaying, setIsPlaying] = useState(true);
 const [showComments, setShowComments] = useState(false);
 const queryClient = useQueryClient();
+const router = useRouter();
 
 useEffect(() => {
     const timer = setTimeout(() => {
@@ -31,7 +36,7 @@ useEffect(() => {
 
 //cargamos todo de las interacciones al principio
 const {data: interactions, isLoading} = useQuery({
-queryKey: ['interactions', video.id],
+queryKey: ['interactions-meta', video.id],
 queryFn: () => videoApi.getInteractions(video.id),
 });
 
@@ -40,17 +45,21 @@ const likeMutation = useMutation({
     mutationFn: () => likesApi.toggleLike(video.id),
     onSuccess: () => {
         //refrescamos e invalidamos interactions para ver el nuevo conteo y estado
-        queryClient.invalidateQueries({queryKey: ['interactions', video.id]});
+        queryClient.invalidateQueries({queryKey: ['interactions-meta', video.id]});
     }
 });
 
-const isLiked=interactions?.status?.isLikedByUser;
+const isLiked= !!interactions?.status?.isLikedByUser;
 const totalLikes=interactions?.status?.totalLikes || 0;
 
 const btnTitle=isLiked ?
-`quitar like (a ${totalLikes} personas les gusta esto)` :
+`quitar like (a ${totalLikes} personas les gusta esto   )` :
 `dar like (a ${totalLikes} personas les gusta esto)`;
 
+const {data: autor} = useQuery({
+    queryKey: ['usuario_autor', video.userId],
+    queryFn: () => userApi.getProfile(video.userId),
+});
 
 //usar flechas laterales para atrasar o adelantar el video
 const handleSec = (seconds: number) =>{
@@ -101,6 +110,10 @@ videoRef.current.play().catch(() => {}); // Evita el error de "Uncaught (in prom
                             }
                         }
                             break;
+                            case "w":
+                                e.preventDefault();
+                                router.push('/');
+                                break;
                             default:
                                 break;
             }
@@ -110,7 +123,7 @@ videoRef.current.play().catch(() => {}); // Evita el error de "Uncaught (in prom
         return() => {
             window.removeEventListener("keydown", handleKeyDown);
         }
-    }, [onNext, onPrev, showComments]);
+    }, [onNext, onPrev, showComments, router]);
 
     return(
         <div className="relative h-screen w-full bg-black flex items-center justify-center overflow-hidden outline-none"
@@ -140,23 +153,48 @@ videoRef.current.play().catch(() => {}); // Evita el error de "Uncaught (in prom
 
                 {/* lateral de interacciones (Accesible por Tab) */}
                 <div className="absolute right-4 bottom-20 flex flex-col gap-6 items-center">
+                    <div className="flex flex-col items-center gap-2">
                     {/* perfil de el autor */}
-                    <button className="p-2 bg-gray-800 rounded-full border border-gray-600 hover:scale-110 transition-transform" title="ver perfil">
+                        <Link href={`/profile/${video.userId}`} 
+                        className="group flex flex-col items-center gap-2"
+                        title={`ir al perfil de ${autor?.username || 'este usuario'}`}>
+                            <div                         className="shrink-0 bg-gray-800 rounded-full border border-gray-600 hover:scale-110 transition-transform overflow-hidden w-12 h-12 flex items-center justify-center"> 
+                            {autor?.profilePictureUrl ? (
+<Image
+src={autor.profilePictureUrl}
+alt={autor.username}
+width={48}
+height={48}
+className="object-cover"
+/>
+                            ) : (
                         <User className="text-white" size={28} />
-                    </button>
+                            )}
+</div>
+                        <span className="text-white font-bold text-lg group-hover:underline">{autor?.username}</span>
+</Link>
 
+{/* boton de subscripcion */}
+{
+ video.userId &&
+ <SubscribeButton 
+ userId={video.userId}
+ onActionComplete={() => containerRef.current?.focus()} />
+ }
+</div>
                 {/* boton de like */}
                 <div className="flex flex-col items-center">
                     <button 
                     className={`p-3 rounded-full hover:bg-red-500/50 transition-colors ${isLiked ? 'bg-red-500' : 'bg-gray-800/50'} ${likeMutation.isPending || isLoading ? 'opacity-50 cursor-not-allowed' : ''}`} 
                     title={btnTitle}
-                    disabled={likeMutation.isPending || isLoading} //evita el spam de clicks
                     onClick={(e) => {
                         e.stopPropagation();
                         likeMutation.mutate();
                         containerRef.current?.focus();                        
                     }}
+                    disabled={likeMutation.isPending || isLoading} //evita el spam de clicks
                     aria-pressed={isLiked}
+                    aria-label={btnTitle}
                     >
                     <Heart className={`text-white ${isLiked ? 'fill-current' : ''}`} size={30} />
                     </button>
@@ -185,15 +223,14 @@ e.stopPropagation();
         </div>
 
 {/* panel de comentarios */}
-{showComments && createPortal(
+{showComments && (
     <CommentsPanel
     videoId={video.id}
     onClose={() => {
         setShowComments(false);
         containerRef.current?.focus();
     }}
-    />,
-    document.body //se renderiza fuera de el role = "application"
+    />
 )}
 
     {/* informacion de el video (abajo a la izquierda) */}

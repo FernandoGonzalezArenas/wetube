@@ -42,6 +42,8 @@ private StorageService storageService;
             .id(1L)
             .username("testuser")
             .profilePictureUrl("portada.jpg")
+            .privacyLikes(true)
+            .privacySubs(false)
             .build();
 when(repository.findById(1L)).thenReturn(Optional.of(user));
 when(storageService.getPublicUrl(anyString())).thenReturn("http://localhost:9000/bucket-users/profiles/portada.jpg");
@@ -72,7 +74,7 @@ when(storageService.getPublicUrl(anyString())).thenReturn("http://localhost:9000
     when(repository.findById(anyLong())).thenReturn(Optional.empty());
 
     assertThrows(ResponseStatusException.class, () -> {
-        service.updateProfile(new UserDtoEntrada("my description", "profile picture"));
+        service.updateProfile(new UserDtoEntrada("my description", "profile picture", false, true));
     });
 }
 

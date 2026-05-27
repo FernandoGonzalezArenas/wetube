@@ -28,8 +28,8 @@ private static final Logger logger= LoggerFactory.getLogger(MinioVideoServiceImp
 @Value("${minio.url}")
 private String minioUrl;
 
-    public MinioVideoServiceImpl(VideoRepository videoRepository, InteractionsService interactionsService, MinioClient minioClient){
-    super(videoRepository, interactionsService);
+    public MinioVideoServiceImpl(VideoRepository videoRepository, InteractionsService interactionsService, LikeService likeService, SubscriptionService subscriptionService, UserService userService, MinioClient minioClient){
+    super(videoRepository, interactionsService, likeService, subscriptionService, userService);
     this.minioClient=minioClient;
 }
 

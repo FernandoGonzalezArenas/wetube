@@ -34,6 +34,8 @@ public class UserControllerTest {
     UserDto user=UserDto.builder()
             .username("pedro")
             .bio("hola")
+            .privacyLikes(true)
+            .privacySubs(false)
             .build();
 when(userService.getProfile(1L)).thenReturn(user);
 
@@ -47,6 +49,8 @@ mockMvc.perform(get("/users/1"))
     UserDto update=UserDto.builder()
             .username("raul")
             .bio("nueva bio")
+            .privacySubs(true)
+            .privacyLikes(false)
             .build();
     when(userService.updateProfile(any())).thenReturn(update);
 

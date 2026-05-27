@@ -79,7 +79,7 @@ assertTrue(result.getContent().stream()
 
     //pedimos videos con id menor a v3
     Pageable pageable=PageRequest.of(0, 2);
-    List<VideoEntity> result=repository.findNextVideos(lastId, pageable);
+    List<VideoEntity> result=repository.findNextShortVideos(lastId, pageable);
 
     //validaciones
     assertEquals(2, result.size());
@@ -92,7 +92,9 @@ assertTrue(result.getContent().stream()
     VideoEntity v1=repository.save(VideoEntity.builder().userId(1L).title("V1").description("d").duration(46L).videoUrl("U1").build());
     VideoEntity v2=repository.save(VideoEntity.builder().userId(1L).title("V2").description("d").duration(58L).videoUrl("U2").build());
 
-    List<VideoEntity> result=repository.findByIdIn(List.of(v1.getId(), v2.getId()));
+    Pageable pageable=PageRequest.of(0, 2);
+
+    List<VideoEntity> result=repository.findByIdIn(List.of(v1.getId(), v2.getId()), null, pageable);
 
     assertEquals(2, result.size());
 }
@@ -103,8 +105,10 @@ assertTrue(result.getContent().stream()
     repository.save(VideoEntity.builder().userId(10L).title("canal a").description("d").duration(48L).videoUrl("U1").build());
     repository.save(VideoEntity.builder().userId(11L).title("canal b").description("d").duration(48L).videoUrl("U2").build());
 
+    Pageable pageable=PageRequest.of(0, 2);
+
     //suponiendo que el usuario sigue a los id's 10 y 11
-    List<VideoEntity> result=repository.findByUserIdInOrderByCreatedAtDesc(List.of(10L, 11L));
+    List<VideoEntity> result=repository.findByUserIdInOrderByCreatedAtDesc(List.of(10L, 11L), null, pageable);
 
     assertEquals(2, result.size());
 }

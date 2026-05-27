@@ -21,7 +21,7 @@ public class UserRepositoryTest {
     @DisplayName("debe borrar un usuario fisicamente de la base de datos")
     void shouldDeleteUserFromDatabase(){
     UserEntity user=userRepository.save(UserEntity.builder()
-            .id(1L).username("fernando").bio("biografía").profilePictureUrl("prof").build());
+            .id(1L).username("fernando").bio("biografía").profilePictureUrl("prof").privacyLikes(true).privacySubs(false).build());
     Long id=user.getId();
 
     userRepository.deleteById(id);

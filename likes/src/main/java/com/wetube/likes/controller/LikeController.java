@@ -69,9 +69,9 @@ private final LikeService likeService;
             @ApiResponse(responseCode = "200", description = "ID's obtenidos exitosamente",
                     content = @Content(schema = @Schema(implementation = IdsDto.class)))
                     })
-@GetMapping("/me")
-    public ResponseEntity<IdsDto> getLikesVideosByUserId(){
-    IdsDto videoIds=likeService.getLikesVideosByUserId();
+@GetMapping("/user-likes/{userId}")
+    public ResponseEntity<IdsDto> getLikesVideosByUserId(@PathVariable Long userId){
+    IdsDto videoIds=likeService.getLikesVideosByUserId(userId);
   return ResponseEntity.ok(videoIds);
 }
 

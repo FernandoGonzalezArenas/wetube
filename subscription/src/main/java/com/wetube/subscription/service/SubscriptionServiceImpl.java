@@ -25,12 +25,14 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     @Override
     @Transactional
     public boolean toggleSubscription(Long channelId){
+        System.out.println("entrando en el metodo toggle del backend con el ChannelId = "+ channelId);
         if (channelId<=0){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "problema con el ID de el canal");
         }
 
         UserPrincipal principal=(UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Long subscriberId=principal.userId();
+System.out.println("el ID de el usuario actual dentro de el metodo toggle es = " + subscriberId);
 
         Optional<SubscriptionEntity> existingSubscription=subscriptionRepository.findBySubscriberIdAndChannelId(subscriberId, channelId);
         if (existingSubscription.isPresent()){
@@ -76,6 +78,8 @@ var auth=SecurityContextHolder.getContext().getAuthentication();
 
     @Override
     public SubscriptionStatusDto getChannelStatus(Long channelId){
+        System.out.println("entrando en el metodo status de subscription en el backend con el ChannelId = " + channelId);
+
         boolean statusSubscription=hasUserSubscription(channelId);
         Long totalSubs=countSubscriptions(channelId);
 
@@ -86,12 +90,10 @@ var auth=SecurityContextHolder.getContext().getAuthentication();
     }
 
     @Override
-    public IdsDto getSubscriptionsByUser(){
-        UserPrincipal principal=(UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Long subscriberId=principal.userId();
+    public IdsDto getSubscriptionsByUser(Long userId){
 
         //se obtiene la lista de los canales a los que sigue el usuario
-        List<Long> ressult=subscriptionRepository.findBySubscriberId(subscriberId);
+        List<Long> ressult=subscriptionRepository.findBySubscriberId(userId);
 
         //retornamos los ids en el DTO
         return new IdsDto(ressult);

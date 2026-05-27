@@ -55,16 +55,16 @@ public class LikeControllerTest {
     mockMvc.perform(get("/like/1/status"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.totalLikes").value(10))
-            .andExpect(jsonPath("$.likedByUser").value(true));
+            .andExpect(jsonPath("$.isLikedByUser").value(true));
 }
 
 @Test
     @WithMockUser
     void getLikesVideosByUserId_ShouldReturnOk() throws Exception{
     IdsDto ids=new IdsDto(List.of(10L, 20L));
-    when(service.getLikesVideosByUserId()).thenReturn(ids);
+    when(service.getLikesVideosByUserId(1L)).thenReturn(ids);
 
-mockMvc.perform(get("/like/me"))
+mockMvc.perform(get("/like/user-likes/1"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.ids").isArray())
         .andExpect(jsonPath("$.ids[0]").value(10))

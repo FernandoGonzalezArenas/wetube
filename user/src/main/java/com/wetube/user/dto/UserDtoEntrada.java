@@ -18,4 +18,10 @@ private String bio;
     @Schema(description = "nombre unico de el archivo de la foto de perfil", example = "5ghvhthr3gjgjh-perfil.jpg")
 private String profilePictureUrl;
 
+    @Schema(description = "estado boleano de privacidad para mostrar u ocultar los videos gustados", example = "false")
+    private  Boolean privacyLikes;
+
+    @Schema(description = "estado boleano de privacidad para mostrar u ocultar los videos de subscripciones", example = "false")
+    private  Boolean privacySubs;
+
 }

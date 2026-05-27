@@ -45,6 +45,7 @@ String method=request.getMethod().name();
         path.startsWith("/auth/register") ||
             path.startsWith("/auth/login") ||
             path.startsWith("/auth/refresh") ||
+            path.startsWith("/auth/logout") ||
             path.startsWith("/actuator") ||
     path.contains("/v3/api-docs") ||
     path.contains("/swagger-ui") ||
@@ -56,13 +57,14 @@ String method=request.getMethod().name();
     //definicion de rutas publicas GET
     boolean isPublicGet=method.equals("GET") && (path.matches("/videos/interactions/\\d+") ||
         path.matches("/comentarios/\\d+") ||
-        path.matches("/like/\\d+/count") ||
-        path.matches("/like/\\d+/status") ||
+        path.startsWith("/like/") ||
+//        path.matches("/like/\\d+/status") ||
         path.matches("/users/\\d+") ||
-        path.matches("/subs/\\d+/count") ||
-        path.matches("/subs/\\d+/status") ||
+        path.startsWith("/subs/") ||
+//        path.matches("/subs/\\d+/status") ||
         path.matches("/videos/\\d+/play") ||
-        path.equals("/videos/feed") ||
+        path.equals("/videos/shorts-feed") ||
+        path.equals("/videos/long-feed") ||
         path.equals("/videos/search")
 );
 

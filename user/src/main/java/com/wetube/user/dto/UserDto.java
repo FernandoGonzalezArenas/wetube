@@ -24,6 +24,12 @@ public class UserDto {
     @Schema(description = "URL de la foto de perfil", example = "http://minio:9000/bucket/profiles/6ahfjkhjs7-perfil.jpg")
     private String profilePictureUrl;
 
+    @Schema(description = "estado boleano de privacidad para mostrar u ocultar los videos gustados", example = "false")
+    private  Boolean privacyLikes;
+
+    @Schema(description = "estado boleano de privacidad para mostrar u ocultar los videos de subscripciones", example = "false")
+    private  Boolean privacySubs;
+
     @Schema(description = "fecha de creacion de el perfil", example = "2026-05-18T08:36:57")
     private LocalDateTime createdAt;
 

@@ -15,6 +15,9 @@ import java.time.LocalDateTime;
 @Builder
 public class CommentsDto {
 
+@Schema(description = "ID unico de el comentario", example = "65")
+    private  Long id;
+
     @Schema(description = "ID de el video asociado a el comentario", example = "15")
     private Long videoId;
 

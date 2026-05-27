@@ -28,3 +28,12 @@ export interface AuthResponse {
     accessToken: string;
     refreshToken: string;
 }
+
+export interface CustomJwtPayload {
+    sub: string;
+    userId: string;
+    role: string;
+    email: string;
+    iat: number;
+    exp: number;
+}

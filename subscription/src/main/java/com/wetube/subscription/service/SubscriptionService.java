@@ -10,7 +10,7 @@ public interface SubscriptionService {
     boolean hasUserSubscription(Long channelId);
     Long countSubscriptions(Long channelId);
     SubscriptionStatusDto getChannelStatus(Long channelId);
-    IdsDto getSubscriptionsByUser();
+    IdsDto getSubscriptionsByUser(Long userId);
     void deleteSubscriptionsOfUser(Long userId);
 
 }

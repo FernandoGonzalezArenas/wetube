@@ -94,6 +94,7 @@ commentRepository.deleteByVideoId(videoId);
 
  private CommentsDto mapToDto(CommentEntity comment){
 return CommentsDto.builder()
+        .id(comment.getId())
         .videoId(comment.getVideoId())
         .usernameAuthor(comment.getUsernameAuthor())
         .content(comment.getContent())

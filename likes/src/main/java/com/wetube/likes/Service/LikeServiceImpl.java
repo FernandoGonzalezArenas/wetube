@@ -61,10 +61,12 @@ public Boolean hasUserLiked(Long videoId){
     }
 var auth=SecurityContextHolder.getContext().getAuthentication();
     if (auth==null || !auth.isAuthenticated() || auth.getPrincipal().equals("anonymousUser")){
+        System.out.println("la solicitud cayo en usuario anonimo sin token");
         return false;
     }
 UserPrincipal principal=(UserPrincipal) auth.getPrincipal();
 Long userId= principal.userId();
+System.out.println("si se encontro token y userId en la solicitud es = "+ userId);
     return likeRepository.existsByUserIdAndVideoId(userId, videoId);
 }
 
@@ -81,13 +83,12 @@ public  long countLikes(Long videoId){
     public VideoLikeStatusDto getVideoLikeStatus(Long videoId){
     Long total=countLikes(videoId);
     boolean liked=hasUserLiked(videoId);
+    System.out.println("el total de likes es "+ total + " y el estado es "+ liked);
     return new VideoLikeStatusDto(total, liked);
 }
 
 @Override
-    public IdsDto getLikesVideosByUserId(){
-UserPrincipal principal =(UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-Long userId= principal.userId();
+    public IdsDto getLikesVideosByUserId(Long userId){
 
     //se obtienen los videos a los que el usuario dio like
     List<LikeEntity> result=likeRepository.findByUserId(userId);

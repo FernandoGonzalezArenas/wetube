@@ -1,8 +1,9 @@
 import { useEffect, useRef } from "react";
 import { X, Send } from "lucide-react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { commentApi } from "@/api/comment";
-import { videoApi } from "@/api/video";
+import { createPortal } from "react-dom";
+import CommentsList from "./CommentsList";
 
 interface Props {
     videoId: number;
@@ -33,21 +34,16 @@ const handleKeyDown= (e: React.KeyboardEvent) => {
     }
 };
 
-const {data: interactions, isLoading} = useQuery({
-    queryKey: ['interactions', videoId],
-    queryFn: () => videoApi.getInteractions(videoId),
-    staleTime: 1000 * 60 * 5, //5 minutos de cache 
-});
-
 const mutation = useMutation({
     mutationFn: (content: string) => commentApi.create({videoId, content}),
     onSuccess: () => {
-        queryClient.invalidateQueries({queryKey: ['interactions', videoId]});
+        queryClient.invalidateQueries({queryKey: ['interactions-comments', videoId]});
+        queryClient.invalidateQueries({queryKey: ['interactions-meta', videoId]});
         if(inputRef.current) inputRef.current.value = "";
     }
 });
 
-return (
+const modalContent = (
     <div
     ref={panelRef}
     tabIndex={0} //permite que el div resiba foco por el tab
@@ -55,7 +51,7 @@ return (
     role="dialog" //define esto como un dialogo modal
     aria-labelledby="comments_title" //ancla el ID de el hencabezado H3 de el titulo de comentarios
     aria-modal="true" //le indica a el foco que debe quedarce aqui
-    className="fixed right-0 top-0 h-full w-full md:w-96 bg-gray-900 shadow-2xl z-100 flex flex-col animate-in slide-in-from-right duration-300 outline-none">
+    className="fixed right-0 top-0 h-full w-full md:w-96 bg-gray-900 shadow-2xl z-50 flex flex-col animate-in slide-in-from-right duration-300 outline-none">
         {/* Header */}
         <div className="p-4 border-b border-gray-800 flex justify-between items-center">
             <h3 id="comments_title" className="text-white font-bold text-lg">comentarios</h3>
@@ -82,18 +78,13 @@ return (
             </button>    
         </form>
 
-        {/* lista de comentarios */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {isLoading ? <p className="text-gray-500">Cargando... </p> : 
-            interactions?.comments?.map((c, i) => (
-                <article key={i} className="flex flex-col border-b border-gray-800/50 pb-2">
-                    <h4 className="text-blue-400 text-sm font-bold">{c.usernameAuthor}</h4>
-                    <span className="text-gray-500 text-[10px]">{new Date(c.createdAt).toLocaleString()}</span>
-                    <p className="text-white text-sm">{c.content}</p>
-</article>
-            ))
-            }
-        </div>
+{/* lista de comentarios */}
+<CommentsList
+videoId={videoId} />
     </div>
-)
+);
+
+if(typeof window === "undefined") return;
+
+return createPortal(modalContent, document.body);
 }

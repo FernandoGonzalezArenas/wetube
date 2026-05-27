@@ -12,6 +12,9 @@ import java.time.LocalDateTime;
 @Builder
 public class CommentsDto {
 
+    @Schema(description = "ID unico de el comentario", example = "65")
+    private  Long id;
+
     @Schema(description = "nombre unico de el usuario autor de el comentario", example = "fernando_dev")
 private String usernameAuthor;
 
