@@ -13,6 +13,7 @@ public class RabbitMQConfig {
 
 public static final String ADMIN_EXCHANGE="admin.exchange";
 public static final String DELETE_LIKES_QUEUE="delete.video.likes.queue";
+public static final String USER_BAN_LIKES_QUEUE = "user.ban.likes.queue";
 
 @Bean
     public TopicExchange adminExchange(){
@@ -25,10 +26,20 @@ public static final String DELETE_LIKES_QUEUE="delete.video.likes.queue";
 }
 
 @Bean
+public Queue userBanLikesQueue(){
+    return new Queue(USER_BAN_LIKES_QUEUE, true);
+}
+
+@Bean
     public Binding deleteBinding(Queue deleteLikesQueue, TopicExchange adminExchange){
     return BindingBuilder.bind(deleteLikesQueue)
             .to(adminExchange)
             .with("video.deleted");
+}
+
+@Bean
+public Binding userBanLikesBinding(Queue userBanLikesQueue, TopicExchange adminExchange){
+    return BindingBuilder.bind(userBanLikesQueue).to(adminExchange).with("user.baned");
 }
 
 @Bean

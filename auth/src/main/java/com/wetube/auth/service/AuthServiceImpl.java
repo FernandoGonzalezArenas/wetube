@@ -39,8 +39,6 @@ public void register(RegisterRequest request){
     UserEntity user=new UserEntity();
     user.setUsername(request.getUsername());
     user.setPassword(passwordEncoder.encode(request.getPassword()));
-String assignedRole="ROLE_ADMIN".equals(request.getRole()) ? "ROLE_ADMIN" : "ROLE_USER";
-    user.setRole(assignedRole);
     user.setEmail(request.getEmail());
     user.setAddress(request.getAddress());
     user.setPhone(request.getPhone());

@@ -18,5 +18,6 @@ List<LikeEntity> findByUserId(Long userId);
 @Modifying
 @Query("DELETE FROM LikeEntity l WHERE l.videoId = :videoId")
 void deleteByVideoId(@Param("videoId") Long videoId);
+void deleteByUserId(Long userId);
 
 }

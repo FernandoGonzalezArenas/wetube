@@ -29,6 +29,7 @@ http
                 .requestMatchers(HttpMethod.GET, "/videos/long-feed/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/videos/interactions/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/videos/*/play").permitAll()
+                .requestMatchers(HttpMethod.GET, "/videos/*").permitAll()
                 .requestMatchers("/actuator/**").permitAll()
                 .anyRequest().authenticated())
         .addFilterBefore(new GatewayHeaderFilter(), UsernamePasswordAuthenticationFilter.class);

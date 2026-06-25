@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -60,18 +62,20 @@ public UserDto createInitialProfile(Long id, String username){
      return entityToDto(user);
 }
 
-private UserDto entityToDto(UserEntity user){
-        String foto=user.getProfilePictureUrl();
-        String finalUrl=(foto!=null) ?storageService.getPublicUrl(foto) : null;
-    return UserDto.builder()
-            .id(user.getId())
-            .username(user.getUsername())
-            .bio(user.getBio())
-            .profilePictureUrl(finalUrl)
-            .privacyLikes(user.getPrivacyLikes())
-            .privacySubs(user.getPrivacySubs())
-            .createdAt(user.getCreatedAt())
-            .build();
+    @Override
+    public List<UserDto> getProfilesBatch(List<Long> userIds){
+        Authentication auth=SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin=auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        if (!isAdmin){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "acceso denegado a este recurso, necesitas credenciales de administrador");
+        }
+
+        List<UserEntity> users =repository.findAllById(userIds);
+
+        return users.stream()
+                .map(this::entityToDto)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -90,6 +94,20 @@ private UserDto entityToDto(UserEntity user){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "el usuario que se quiere banear no existe");
         }
         repository.deleteById(userId);
+    }
+
+    private UserDto entityToDto(UserEntity user){
+        String foto=user.getProfilePictureUrl();
+        String finalUrl=(foto!=null) ?storageService.getPublicUrl(foto) : null;
+        return UserDto.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .bio(user.getBio())
+                .profilePictureUrl(finalUrl)
+                .privacyLikes(user.getPrivacyLikes())
+                .privacySubs(user.getPrivacySubs())
+                .createdAt(user.getCreatedAt())
+                .build();
     }
 
 }

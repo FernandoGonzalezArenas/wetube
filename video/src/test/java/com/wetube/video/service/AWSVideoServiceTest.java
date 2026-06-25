@@ -10,6 +10,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -53,6 +54,9 @@ private SubscriptionService subscriptionService;
 private UserService userService;
 
 @Mock
+private RabbitTemplate rabbitTemplate;
+
+@Mock
     private S3Presigner s3Presigner;
 @Mock
     private PresignedGetObjectRequest presignedGetObjectRequest;
@@ -64,7 +68,7 @@ private final Long userId=1L;
 
 @BeforeEach
     void setup(){
-    service=new AWSVideoServiceImpl(repository, interactionsService, likeService, subscriptionService, userService, s3Presigner);
+    service=new AWSVideoServiceImpl(repository, interactionsService, likeService, subscriptionService, userService, rabbitTemplate, s3Presigner);
     ReflectionTestUtils.setField(service, "bucketName", "aws-bucket-videos");
 
     UserPrincipal principal=new UserPrincipal(userId, "user-aws");
@@ -239,25 +243,29 @@ assertEquals(HttpStatus.FORBIDDEN, ex.getStatusCode());
 @Test
     @DisplayName("ADMIN: debe retornar detalles completos de el video para el admin")
     void videoInternalDetails_ShouldReturnDetails_WhenUserIsAdmin() throws Exception{
-    Long videoId=1L;
+    List<Long> videoIds=List.of(1L, 2L, 3L);
     UserPrincipal principal=new UserPrincipal(99L, "userAdmin");
     var auth=new UsernamePasswordAuthenticationToken(principal,
             null,
             List.of(new SimpleGrantedAuthority("ROLE_ADMIN")));
     SecurityContextHolder.getContext().setAuthentication(auth);
 
-    VideoEntity video=VideoEntity.builder()
-            .id(1L).title("Video Admin").videoUrl("URL-Original").build();
+    VideoEntity v1=VideoEntity.builder()
+            .id(1L).title("Video Admin1").duration(48L).videoUrl("URL-Original1").build();
+    VideoEntity v2=VideoEntity.builder()
+            .id(2L).title("Video Admin2").duration(78L).videoUrl("URL-Original2").build();
+    VideoEntity v3=VideoEntity.builder()
+            .id(3L).title("Video Admin3").duration(35L).videoUrl("URL-Original3").build();
 
-    when(repository.findById(videoId)).thenReturn(Optional.of(video));
+    when(repository.findAllById(videoIds)).thenReturn(List.of(v1, v2, v3));
 when(s3Presigner.presignGetObject(any(GetObjectPresignRequest.class))).thenReturn(presignedGetObjectRequest);
 when(presignedGetObjectRequest.url()).thenReturn(new URL("http://url-firmada-aws.com"));
 
-    VideoDto results=service.videoInternalDetails(videoId);
+    List<VideoDto> results=service.videoInternalDetails(videoIds);
 
-assertNotNull(results);
-assertEquals("Video Admin", results.getTitle());
-assertEquals("http://url-firmada-aws.com", results.getVideoUrl());
+    assertNotNull(results);
+    assertEquals("Video Admin1", results.get(0).getTitle());
+assertEquals("http://url-firmada-aws.com", results.get(0).getVideoUrl());
 }
 
 @Test
@@ -270,10 +278,11 @@ assertEquals("http://url-firmada-aws.com", results.getVideoUrl());
             List.of(new SimpleGrantedAuthority("ROLE_ADMIN")));
     SecurityContextHolder.getContext().setAuthentication(auth);
 
-    when(repository.findById(99L)).thenReturn(Optional.empty());
+    when(repository.findAllById(List.of(99L))).thenReturn(Collections.emptyList());
 
-    ResponseStatusException ex=assertThrows(ResponseStatusException.class, () -> service.videoInternalDetails(99L));
-    assertEquals(HttpStatus.NOT_FOUND, ex.getStatusCode());
+    List<VideoDto> results=service.videoInternalDetails(List.of(99L));
+
+    assertTrue(results.isEmpty());
 }
 
 @Test

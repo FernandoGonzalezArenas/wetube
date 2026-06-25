@@ -7,23 +7,25 @@ import com.wetube.admin.dto.ReportDetailDto;
 import com.wetube.admin.dto.UserPrincipal;
 import com.wetube.admin.dto.UserProfileDto;
 import com.wetube.admin.dto.VideoMetadataDto;
-import com.wetube.admin.entity.AdminEntity;
-import com.wetube.admin.entity.ReportEntity;
-import com.wetube.admin.entity.ReportStatus;
-import com.wetube.admin.entity.ReportType;
+import com.wetube.admin.entity.*;
 import com.wetube.admin.repository.AdminRepository;
 import com.wetube.admin.repository.ReportRepository;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AdminServiceImpl implements AdminService {
@@ -58,6 +60,11 @@ public class AdminServiceImpl implements AdminService {
         rabbitTemplate.convertAndSend(
                 RabbitMQConfig.ADMIN_EXCHANGE, RabbitMQConfig.VIDEO_DELETE_RK,
                 videoId);
+
+        List<ReportEntity> activeReports=reportRepository.findByTargetIdAndTypeAndStatus(videoId, ReportType.VIDEO, ReportStatus.PENDING);
+
+        activeReports.forEach(report -> report.setStatus(ReportStatus.RESOLVED));
+        reportRepository.saveAll(activeReports);
     }
 
     public void fallbackModerateVideo(Long videoId, String reason, Throwable throwable){
@@ -83,13 +90,19 @@ public class AdminServiceImpl implements AdminService {
 
         rabbitTemplate.convertAndSend(RabbitMQConfig.ADMIN_EXCHANGE, RabbitMQConfig.USER_BAN_RK,
                 userId);
+
+        List<ReportEntity> activeReports=reportRepository.findByTargetIdAndTypeAndStatus(userId, ReportType.USER, ReportStatus.PENDING);
+
+        activeReports.forEach(report -> report.setStatus(ReportStatus.RESOLVED));
+        reportRepository.saveAll(activeReports);
     }
 
     public void fallbackModerateUser(Long userId, String reason, Throwable throwable){
         throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "el servicio user no esta disponible, no se pudo banear la cuenta");
     }
 
-    public void createReport(ReportType type, Long targetId, String reason){
+    @Override
+    public void createReport(ReportType type, Long targetId, PredefinedReason reason, String description){
         UserPrincipal principal=(UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Long reporterId=principal.userId();
 
@@ -98,27 +111,97 @@ public class AdminServiceImpl implements AdminService {
                 .targetId(targetId)
                 .reporterId(reporterId)
                 .reason(reason)
+                .reportDescription(description)
                 .build();
         reportRepository.save(report);
     }
 
     @CircuitBreaker(name = "video", fallbackMethod = "fallbackGetReports")
     public List<ReportDetailDto> getPendingReports(){
-        return reportRepository.findByStatus(ReportStatus.PENDING).stream()
-                .map(report -> {
+        //obtener todos los reportes crudos individuales
+        List<ReportEntity> rawReports=reportRepository.findByStatus(ReportStatus.PENDING);
+        if (rawReports.isEmpty()) return List.of();
+
+        //agrupar los recursos   reportados  con todos sus reportes en un mapa clave valor, siendo el id de el recurso la clave y la lista de todos sus reportes el valor
+        Map<Long, List<ReportEntity>> groupedByTarget = rawReports.stream()
+                .collect(Collectors.groupingBy(ReportEntity::getTargetId));
+
+        //limpiar los ID's de recursos reportados repetidos para consultar su informacion en los microservicios
+        List<Long> videoIds= rawReports.stream()
+                .filter(r -> r.getType() == ReportType.VIDEO)
+                .map(ReportEntity::getTargetId).distinct().toList();
+
+        List<Long> userIds=rawReports.stream()
+                .filter(r -> r.getType() == ReportType.USER)
+                .map(ReportEntity::getTargetId).distinct().toList();
+
+        //pedir la informacion a los microservicios
+        Map<Long, VideoMetadataDto> videoMap= Collections.emptyMap();
+        if (!videoIds.isEmpty()){
+            try {
+                videoMap = videoClient.getVideoDetails(videoIds).stream()
+                        .collect(Collectors.toMap(VideoMetadataDto::getId, v -> v));
+            }catch (Exception e) {
+log.error("error al obtener la informacion de los videos: ", e);
+            }
+        }
+
+        Map<Long, UserProfileDto> userMap=Collections.emptyMap();
+        if (!userIds.isEmpty()){
+            try {
+                userMap = userClient.getProfileDetails(userIds).stream()
+                        .collect(Collectors.toMap(UserProfileDto::getId, u -> u));
+            }catch (Exception e){
+log.error("error al obtener la informacion de los usuarios: ", e);
+            }
+        }
+
+        //declarar como final a los mapas para que java sepa que no se van a modificar
+        final Map<Long, VideoMetadataDto> finalVideoMap= videoMap;
+        final Map<Long, UserProfileDto> finalUserMap= userMap;
+
+        //mapear cada objeto a un ReportDetailDto
+        return groupedByTarget.entrySet().stream().map(entry -> {
+            Long targetId=entry.getKey();
+            List<ReportEntity> reports=entry.getValue();
+            ReportEntity sample=reports.get(0);
+
+            //calcular repeticion de razones concretas
+            Map<String, Long> reasonCount = reports.stream()
+                    .collect(Collectors.groupingBy(r -> r.getReason().name(), Collectors.counting()));
+
+            //obtener todos los comentarios de los reportes
+            List<ReportDetailDto.IndividualReportDto> commentsReports=reports.stream()
+                    .map(r -> new ReportDetailDto.IndividualReportDto(
+                            r.getId(),
+                            r.getReason().name(),
+                            r.getReportDescription() != null ? r.getReportDescription() : "",
+                            r.getCreatedAt()
+                    )).toList();
+
+
                     ReportDetailDto dto=ReportDetailDto.builder()
-                            .reportId(report.getId())
-                            .type(report.getType())
-                            .targetId(report.getTargetId())
-                            .status(report.getStatus().name())
-                            .reason(report.getReason())
-                            .createdAt(report.getCreatedAt())
+                            .type(sample.getType())
+                            .targetId(targetId)
+                            .status(sample.getStatus().name())
+                            .totalReports(reports.size())
+                            .reasonsCount(reasonCount)
+                            .reportDescriptions(commentsReports)
                             .build();
 
-if (report.getType()== ReportType.VIDEO){
-    fillVideoDetails(dto, report.getTargetId());
-}else if (report.getType()==ReportType.USER){
-    fillUserDetails(dto, report.getTargetId());
+if (sample.getType()== ReportType.VIDEO && finalVideoMap.containsKey(targetId)){
+VideoMetadataDto v=finalVideoMap.get(targetId);
+dto.setVideoUserId(v.getUserId());
+dto.setVideoTitle(v.getTitle());
+dto.setVideoDescription(v.getDescription());
+dto.setVideoDuration(v.getDuration());
+dto.setVideoUrl(v.getVideoUrl());
+dto.setThumbnailUrl(v.getThumbnailUrl());
+dto.setVideoCreatedAt(v.getCreatedAt());
+}else if (sample.getType()==ReportType.USER && finalUserMap.containsKey(targetId)){
+UserProfileDto u=finalUserMap.get(targetId);
+dto.setTargetUsername(u.getUsername());
+dto.setProfilePictureUrl(u.getProfilePictureUrl());
 }
 
                     return dto;
@@ -132,28 +215,16 @@ if (report.getType()== ReportType.VIDEO){
     }
 
     //descartar un reporte si no hay nada malo
-    public void dismissReport(Long reportId){
-        ReportEntity report=reportRepository.findById(reportId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-        report.setStatus(ReportStatus.DISMISSED);
-        reportRepository.save(report);
-    }
+    public void dismissReport(Long targetId, ReportType type){
+        java.util.List<ReportEntity> reports=reportRepository.findByTargetIdAndTypeAndStatus(targetId, type, ReportStatus.PENDING);
 
-    private void fillVideoDetails(ReportDetailDto dto, Long videoId){
-        VideoMetadataDto video=videoClient.getVideoDetails(videoId);
-        if (video!=null){
-            dto.setVideoTitle(video.getTitle());
-            dto.setVideoDescription(video.getDescription());
-            dto.setVideoUrl(video.getVideoUrl());
-            dto.setThumbnailUrl(video.getThumbnailUrl());
+        if (reports.isEmpty()){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "no se encontraron reportes pendientes para este recurso.");
         }
-    }
 
-    private void fillUserDetails(ReportDetailDto dto, Long userId){
-        UserProfileDto profileDto=userClient.getProfileUser(userId);
-        if (profileDto!=null){
-            dto.setTargetUsername(profileDto.getUsername());
-        }
+//descartar todos los reportes
+        reports.forEach(report -> report.setStatus(ReportStatus.DISMISSED));
+        reportRepository.saveAll(reports);
     }
 
 }

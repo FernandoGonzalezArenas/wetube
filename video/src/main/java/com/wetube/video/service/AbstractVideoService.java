@@ -7,6 +7,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -26,6 +27,7 @@ protected final  InteractionsService interactionsService;
     protected final LikeService likeService;
 protected final SubscriptionService subscriptionService;
 protected final UserService userService;
+protected  final RabbitTemplate rabbitTemplate;
     protected static final Logger logger= LoggerFactory.getLogger(MinioVideoServiceImpl.class);
 
     public abstract UploadUrlResponse generateUploadUrl(String filename);
@@ -192,7 +194,32 @@ videoRepository.deleteById(videoId);
     }
 
     @Override
-    public VideoDto videoInternalDetails(Long videoId){
+    @Transactional
+    public void processUserBannedInternal(Long userId){
+//buscar los videos de el usuario
+        List<VideoEntity> userVideos=videoRepository.findAllByUserId(userId);
+
+        if (!userVideos.isEmpty()){
+            //extraer los ids de los videos
+            List<Long> videoIds=userVideos.stream().map(VideoEntity::getId).toList();
+
+//borrar los videos de el usuario
+            videoRepository.deleteByUserId(userId);
+
+            //mandar los ids de videos al exchange para borrar likes y comentarios de cada video
+            for (Long videoId : videoIds){
+rabbitTemplate.convertAndSend(
+        "admin.exchange",
+        "video.deleted",
+        videoId
+);
+            }
+            logger.info("se eliminaron de forma fisica / logica {} videos de el usuario baneado {}", videoIds.size(), userId);
+        }
+    }
+
+    @Override
+    public List<VideoDto> videoInternalDetails(List<Long> ids){
 Authentication auth=SecurityContextHolder.getContext().getAuthentication();
 
 boolean isAdmin=auth.getAuthorities().stream()
@@ -201,15 +228,20 @@ if (!isAdmin){
     throw new ResponseStatusException(HttpStatus.FORBIDDEN, "acceso denegado, se requieren permisos de administrador para borrar el video");
 }
 
-        VideoEntity video=videoRepository.findById(videoId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "video no encontrado"));
+        List<VideoEntity> videos=videoRepository.findAllById(ids);
 
-        VideoPlaybackDto playbackDto=getVideoForPlayback(videoId);
-        VideoDto dto=mapToDto(video);
+return videos.stream().map(video -> {
+    VideoDto dto = mapToDto(video);
 
-        dto.setVideoUrl(playbackDto.getVideoUrl());
+try {
+    java.lang.String urlFirmada = getPlaybackUrl(video.getVideoUrl());
 
-return dto;
+    dto.setVideoUrl(urlFirmada);
+}catch (Exception e){
+logger.error("error al construir la URL firmada de reproduccion: ", e);
+}
+    return dto;
+}).collect(Collectors.toList());
     }
 
     protected VideoDto mapToDto(VideoEntity video){

@@ -21,6 +21,9 @@ public class CommentsDto {
     @Schema(description = "ID de el video asociado a el comentario", example = "15")
     private Long videoId;
 
+    @Schema(description = "ID unico de el usuario que hizo el comentario", example = "65")
+    private Long userId;
+
     @Schema(description = "nombre unico de el usuario autor de el comentario", example = "fernando_dev")
     private String usernameAuthor;
 

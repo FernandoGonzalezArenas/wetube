@@ -20,4 +20,6 @@ public interface CommentService {
 
      void deleteCommentsWithVideoId(Long videoId);
 
+     void deleteCommentsByUserId(Long userId);
+
 }

@@ -9,7 +9,7 @@ import { authApi } from "@/api/auth";
 import { SearchBar } from "./SearchBar";
 import { useAuth } from "@/hooks/useAuth";
 import { videoApi } from "@/api/video";
-import { Zap } from "lucide-react";
+import { ShieldAlert, Zap } from "lucide-react";
 import { useState } from "react";
 
 export default function Navbar(){
@@ -20,10 +20,12 @@ const [isLoginShorts, setIsLoginShorts] = useState(false);
 //estado de el login
  const isLoggedIn = !!user;
 
+const isAdmin = user?.role === 'ROLE_ADMIN';
+
 const goToRandomShort = async() => {
     if(isLoginShorts) return;
     setIsLoginShorts(true);
-    
+
     try {
         const shorts = await videoApi.getShortsFeed();
         if (shorts && shorts.length > 0) {
@@ -72,9 +74,19 @@ className={`flex items-center gap-2 hover:text-red-400 transition-colors font-me
     <Zap size={20} fill="currentColor" />
     <span className="hidden sm:inline">shorts</span>
 </button>
-        <div className="flex gap-4">
+        <div className="flex items-center gap-4">
             {isLoggedIn ? (
                 <>
+                {/* opcion de administracion, solo visible si el usuario es administrador */}
+                {isAdmin && (
+                    <Link
+                    href="/admin"
+                    className="flex items-center gap-1 bg-red-600/20 border border-red-500/40 text-red-400 px-3 py-1 rounded hover:bg-red-600 hover:text-white transition text-sm font-semibold"
+                    >
+                        <ShieldAlert size={16} />
+                        <span>Administracion</span>
+                    </Link>
+                )}
                 <Link href="/upload" className="hover:text-gray-300">subir video</Link>
                 <button
                 onClick={handleLogout} className="bg-red-600 px-3 py-1 rounded hover:bg-red-700">

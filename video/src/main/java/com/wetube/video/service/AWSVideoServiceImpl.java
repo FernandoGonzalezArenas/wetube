@@ -2,6 +2,7 @@ package com.wetube.video.service;
 
 import com.wetube.video.dto.UploadUrlResponse;
 import com.wetube.video.repository.VideoRepository;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpStatus;
@@ -24,8 +25,8 @@ public class AWSVideoServiceImpl extends AbstractVideoService {
 @Value("${aws.s3.bucket-videos}")
     private String bucketName;
 
-    public AWSVideoServiceImpl(VideoRepository videoRepository, InteractionsService interactionsService, LikeService likeService, SubscriptionService subscriptionService, UserService userService, S3Presigner s3Presigner){
-    super(videoRepository, interactionsService, likeService, subscriptionService, userService);
+    public AWSVideoServiceImpl(VideoRepository videoRepository, InteractionsService interactionsService, LikeService likeService, SubscriptionService subscriptionService, UserService userService, RabbitTemplate rabbitTemplate, S3Presigner s3Presigner){
+    super(videoRepository, interactionsService, likeService, subscriptionService, userService, rabbitTemplate);
     this.s3Presigner=s3Presigner;
 }
 

@@ -2,6 +2,7 @@ package com.wetube.admin.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wetube.admin.dto.AuditorDto;
+import com.wetube.admin.dto.ReportCreateDto;
 import com.wetube.admin.service.AdminService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,7 +52,7 @@ mockMvc.perform(delete("/admin/videos/1")
 
 @Test
     void shouldReturnOkWhenCreatedReport() throws Exception{
-    AuditorDto dto=new AuditorDto("contenido inapropiado");
+    ReportCreateDto dto=new ReportCreateDto("VIOLENCIA", "contenido muy violento");
 
     mockMvc.perform(post("/admin/reports/VIDEO/1")
             .contentType(MediaType.APPLICATION_JSON)
@@ -68,7 +69,8 @@ mockMvc.perform(delete("/admin/videos/1")
 
 @Test
     void shouldReturnOkWhenMarcDismissReport() throws Exception{
-    mockMvc.perform(patch("/admin/reports/1/dismiss"))
+    mockMvc.perform(patch("/admin/reports/1/dismiss")
+                    .param("type", "VIDEO"))
             .andExpect(status().isOk());
 }
 

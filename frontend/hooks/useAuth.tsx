@@ -93,8 +93,13 @@ await authApi.register(data);
 return true;
  }catch(err: unknown){
     if(axios.isAxiosError(err)){
-setError(err.response?.data || 'error en el registro');
-    }else{
+const backendError = err.response?.data;
+if (backendError && typeof backendError === 'object') {
+setError(backendError.message || backendError.error || 'error en el registro');
+}else{
+    setError(err.response?.data || 'error en el registro');
+}
+        }else{
         setError('ocurrio un error inesperado');
     }
 return false;

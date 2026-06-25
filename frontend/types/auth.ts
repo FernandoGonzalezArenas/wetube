@@ -6,7 +6,6 @@ interfases espejo de los DTO's de AuthController
 export interface RegisterRequest {
     username: string;
     password: string;
-    role?: 'ROLE_USER' | 'ROLE_ADMIN';
     email: string;
     address: string;
     phone: string;

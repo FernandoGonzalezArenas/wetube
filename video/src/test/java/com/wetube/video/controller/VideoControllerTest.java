@@ -147,13 +147,17 @@ mockMvc.perform(delete("/videos/internal/1")
     @DisplayName("GET /videos/internal/details/{id}, debe retornar detalles de el video")
     @WithMockUser(roles = "ADMIN")
     void shouldReturnVideoDetailsForAdmin() throws Exception{
-        VideoDto dto=VideoDto.builder()
+        VideoDto dto1=VideoDto.builder()
                 .title("Admin View").duration(59L).build();
-        when(videoService.videoInternalDetails(1L)).thenReturn(dto);
+        VideoDto dto2=VideoDto.builder()
+                .title("Admin View2").duration(69L).build();
 
-        mockMvc.perform(get("/videos/internal/details/1"))
+        when(videoService.videoInternalDetails(List.of(1L, 2L))).thenReturn(List.of(dto1, dto2));
+
+        mockMvc.perform(get("/videos/internal/details")
+                        .param("ids", "1,2"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.title").value("Admin View"));
+                .andExpect(jsonPath("$[0].title").value("Admin View"));
     }
 
     @Test

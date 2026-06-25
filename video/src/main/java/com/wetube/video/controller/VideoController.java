@@ -183,10 +183,10 @@ try {
                     @ApiResponse(responseCode = "403", description = "no tiene los permisos necesarios para solicitar la informacion de el video"),
                     @ApiResponse(responseCode = "404", description = "el video solicitado no existe")
     })
-    @GetMapping("/internal/details/{videoId}")
-    public ResponseEntity<VideoDto> getVideoDetails(@PathVariable Long videoId){
-VideoDto video = videoService.videoInternalDetails(videoId);
-return ResponseEntity.ok(video);
+    @GetMapping("/internal/details")
+    public ResponseEntity<List<VideoDto>> getVideoDetails(@RequestParam("ids") List<Long> ids){
+List<VideoDto> videos = videoService.videoInternalDetails(ids);
+return ResponseEntity.ok(videos);
     }
 
 }

@@ -21,6 +21,9 @@ public class CommentEntity {
     private Long videoId;
 
 @Column(nullable = false)
+private Long userId;
+
+@Column(nullable = false)
     private String usernameAuthor;
 
 @Column(nullable = false, length = 1200)

@@ -14,7 +14,6 @@ export default function RegisterPage(){
         email: '',
         address: '',
         phone: '',
-        role: 'ROLE_USER'
     })
     const {register, isLoading, error} = useAuth();
 
@@ -62,20 +61,6 @@ className="w-full border p-2 rounded text-black"
 onChange={(e) => setForm({...form, email: e.target.value})}
 />
                 </div>
-
-{/* campo role */}
-<div>
-<label htmlFor="role">tipo de cuenta</label>
-<select
-id="role"
-className="w-full border p-2 rounded text-black mt-1"
-value={form.role}
-onChange={(e) => setForm({...form, role: e.target.value as 'ROLE_USER' | 'ROLE_ADMIN'})}
->
-    <option value="ROLE_USER">Cuenta de usuario</option>
-<option value="ROLE_ADMIN">Cuenta de administrador</option>    
-</select>
-</div>
 
 {/* campo phone */}
 <div>

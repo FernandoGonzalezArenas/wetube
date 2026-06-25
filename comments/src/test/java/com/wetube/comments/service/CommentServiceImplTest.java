@@ -54,6 +54,7 @@ void setupSecurityContext(){
     entitySaved.setId(1L);
     entitySaved.setUsernameAuthor(username);
     entitySaved.setVideoId(1L);
+    entitySaved.setUserId(1L);
     entitySaved.setContent("contenido de prueba");
 
 when(repository.save(any(CommentEntity.class))).thenReturn(entitySaved);

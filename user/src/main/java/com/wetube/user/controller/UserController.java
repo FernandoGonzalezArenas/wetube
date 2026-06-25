@@ -16,6 +16,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
@@ -60,6 +62,11 @@ public class UserController {
     @PutMapping("/me")
     public ResponseEntity<UserDto> updateMyProfile(@Valid @RequestBody UserDtoEntrada profile){
         return ResponseEntity.ok(service.updateProfile(profile));
+    }
+
+    @GetMapping("/details")
+    public ResponseEntity<List<UserDto>> getProfilesDetailsBatch(@RequestParam("ids") List<Long> userIds){
+        return ResponseEntity.ok(service.getProfilesBatch(userIds));
     }
 
     @Operation(summary = "eliminar un perfil de usuario desde administracion",

@@ -31,6 +31,8 @@ List<VideoDto> getShortsFeed(Long lastId, int limit);
 
  void deleteVideoInternal(Long videoId);
 
-VideoDto videoInternalDetails(Long videoId);
+List<VideoDto> videoInternalDetails(List<Long> ids);
+
+void processUserBannedInternal(Long userId);
 
 }

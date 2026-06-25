@@ -28,10 +28,12 @@ public class CommentServiceImpl implements CommentService{
 @Override
     public CommentsDto saveComments(CommentDtoEntrada comment){
     UserPrincipal principal=(UserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    Long userId=principal.userId();
     String username=principal.username();
     CommentEntity comentario=new CommentEntity();
-    comentario.setUsernameAuthor(username);
     comentario.setVideoId(comment.getVideoId());
+    comentario.setUserId(userId);
+    comentario.setUsernameAuthor(username);
     comentario.setContent(comment.getContent());
 
     CommentEntity savedComment = commentRepository.save(comentario);
@@ -92,10 +94,17 @@ String username=principal.username();
 commentRepository.deleteByVideoId(videoId);
  }
 
+ @Override
+ @Transactional
+ public void deleteCommentsByUserId(Long userId){
+    commentRepository.deleteByUserId(userId);
+ }
+
  private CommentsDto mapToDto(CommentEntity comment){
 return CommentsDto.builder()
         .id(comment.getId())
         .videoId(comment.getVideoId())
+        .userId(comment.getUserId())
         .usernameAuthor(comment.getUsernameAuthor())
         .content(comment.getContent())
         .createdAt(comment.getCreatedAt())

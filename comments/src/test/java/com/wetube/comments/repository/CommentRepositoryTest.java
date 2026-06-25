@@ -24,9 +24,9 @@ private TestEntityManager entityManager;
 
 @Test
     void findNextComments_ShouldReturnOnlyCommentsWithLowerId(){
-    repository.save(CommentEntity.builder().videoId(1L).usernameAuthor("usuario1").content("comentario 1").build());
-    repository.save(CommentEntity.builder().videoId(1L).usernameAuthor("usuario1").content("comentario 2").build());
-    CommentEntity ref=repository.save(CommentEntity.builder().videoId(1L).usernameAuthor("usuario1").content("comentario 3").build());
+    repository.save(CommentEntity.builder().videoId(1L).userId(1L).usernameAuthor("usuario1").content("comentario 1").build());
+    repository.save(CommentEntity.builder().videoId(1L).userId(1L).usernameAuthor("usuario1").content("comentario 2").build());
+    CommentEntity ref=repository.save(CommentEntity.builder().videoId(1L).userId(1L).usernameAuthor("usuario1").content("comentario 3").build());
 
     Long lastId=ref.getId();
 
@@ -39,8 +39,8 @@ private TestEntityManager entityManager;
 
     @Test
 void shouldCountCommentsByVideoId(){
-repository.save(CommentEntity.builder().videoId(1L).usernameAuthor("usuario1").content("comentario 1").build());
-        repository.save(CommentEntity.builder().videoId(1L).usernameAuthor("usuario1").content("comentario 2").build());
+repository.save(CommentEntity.builder().videoId(1L).userId(1L).usernameAuthor("usuario1").content("comentario 1").build());
+        repository.save(CommentEntity.builder().videoId(1L).userId(1L).usernameAuthor("usuario1").content("comentario 2").build());
 
     Long count =repository.countByVideoId(1L);
 
@@ -52,7 +52,7 @@ repository.save(CommentEntity.builder().videoId(1L).usernameAuthor("usuario1").c
     @DisplayName("debe eliminar fisicamente comentarios de un video")
     void shouldDeleteCommentsOfVideo(){
     CommentEntity comment=repository.save(CommentEntity.builder()
-            .videoId(1L).usernameAuthor("yo").content("mi comentario").build());
+            .videoId(1L).userId(1L).usernameAuthor("yo").content("mi comentario").build());
     Long id=comment.getId();
 
     entityManager.flush();

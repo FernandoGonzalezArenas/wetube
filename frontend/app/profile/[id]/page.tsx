@@ -12,14 +12,17 @@ import { useAuth } from "@/hooks/useAuth";
 import EditProfileModal from "@/components/EditProfileModal";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import ReportButton from "@/components/ReportButton";
 
 export default function ProfilePage(){
     const { id } = useParams();
 const userId = Number(id);
-const { isOwner} = useAuth();
-const isMyProfile = isOwner(userId);
+const {user, isOwner} = useAuth();
+const isMyProfile =!!user ? isOwner(userId) : false;
 const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 const loadMoreRef = useRef<HTMLDivElement>(null);
+
+console.log(`identificador de el perfil solicitado = ${userId}\nperfil propio o anonimo = ${isMyProfile}`);
 
 //obtener los datos de el usuario
 const {data: perfil, isLoading: loadingUser } = useQuery({
@@ -63,7 +66,7 @@ if(!el) return;
     observer.observe(el);
 
 return () => observer.disconnect();
-}, [fetchNextPage, hasNextPage, isFetchingNextPage]);
+}, [fetchNextPage, hasNextPage, isFetchingNextPage, videos]);
 
 //obtener estadisticas de subscripcion
 const {data: stats } = useQuery({
@@ -72,8 +75,6 @@ const {data: stats } = useQuery({
 });
 
 if(loadingUser) return <div className="p-10 text-white">Cargando perfil de usuario...</div>;
-
-console.log(`es mi perfil = ${isMyProfile}\nmostrar likes = ${perfil?.privacyLikes}\nmostrar subscripciones = ${perfil?.privacySubs}`);
 
 return (
  <div className="min-h-screen bg-black text-white">
@@ -134,8 +135,11 @@ className="flex items-center gap-2 px-6 py-2 bg-gray-800 hover:bg-gray-700 round
 editar perfil    
 </button>
     ) : (
- <SubscribeButton userId={userId} />
-    )}   
+<>
+<SubscribeButton userId={userId} />
+     <ReportButton type="USER" targetId={userId} />                    
+</>
+ )}   
 </div>
     </div>    
 
@@ -151,7 +155,7 @@ editar perfil
         </div>    
 
 {/* pestañas de secciones de el perfil */}
-<div className="flex flex-row border-b border-gray-800 mt-6 gap-6 text-sm font font-semibold">
+<div className="flex flex-row border-b border-gray-800 mt-6 gap-6 text-sm font-semibold">
     {(isMyProfile || perfil?.privacyLikes) && (
         <Link href={`/profile/${userId}/liked`} className="text-gray-400 hover:text-white pb-3 px-1 transition-colors">
             videos gustados

@@ -109,6 +109,8 @@ services:
         condition: service_started
       minio:
         condition: service_started
+      rabbitmq:
+        condition: service_started
     environment:
       - user_db=${user_db_env}
       - password_db=${password_db_env}
@@ -120,8 +122,12 @@ services:
       - SPRING_CLOUD_CONSUL_HOST=consul
       - MINIO_URL=http://minio:9000
       - STORAGE_TYPE=minio
+      - RABBIT_HOST=rabbitmq-wetube
+      - RABBIT_USER=guest
+      - RABBIT_PASSWORD=guest
 
-#microservicio comments
+
+  #microservicio comments
   comments-service:
     networks:
       - wetube-network

@@ -14,4 +14,5 @@ public interface LikeService {
 
 void deleteLikesVideo(Long videoId);
 
+void deleteLikesByUserId(Long userId);
 }

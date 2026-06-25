@@ -11,6 +11,8 @@ import Link from "next/link";
 import {Play, Pause, RotateCcw, RotateCw, Volume2, VolumeX, Heart, MessageCircle, Share2, User, Send } from "lucide-react";
 import CommentsList from "./CommentsList";
 import { commentApi } from "@/api/comment";
+import ReportButton from "./ReportButton";
+import { useAuth } from "@/hooks/useAuth";
 
 interface Props {
     video: VideoPlayback;
@@ -27,6 +29,7 @@ const videoId = video.id;
 const [isMuted, setIsMuted ] = useState(false);
 const [progress, setProgress] = useState(0);
 const [duration, setDuration ]= useState(video.duration || 0);
+const { isOwner } = useAuth();
 
 useEffect(() => {
 const timer = setTimeout(() => {
@@ -46,6 +49,8 @@ const {data: autor} = useQuery({
     queryKey: ['user_autor', video.userId],
     queryFn: () => userApi.getProfile(video.userId),
 });
+
+const isMyVideo = isOwner(video.userId);
 
 //mutacion de el like
 const likeMutation = useMutation({
@@ -268,7 +273,11 @@ return (
                                         <Share2 size={20} />
                                     <span className="hidden sm:inline">compartir</span>
                                     </button>
-                                </div>
+
+{!isMyVideo && (
+            <ReportButton type="VIDEO" targetId={video.id} />                    
+)}
+            </div>
             </div>
 
             {/* descripcion */}

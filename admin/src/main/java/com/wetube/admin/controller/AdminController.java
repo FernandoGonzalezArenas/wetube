@@ -1,7 +1,9 @@
 package com.wetube.admin.controller;
 
 import com.wetube.admin.dto.AuditorDto;
+import com.wetube.admin.dto.ReportCreateDto;
 import com.wetube.admin.dto.ReportDetailDto;
+import com.wetube.admin.entity.PredefinedReason;
 import com.wetube.admin.entity.ReportType;
 import com.wetube.admin.service.AdminService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -11,9 +13,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -57,8 +61,13 @@ private final AdminService adminService;
             @ApiResponse(responseCode = "200", description = "reporte creado exitosamente")
                     })
 @PostMapping("/reports/{type}/{targetId}")
-    public ResponseEntity<String> createReport(@PathVariable ReportType type,  @PathVariable Long targetId, @RequestBody AuditorDto datos){
-    adminService.createReport(type, targetId, datos.getReason());
+    public ResponseEntity<String> createReport(@PathVariable ReportType type,  @PathVariable Long targetId, @RequestBody ReportCreateDto datos){
+        try {
+            PredefinedReason reason = PredefinedReason.valueOf(datos.getReason().toUpperCase());
+            adminService.createReport(type, targetId, reason, datos.getDescription());
+        } catch (IllegalArgumentException e){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "El motivo del reporte no es válido.");
+        }
     return ResponseEntity.ok("reporte creado y enviado a revision");
 }
 
@@ -80,10 +89,10 @@ private final AdminService adminService;
             @ApiResponse(responseCode = "200", description = "reporte marcado con exito"),
                     @ApiResponse(responseCode = "404", description = "el reporte solicitado no existe")
                     })
-@PatchMapping("/reports/{reportId}/dismiss")
+@PatchMapping("/reports/{targetId}/dismiss")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<String> dismiss(@PathVariable Long reportId){
-    adminService.dismissReport(reportId);
+    public ResponseEntity<String> dismiss(@PathVariable Long targetId, @RequestParam("type") ReportType type){
+    adminService.dismissReport(targetId, type);
     return ResponseEntity.ok("reporte descartado por el administrador");
 }
 

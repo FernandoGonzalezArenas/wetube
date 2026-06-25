@@ -16,4 +16,9 @@ private final LikeService likeService;
 likeService.deleteLikesVideo(videoId);
 }
 
+@RabbitListener(queues = "user.ban.likes.queue")
+    private void consumerUserBanned(Long userId){
+    likeService.deleteLikesByUserId(userId);
+}
+
 }

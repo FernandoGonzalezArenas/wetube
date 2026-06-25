@@ -16,4 +16,10 @@ public class ConsumerRabbitListener {
 commentService.deleteCommentsWithVideoId(videoId);
 }
 
+@RabbitListener(queues = "user.ban.comments.queue")
+    public void consumerCommentsUserBanned(Long userId){
+    commentService.deleteCommentsByUserId(userId);
+}
+
+
 }

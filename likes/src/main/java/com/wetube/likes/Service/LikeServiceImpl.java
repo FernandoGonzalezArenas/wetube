@@ -108,4 +108,10 @@ public  long countLikes(Long videoId){
 likeRepository.deleteByVideoId(videoId);
 }
 
+@Override
+    @Transactional
+    public void deleteLikesByUserId(Long userId){
+        likeRepository.deleteByUserId(userId);
+}
+
 }

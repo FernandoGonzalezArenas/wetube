@@ -11,6 +11,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -48,6 +49,9 @@ private SubscriptionService subscriptionService;
 private UserService userService;
 
 @Mock
+private RabbitTemplate rabbitTemplate;
+
+@Mock
     private MinioClient minioClient;
 private MinioVideoServiceImpl service;
 
@@ -56,7 +60,7 @@ private Long userId=55L;
 @BeforeEach
     void setup(){
     //instanciamos la verdadera implementacion de la clase
-    service=new MinioVideoServiceImpl(repository, interactionsService, likeService, subscriptionService, userService, minioClient);
+    service=new MinioVideoServiceImpl(repository, interactionsService, likeService, subscriptionService, userService, rabbitTemplate, minioClient);
 
     //inyectamos valores de value con ReflectionTestUtils
     ReflectionTestUtils.setField(service, "bucketName", "test-bucket");
@@ -228,7 +232,7 @@ verify(repository).deleteById(videoId);
 @Test
     @DisplayName("ADMIN: debe retornar detalles completos de el video para el admin")
     void videoInternalDetails_ShouldReturnDetails_WhenUserIsAdmin() throws Exception{
-Long videoId=1L;
+List<Long> videoIds=List.of(1L, 2L, 3L);
 UserPrincipal principal=new UserPrincipal(99L, "userAdmin");
 var auth=new UsernamePasswordAuthenticationToken(
         principal,
@@ -236,16 +240,21 @@ var auth=new UsernamePasswordAuthenticationToken(
         List.of(new SimpleGrantedAuthority("ROLE_ADMIN")));
 SecurityContextHolder.getContext().setAuthentication(auth);
 
-VideoEntity video=VideoEntity.builder()
-        .id(videoId).title("Video Admin").duration(38L).videoUrl("URL-Original").build();
-when(repository.findById(videoId)).thenReturn(Optional.of(video));
+VideoEntity v1=VideoEntity.builder()
+        .id(1L).title("Video Admin1").duration(48L).videoUrl("URL-Original1").build();
+    VideoEntity v2=VideoEntity.builder()
+            .id(2L).title("Video Admin2").duration(78L).videoUrl("URL-Original2").build();
+    VideoEntity v3=VideoEntity.builder()
+            .id(3L).title("Video Admin3").duration(35L).videoUrl("URL-Original3").build();
+
+when(repository.findAllById(videoIds)).thenReturn(List.of(v1, v2, v3));
 when(minioClient.getPresignedObjectUrl(any())).thenReturn("http://url-firmada.com");
 
-VideoDto results=service.videoInternalDetails(videoId);
+List<VideoDto> results=service.videoInternalDetails(videoIds);
 
 assertNotNull(results);
-assertEquals("Video Admin", results.getTitle());
-assertEquals("http://url-firmada.com", results.getVideoUrl());
+assertEquals("Video Admin1", results.get(0).getTitle());
+assertEquals("http://url-firmada.com", results.get(0).getVideoUrl());
 }
 
 @Test
@@ -258,10 +267,11 @@ assertEquals("http://url-firmada.com", results.getVideoUrl());
             List.of(new SimpleGrantedAuthority("ROLE_ADMIN")));
     SecurityContextHolder.getContext().setAuthentication(auth);
 
-    when(repository.findById(88L)).thenReturn(Optional.empty());
+    when(repository.findAllById(List.of(88L))).thenReturn(Collections.emptyList());
 
-ResponseStatusException ex=assertThrows(ResponseStatusException.class, () -> service.videoInternalDetails(88L));
-assertEquals(HttpStatus.NOT_FOUND, ex.getStatusCode());
+    List<VideoDto> results=service.videoInternalDetails(List.of(88L));
+
+    assertTrue(results.isEmpty());
 }
 
 @Test

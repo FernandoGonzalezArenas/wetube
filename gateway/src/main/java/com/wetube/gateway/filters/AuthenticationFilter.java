@@ -63,6 +63,7 @@ String method=request.getMethod().name();
         path.startsWith("/subs/") ||
 //        path.matches("/subs/\\d+/status") ||
         path.matches("/videos/\\d+/play") ||
+        path.matches("/videos/\\d+") ||
         path.equals("/videos/shorts-feed") ||
         path.equals("/videos/long-feed") ||
         path.equals("/videos/search")
@@ -86,7 +87,9 @@ try {
 String userId=jwtUtil.extractUserId(token);
 String role=jwtUtil.extractRole(token);
 
-if (path.startsWith("/admin") && !"ROLE_ADMIN".equals(role)){
+boolean isReportCreation = method.equals("POST") && path.startsWith("/admin/reports/");
+
+if (path.startsWith("/admin") && !isReportCreation && !"ROLE_ADMIN".equals(role)){
     return unauthorizedResponse(exchange, "acceso denegado, se requieren privilegios de administrador");
 }
 

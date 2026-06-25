@@ -19,4 +19,6 @@ public interface CommentRepository extends JpaRepository<CommentEntity, Long> {
 @Modifying
 @Query("DELETE FROM CommentEntity c WHERE c.videoId = :videoId")
 void deleteByVideoId(@Param("videoId") Long videoId);
+void deleteByUserId(Long userId);
+
 }

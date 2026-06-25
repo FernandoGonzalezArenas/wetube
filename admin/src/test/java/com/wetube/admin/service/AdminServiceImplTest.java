@@ -6,10 +6,7 @@ import com.wetube.admin.config.RabbitMQConfig;
 import com.wetube.admin.dto.ReportDetailDto;
 import com.wetube.admin.dto.UserPrincipal;
 import com.wetube.admin.dto.VideoMetadataDto;
-import com.wetube.admin.entity.AdminEntity;
-import com.wetube.admin.entity.ReportEntity;
-import com.wetube.admin.entity.ReportStatus;
-import com.wetube.admin.entity.ReportType;
+import com.wetube.admin.entity.*;
 import com.wetube.admin.repository.AdminRepository;
 import com.wetube.admin.repository.ReportRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -54,10 +51,14 @@ public class AdminServiceImplTest {
     var auth=new UsernamePasswordAuthenticationToken(principal, null, null);
     SecurityContextHolder.getContext().setAuthentication(auth);
 }
+
 @Test
     void moderateUser_ShouldBanUserAndNotify(){
     Long targetId=99L;
     String reason="spam detectado";
+
+    when(reportRepository.findByTargetIdAndTypeAndStatus(targetId, ReportType.USER, ReportStatus.PENDING))
+            .thenReturn(List.of());
 
     adminService.moderateUser(targetId, reason);
 
@@ -67,6 +68,7 @@ verify(userClient, times(1)).banUserInternal(targetId);
     assertEquals("BAN_USER", adminCaptor.getValue().getActionType());
     assertEquals(targetId, adminCaptor.getValue().getTargetId());
     assertEquals(1L, adminCaptor.getValue().getAdminId());
+
     verify(rabbitTemplate).convertAndSend(
             eq(RabbitMQConfig.ADMIN_EXCHANGE),
             eq(RabbitMQConfig.USER_BAN_RK),
@@ -78,10 +80,14 @@ verify(userClient, times(1)).banUserInternal(targetId);
     Long videoId=500L;
     String reason="contenido inapropiado";
 
+    when(reportRepository.findByTargetIdAndTypeAndStatus(videoId, ReportType.VIDEO, ReportStatus.PENDING))
+            .thenReturn(List.of());
+
     adminService.moderateVideo(videoId, reason);
 
     verify(videoClient, times(1)).deleteVideoInternal(videoId);
 
+    verify(adminRepository, times(1)).save(any(AdminEntity.class));
     verify(rabbitTemplate).convertAndSend(
             eq(RabbitMQConfig.ADMIN_EXCHANGE),
             eq(RabbitMQConfig.VIDEO_DELETE_RK),
@@ -92,32 +98,35 @@ verify(userClient, times(1)).banUserInternal(targetId);
     void shouldCreateReport(){
     ReportType type=ReportType.VIDEO;
     Long targetId=5L;
-    String reason="contenido inapropiado";
+    PredefinedReason reason=PredefinedReason.VIOLENCIA;
+    String description="el video muestra esenas explisitas";
 
-    adminService.createReport(type, targetId, reason);
+    adminService.createReport(type, targetId, reason, description);
 
     ArgumentCaptor<ReportEntity> reportCaptor=ArgumentCaptor.forClass(ReportEntity.class);
 
     verify(reportRepository, times(1)).save(reportCaptor.capture());
     assertEquals(1L, reportCaptor.getValue().getReporterId());
+    assertEquals(PredefinedReason.VIOLENCIA, reportCaptor.getValue().getReason());
+    assertEquals(description, reportCaptor.getValue().getReportDescription());
 }
 
 @Test
     void shouldGetPendingReports(){
     VideoMetadataDto videoMetadataDto=VideoMetadataDto.builder()
-            .id(2L)
+            .id(20L)
                     .title("mi video")
                             .description("la descripcion")
                                     .videoUrl("url_del_video")
                                             .thumbnailUrl("thumbnail.jpg")
                                                     .build();
-when(videoClient.getVideoDetails(anyLong())).thenReturn(videoMetadataDto);
+when(videoClient.getVideoDetails(anyList())).thenReturn(List.of(videoMetadataDto));
 
     ReportEntity r1=ReportEntity.builder()
             .targetId(20L)
             .type(ReportType.VIDEO)
             .reporterId(1L)
-            .reason("violencia")
+            .reason(PredefinedReason.VIOLENCIA)
             .status(ReportStatus.PENDING)
             .createdAt(LocalDateTime.now())
             .build();
@@ -125,7 +134,7 @@ when(videoClient.getVideoDetails(anyLong())).thenReturn(videoMetadataDto);
             .targetId(30L)
             .type(ReportType.VIDEO)
             .reporterId(1L)
-            .reason("violencia")
+            .reason(PredefinedReason.SPAM)
             .status(ReportStatus.PENDING)
             .createdAt(LocalDateTime.now())
             .build();
@@ -144,24 +153,28 @@ assertTrue(reports.stream().anyMatch(r -> r.getTargetId().equals(30L)));
             .targetId(20L)
             .type(ReportType.VIDEO)
             .reporterId(1L)
-            .reason("violencia")
+            .reason(PredefinedReason.VIOLENCIA)
             .status(ReportStatus.PENDING)
             .createdAt(LocalDateTime.now())
             .build();
-when(reportRepository.findById(1L)).thenReturn(Optional.of(r1));
 
-adminService.dismissReport(1L);
+    Long targetId=20L;
+    ReportType type=ReportType.VIDEO;
+
+when(reportRepository.findByTargetIdAndTypeAndStatus(targetId, type, ReportStatus.PENDING)).thenReturn(List.of(r1));
+
+adminService.dismissReport(targetId, type);
 
 assertEquals(ReportStatus.DISMISSED, r1.getStatus());
-verify(reportRepository, times(1)).save(r1);
+verify(reportRepository, times(1)).saveAll(anyList());
 }
 
 @Test
     void dismissReport_ShouldThrowNotFound_WhenIdDoesNotExist(){
-    when(reportRepository.findById(anyLong())).thenReturn(Optional.empty());
+    when(reportRepository.findByTargetIdAndTypeAndStatus(999L, ReportType.VIDEO, ReportStatus.PENDING)).thenReturn(List.of());
 
     assertThrows(ResponseStatusException.class, () ->{
-        adminService.dismissReport(999L);
+        adminService.dismissReport(999L, ReportType.VIDEO);
     });
 }
 

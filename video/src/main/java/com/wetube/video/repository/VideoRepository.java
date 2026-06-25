@@ -39,5 +39,7 @@ public interface VideoRepository extends JpaRepository<VideoEntity, Long> {
     //obtener los videos subidos por el usuario
     @Query("SELECT v FROM VideoEntity v WHERE v.userId = :userId AND (:lastId IS NULL OR v.id < :lastId) ORDER BY v.id DESC")
     List<VideoEntity> findByUserId(@Param("userId") Long userId, @Param("lastId") Long lastId, Pageable pageable);
+    List<VideoEntity> findAllByUserId(Long userId);
+    void deleteByUserId(Long userId);
 
 }

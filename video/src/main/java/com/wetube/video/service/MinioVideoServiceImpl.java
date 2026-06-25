@@ -7,6 +7,7 @@ import io.minio.MinioClient;
 import io.minio.http.Method;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
@@ -28,8 +29,8 @@ private static final Logger logger= LoggerFactory.getLogger(MinioVideoServiceImp
 @Value("${minio.url}")
 private String minioUrl;
 
-    public MinioVideoServiceImpl(VideoRepository videoRepository, InteractionsService interactionsService, LikeService likeService, SubscriptionService subscriptionService, UserService userService, MinioClient minioClient){
-    super(videoRepository, interactionsService, likeService, subscriptionService, userService);
+    public MinioVideoServiceImpl(VideoRepository videoRepository, InteractionsService interactionsService, LikeService likeService, SubscriptionService subscriptionService, UserService userService, RabbitTemplate rabbitTemplate, MinioClient minioClient){
+    super(videoRepository, interactionsService, likeService, subscriptionService, userService, rabbitTemplate);
     this.minioClient=minioClient;
 }
 

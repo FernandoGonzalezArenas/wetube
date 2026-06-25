@@ -11,6 +11,8 @@ import Link from "next/link";
 import { userApi } from "@/api/user";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import ReportButton from "./ReportButton";
+import { useAuth } from "@/hooks/useAuth";
 
     interface Props {
         video: VideoPlayback;
@@ -25,6 +27,7 @@ import { useRouter } from "next/navigation";
 const [showComments, setShowComments] = useState(false);
 const queryClient = useQueryClient();
 const router = useRouter();
+const { isOwner} = useAuth();
 
 useEffect(() => {
     const timer = setTimeout(() => {
@@ -60,6 +63,8 @@ const {data: autor} = useQuery({
     queryKey: ['usuario_autor', video.userId],
     queryFn: () => userApi.getProfile(video.userId),
 });
+
+const isMyVideo = isOwner(video.userId);
 
 //usar flechas laterales para atrasar o adelantar el video
 const handleSec = (seconds: number) =>{
@@ -220,6 +225,14 @@ e.stopPropagation();
                 <button className="p-3 bg-gray-800/50 rounded-full hover:bg-green-500/50 transition-colors" title="compartir">
                 <Share2 className="text-white" size={30} />
                 </button>
+
+{!isMyVideo && (
+            <ReportButton 
+            type="VIDEO" 
+            targetId={video.id} 
+            onlyIcon={true}
+            onActionComplete={() => containerRef.current?.focus()}/>                    
+)}
         </div>
 
 {/* panel de comentarios */}

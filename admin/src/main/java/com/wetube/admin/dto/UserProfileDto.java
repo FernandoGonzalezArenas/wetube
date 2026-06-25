@@ -14,6 +14,9 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class UserProfileDto {
 
+    @Schema(description = "ID unico de el usuario", example = "76")
+    private Long id;
+
     @Schema(description = "nombre unico de usuario", example = "fernando_dev")
 private String username;
 

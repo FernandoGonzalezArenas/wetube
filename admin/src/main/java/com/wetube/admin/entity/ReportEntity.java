@@ -25,7 +25,12 @@ public class ReportEntity {
 private ReportType type; //tipo de el recurso
 
     private Long reporterId; //id de el usuario que reporta
-    private String reason; //motivo
+
+    @Enumerated(EnumType.STRING)
+    private PredefinedReason reason; //motivo
+
+@Column(columnDefinition = "TEXT")
+    private String reportDescription;
 
     @Builder.Default
 @Enumerated(EnumType.STRING)

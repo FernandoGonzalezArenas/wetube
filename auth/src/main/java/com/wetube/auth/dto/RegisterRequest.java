@@ -22,9 +22,6 @@ public class RegisterRequest {
     @Size(min = 8, max = 200, message = "la contraseña debe tener almenos 8 caracteres")
     private String password;
 
-    @Schema(description = "rol del usuario", example = "ROLE_USER", allowableValues = {"ROLE_USER", "ROLE_ADMIN"})
-    private String role;
-
     @Schema(description = "correo electronico", example = "contacto@wetube.com")
     @NotBlank(message = "el correo es obligatorio")
 @Email(message = "debe ser un correo electronico valido")
