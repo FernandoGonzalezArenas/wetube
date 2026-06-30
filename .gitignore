@@ -1,12 +1,20 @@
-# Documentación o archivos innecesarios
+# =========================================================================
+# teakter-backend - .gitignore oficial para el repositorio de Backend
+# =========================================================================
+
+# Documentación del framework
 HELP.md
 
-# Archivos compilados y generados por Maven/Gradle
+# Archivos compilados y generados por Maven / Gradle
 **/target/
 build/
 !.mvn/wrapper/maven-wrapper.jar
 
-# Spring Boot (STS)
+# Archivos de configuración de IDEs (IntelliJ IDEA, Eclipse, NetBeans)
+.idea/
+*.iws
+*.iml
+*.ipr
 .apt_generated
 .classpath
 .factorypath
@@ -14,14 +22,6 @@ build/
 .settings
 .springBeans
 .sts4-cache
-
-# IntelliJ IDEA
-.idea/
-*.iws
-*.iml
-*.ipr
-
-# NetBeans
 /nbproject/private/
 /nbbuild/
 /dist/
@@ -31,81 +31,51 @@ build/
 # VS Code
 .vscode/
 
-# Maven Wrapper (opcionalmente puedes incluirlo en Git)
+# Maven Wrapper y Gradle
 mvnw
 mvnw.cmd
 .mvn/
-
-# Gradle (si usas Gradle en lugar de Maven)
 .gradle/
 gradle-app.setting
 
-# Logs y archivos temporales
+# Logs y archivos temporales del sistema
 logs/
 log/
 *.log
-
-# Configuraciones del sistema operativo
 .DS_Store
 Thumbs.db
 
-# Evitar que recursos de `src/main/resources` sean ignorados accidentalmente
+# =========================================================================
+# CONFIGURACIÓN DE RECURSOS DE SPRING BOOT / PYTHON
+# =========================================================================
+
+# Asegurar que los recursos esenciales de Java no se ignoren
 !src/main/resources/static/
 !src/main/resources/templates/
 !application.properties
 !application.yml
 
 # --- SECCIÓN DE MULTIMEDIA Y ARCHIVOS PESADOS ---
+# Bloquea archivos de video pesados en cualquier subcarpeta (como test-data)
 **/test-data/
 *.mp4
 *.mkv
 *.avi
 *.mov
+
+# Permitir imágenes de configuración del sistema pero ignorar fotos sueltas
+# (Ideal si usas almacenamiento local temporal en desarrollo)
 *.jpg
 *.png
-
-# EXCEPCIONES: Permitir imágenes necesarias para la UI del frontend
-!**/frontend/public/**/*.png
-!**/frontend/public/**/*.jpg
-!**/frontend/public/**/*.svg
-!**/frontend/public/**/*.ico
 
 # --- SECCIÓN DE DOCUMENTOS Y TEXTO ---
 **/*.txt
 **/*.http
 **/.editorconfig
 
-# EXCEPCIÓN: Permitir archivos de configuración específicos
-!**/frontend/public/robots.txt
-!**/frontend/public/manifest.json
-!HELP.md
-
-# --- CREDENCIALES ---
+# --- VARIABLES DE ENTORNO Y CREDENCIALES (CRÍTICO POR SEGURIDAD) ---
 .env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
-
-# --- NEXT.JS / FRONTEND (wetube/frontend/) ---
-
-# Dependencias (Evita subir miles de archivos de node)
-**/frontend/node_modules/
-
-# Compilación de Next.js
-**/frontend/.next/
-**/frontend/out/
-**/frontend/build/
-
-# Logs de npm/yarn
-**/frontend/npm-debug.log*
-**/frontend/yarn-debug.log*
-**/frontend/yarn-error.log*
-
-# Variables de entorno locales (SEGURIDAD)
-**/frontend/.env*.local
-**/frontend/.env
-
-# Caché de herramientas
-**/frontend/.eslintcache
-**/frontend/.next/cache/
