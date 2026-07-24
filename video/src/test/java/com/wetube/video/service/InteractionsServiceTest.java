@@ -1,11 +1,11 @@
-package com.wetube.video.service;
+package com.teakter.video.service;
 
-import com.wetube.video.client.CommentsClient;
-import com.wetube.video.client.LikesClient;
-import com.wetube.video.client.SubscriptionsClient;
-import com.wetube.video.dto.CommentsDto;
-import com.wetube.video.dto.IdsDto;
-import com.wetube.video.dto.LikeStatus;
+import com.teakter.video.client.CommentsClient;
+import com.teakter.video.client.LikesClient;
+import com.teakter.video.client.SubscriptionsClient;
+import com.teakter.video.dto.CommentsDto;
+import com.teakter.video.dto.IdsDto;
+import com.teakter.video.dto.LikeStatus;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

@@ -1,8 +1,8 @@
-package com.wetube.auth.service;
+package com.teakter.auth.service;
 
 import java.util.Optional;
 
-import com.wetube.auth.repository.RefreshTokenRepository;
+import com.teakter.auth.repository.RefreshTokenRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -20,11 +20,11 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.wetube.auth.dto.AuthResponse;
-import com.wetube.auth.dto.LoginRequest;
-import com.wetube.auth.dto.RegisterRequest;
-import com.wetube.auth.entity.UserEntity;
-import com.wetube.auth.repository.UserRepository;
+import com.teakter.auth.dto.AuthResponse;
+import com.teakter.auth.dto.LoginRequest;
+import com.teakter.auth.dto.RegisterRequest;
+import com.teakter.auth.entity.UserEntity;
+import com.teakter.auth.repository.UserRepository;
 
 public class AuthServiceImplTest {
 

@@ -1,6 +1,6 @@
-package com.wetube.comments.repository;
+package com.teakter.comments.repository;
 
-import com.wetube.comments.entity.CommentEntity;
+import com.teakter.comments.entity.CommentEntity;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

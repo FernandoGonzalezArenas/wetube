@@ -1,4 +1,4 @@
-package com.wetube.subscription;
+package com.teakter.subscription;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

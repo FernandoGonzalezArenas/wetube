@@ -1,6 +1,6 @@
-package com.wetube.likes.repository;
+package com.teakter.likes.repository;
 
-import com.wetube.likes.entity.LikeEntity;
+import com.teakter.likes.entity.LikeEntity;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

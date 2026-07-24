@@ -10,10 +10,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 
-    <groupId>com.wetube</groupId>
-    <artifactId>wetube-parent</artifactId>
+    <groupId>com.teakter</groupId>
+    <artifactId>teakter-parent</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <packaging>pom</packaging> <name>wetube-parent</name>
+    <packaging>pom</packaging> <name>teakter-parent</name>
     <description>Proyecto raíz para gestionar microservicios</description>
 
     <modules>

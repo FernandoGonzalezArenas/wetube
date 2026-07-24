@@ -1,6 +1,6 @@
-package com.wetube.video.security;
+package com.teakter.video.security;
 
-import com.wetube.video.dto.UserPrincipal;
+import com.teakter.video.dto.UserPrincipal;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

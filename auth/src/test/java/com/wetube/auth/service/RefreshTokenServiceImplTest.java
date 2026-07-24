@@ -1,4 +1,4 @@
-package com.wetube.auth.service;
+package com.teakter.auth.service;
 
 import java.time.Instant;
 import java.util.List;
@@ -20,12 +20,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.wetube.auth.dto.AuthResponse;
-import com.wetube.auth.entity.RefreshTokenEntity;
-import com.wetube.auth.entity.UserEntity;
-import com.wetube.auth.repository.RefreshTokenRepository;
-import com.wetube.auth.security.CustomUserDetails;
-import com.wetube.auth.security.JwtUtil;
+import com.teakter.auth.dto.AuthResponse;
+import com.teakter.auth.entity.RefreshTokenEntity;
+import com.teakter.auth.entity.UserEntity;
+import com.teakter.auth.repository.RefreshTokenRepository;
+import com.teakter.auth.security.CustomUserDetails;
+import com.teakter.auth.security.JwtUtil;
 
 public class RefreshTokenServiceImplTest {
 

@@ -1,10 +1,10 @@
-package com.wetube.user.service;
+package com.teakter.user.service;
 
-import com.wetube.user.dto.UserDto;
-import com.wetube.user.dto.UserDtoEntrada;
-import com.wetube.user.dto.UserPrincipal;
-import com.wetube.user.entity.UserEntity;
-import com.wetube.user.repository.UserRepository;
+import com.teakter.user.dto.UserDto;
+import com.teakter.user.dto.UserDtoEntrada;
+import com.teakter.user.dto.UserPrincipal;
+import com.teakter.user.entity.UserEntity;
+import com.teakter.user.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

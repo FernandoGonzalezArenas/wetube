@@ -1,8 +1,8 @@
-package com.wetube.user.service;
+package com.teakter.user.service;
 
-import com.wetube.user.dto.UploadUrlResponse;
-import com.wetube.user.dto.UserPrincipal;
-import com.wetube.user.repository.UserRepository;
+import com.teakter.user.dto.UploadUrlResponse;
+import com.teakter.user.dto.UserPrincipal;
+import com.teakter.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

@@ -1,4 +1,4 @@
-package com.wetube.auth.security;
+package com.teakter.auth.security;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;

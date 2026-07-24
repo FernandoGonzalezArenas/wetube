@@ -1,11 +1,11 @@
-package com.wetube.comments.service;
+package com.teakter.comments.service;
 
-import com.wetube.comments.dto.CommentDtoEntrada;
-import com.wetube.comments.dto.CommentsDto;
-import com.wetube.comments.dto.UpdateCommentDto;
-import com.wetube.comments.dto.UserPrincipal;
-import com.wetube.comments.entity.CommentEntity;
-import com.wetube.comments.repository.CommentRepository;
+import com.teakter.comments.dto.CommentDtoEntrada;
+import com.teakter.comments.dto.CommentsDto;
+import com.teakter.comments.dto.UpdateCommentDto;
+import com.teakter.comments.dto.UserPrincipal;
+import com.teakter.comments.entity.CommentEntity;
+import com.teakter.comments.repository.CommentRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

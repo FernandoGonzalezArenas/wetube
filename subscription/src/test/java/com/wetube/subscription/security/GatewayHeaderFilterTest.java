@@ -1,6 +1,6 @@
-package com.wetube.subscription.security;
+package com.teakter.subscription.security;
 
-import com.wetube.subscription.dto.UserPrincipal;
+import com.teakter.subscription.dto.UserPrincipal;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

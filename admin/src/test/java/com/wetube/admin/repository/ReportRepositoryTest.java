@@ -1,8 +1,8 @@
-package com.wetube.admin.repository;
+package com.teakter.admin.repository;
 
-import com.wetube.admin.entity.ReportEntity;
-import com.wetube.admin.entity.ReportStatus;
-import com.wetube.admin.entity.ReportType;
+import com.teakter.admin.entity.ReportEntity;
+import com.teakter.admin.entity.ReportStatus;
+import com.teakter.admin.entity.ReportType;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;

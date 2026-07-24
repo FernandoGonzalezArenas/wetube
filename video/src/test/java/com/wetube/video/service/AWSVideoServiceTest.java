@@ -1,8 +1,8 @@
-package com.wetube.video.service;
+package com.teakter.video.service;
 
-import com.wetube.video.dto.*;
-import com.wetube.video.entity.VideoEntity;
-import com.wetube.video.repository.VideoRepository;
+import com.teakter.video.dto.*;
+import com.teakter.video.entity.VideoEntity;
+import com.teakter.video.repository.VideoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

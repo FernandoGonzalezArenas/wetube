@@ -1,8 +1,8 @@
-package com.wetube.subscription.service;
-import com.wetube.subscription.dto.SubscriptionStatusDto;
-import com.wetube.subscription.dto.UserPrincipal;
-import com.wetube.subscription.entity.SubscriptionEntity;
-import com.wetube.subscription.repository.SubscriptionRepository;
+package com.teakter.subscription.service;
+import com.teakter.subscription.dto.SubscriptionStatusDto;
+import com.teakter.subscription.dto.UserPrincipal;
+import com.teakter.subscription.entity.SubscriptionEntity;
+import com.teakter.subscription.repository.SubscriptionRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

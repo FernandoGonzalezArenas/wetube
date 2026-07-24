@@ -1,14 +1,14 @@
-package com.wetube.admin.service;
+package com.teakter.admin.service;
 
-import com.wetube.admin.client.UserClient;
-import com.wetube.admin.client.VideoClient;
-import com.wetube.admin.config.RabbitMQConfig;
-import com.wetube.admin.dto.ReportDetailDto;
-import com.wetube.admin.dto.UserPrincipal;
-import com.wetube.admin.dto.VideoMetadataDto;
-import com.wetube.admin.entity.*;
-import com.wetube.admin.repository.AdminRepository;
-import com.wetube.admin.repository.ReportRepository;
+import com.teakter.admin.client.UserClient;
+import com.teakter.admin.client.VideoClient;
+import com.teakter.admin.config.RabbitMQConfig;
+import com.teakter.admin.dto.ReportDetailDto;
+import com.teakter.admin.dto.UserPrincipal;
+import com.teakter.admin.dto.VideoMetadataDto;
+import com.teakter.admin.entity.*;
+import com.teakter.admin.repository.AdminRepository;
+import com.teakter.admin.repository.ReportRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

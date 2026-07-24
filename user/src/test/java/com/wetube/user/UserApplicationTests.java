@@ -1,4 +1,4 @@
-package com.wetube.user;
+package com.teakter.user;
 
 import io.minio.MinioClient;
 import org.junit.jupiter.api.Test;

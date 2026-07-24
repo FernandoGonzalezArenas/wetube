@@ -1,4 +1,4 @@
-package com.wetube.gateway;
+package com.teakter.gateway;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

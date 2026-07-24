@@ -1,8 +1,8 @@
-package com.wetube.video.controller;
+package com.teakter.video.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.wetube.video.dto.*;
-import com.wetube.video.service.VideoService;
+import com.teakter.video.dto.*;
+import com.teakter.video.service.VideoService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

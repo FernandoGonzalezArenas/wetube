@@ -1,14 +1,14 @@
 networks:
-  wetube-network:
+  teakter-network:
     driver: bridge
 
 services:
   # Base de Datos
   db-global:
     networks:
-      - wetube-network
+      - teakter-network
     image: postgres:15
-    container_name: postgres-wetube
+    container_name: postgres-teakter
     environment:
       POSTGRES_USER: ${user_db_env}
       POSTGRES_PASSWORD: ${password_db_env}
@@ -25,7 +25,7 @@ services:
   # Consul
   consul:
     networks:
-      - wetube-network
+      - teakter-network
     image: hashicorp/consul:1.15
     container_name: consul-server
     ports:
@@ -35,7 +35,7 @@ services:
   # MinIO
   minio:
     networks:
-      - wetube-network
+      - teakter-network
     image: minio/minio
     container_name: minio-server
     environment:
@@ -51,7 +51,7 @@ services:
     depends_on:
       - minio
     networks:
-      - wetube-network
+      - teakter-network
     volumes:
       - ./init-scripts/setup-minio.sh:/setup-minio.sh
     entrypoint: /bin/sh
@@ -62,9 +62,9 @@ services:
 
   rabbitmq:
     networks:
-      - wetube-network
+      - teakter-network
     image: rabbitmq:3-management
-    container_name: rabbitmq-wetube
+    container_name: rabbitmq-teakter
     ports:
       - "5672:5672"
       - "15672:15672"
@@ -72,7 +72,7 @@ services:
 #microservicio auth
   auth-service:
     networks:
-      - wetube-network
+      - teakter-network
     build:
       context: ./auth
       dockerfile: Dockerfile
@@ -90,14 +90,14 @@ services:
       - JWT_SECRET=${jwt_secret_env}
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db-global:5432/authdb
       - SPRING_CLOUD_CONSUL_HOST=consul
-      - RABBIT_HOST=rabbitmq-wetube
+      - RABBIT_HOST=rabbitmq-teakter
       - RABBIT_USER=guest
       - RABBIT_PASSWORD=guest
 
   # microservicio video
   video-service:
     networks:
-      - wetube-network
+      - teakter-network
     build: 
       context: ./video
       dockerfile: Dockerfile
@@ -122,7 +122,7 @@ services:
       - SPRING_CLOUD_CONSUL_HOST=consul
       - MINIO_URL=http://minio:9000
       - STORAGE_TYPE=minio
-      - RABBIT_HOST=rabbitmq-wetube
+      - RABBIT_HOST=rabbitmq-teakter
       - RABBIT_USER=guest
       - RABBIT_PASSWORD=guest
 
@@ -130,7 +130,7 @@ services:
   #microservicio comments
   comments-service:
     networks:
-      - wetube-network
+      - teakter-network
     build:
       context: ./comments
       dockerfile: Dockerfile
@@ -147,14 +147,14 @@ services:
       - password_db=${password_db_env}
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db-global:5432/commentdb
       - SPRING_CLOUD_CONSUL_HOST=consul
-      - RABBIT_HOST=rabbitmq-wetube
+      - RABBIT_HOST=rabbitmq-teakter
       - RABBIT_USER=guest
       - RABBIT_PASSWORD=guest
 
 #microservicio likes
   likes-service:
     networks:
-      - wetube-network
+      - teakter-network
     build:
       context: ./likes
       dockerfile: Dockerfile
@@ -171,14 +171,14 @@ services:
       - password_db=${password_db_env}
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db-global:5432/likedb
       - SPRING_CLOUD_CONSUL_HOST=consul
-      - RABBIT_HOST=rabbitmq-wetube
+      - RABBIT_HOST=rabbitmq-teakter
       - RABBIT_USER=guest
       - RABBIT_PASSWORD=guest
 
 #microservice user
   user-service:
     networks:
-      - wetube-network
+      - teakter-network
     build:
       context: ./user
       dockerfile: Dockerfile
@@ -201,7 +201,7 @@ services:
       - AWS_SECRET_KEY=${aws_secretKey_env}
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db-global:5432/userdb
       - SPRING_CLOUD_CONSUL_HOST=consul
-      - RABBIT_HOST=rabbitmq-wetube
+      - RABBIT_HOST=rabbitmq-teakter
       - RABBIT_USER=guest
       - RABBIT_PASSWORD=guest
       - MINIO_URL=http://minio:9000
@@ -210,7 +210,7 @@ services:
 #microservicio subscription
   subscription-service:
     networks:
-      - wetube-network
+      - teakter-network
     build:
       context: ./subscription
       dockerfile: Dockerfile
@@ -227,14 +227,14 @@ services:
       - password_db=${password_db_env}
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db-global:5432/subscriptiondb
       - SPRING_CLOUD_CONSUL_HOST=consul
-      - RABBIT_HOST=rabbitmq-wetube
+      - RABBIT_HOST=rabbitmq-teakter
       - RABBIT_USER=guest
       - RABBIT_PASSWORD=guest
 
   #microservicio admin
   admin-service:
     networks:
-      - wetube-network
+      - teakter-network
     build:
       context: ./admin
       dockerfile: Dockerfile
@@ -251,14 +251,14 @@ services:
       - password_db=${password_db_env}
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db-global:5432/admindb
       - SPRING_CLOUD_CONSUL_HOST=consul
-      - RABBIT_HOST=rabbitmq-wetube
+      - RABBIT_HOST=rabbitmq-teakter
       - RABBIT_USER=guest
       - RABBIT_PASSWORD=guest
 
   #microservicio gateway
   gateway-service:
     networks:
-      - wetube-network
+      - teakter-network
     build:
       context: ./gateway
       dockerfile: Dockerfile

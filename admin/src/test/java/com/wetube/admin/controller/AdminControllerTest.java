@@ -1,9 +1,9 @@
-package com.wetube.admin.controller;
+package com.teakter.admin.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.wetube.admin.dto.AuditorDto;
-import com.wetube.admin.dto.ReportCreateDto;
-import com.wetube.admin.service.AdminService;
+import com.teakter.admin.dto.AuditorDto;
+import com.teakter.admin.dto.ReportCreateDto;
+import com.teakter.admin.service.AdminService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;

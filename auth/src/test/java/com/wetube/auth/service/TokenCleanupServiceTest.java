@@ -1,4 +1,4 @@
-package com.wetube.auth.service;
+package com.teakter.auth.service;
 
 import java.time.Instant;
 
@@ -8,7 +8,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import com.wetube.auth.repository.RefreshTokenRepository;
+import com.teakter.auth.repository.RefreshTokenRepository;
 
 public class TokenCleanupServiceTest {
 

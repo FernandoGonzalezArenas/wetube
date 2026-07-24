@@ -1,4 +1,4 @@
-package com.wetube.likes;
+package com.teakter.likes;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

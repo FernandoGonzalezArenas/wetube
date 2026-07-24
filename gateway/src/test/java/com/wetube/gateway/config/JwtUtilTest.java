@@ -1,4 +1,4 @@
-package com.wetube.gateway.config;
+package com.teakter.gateway.config;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;

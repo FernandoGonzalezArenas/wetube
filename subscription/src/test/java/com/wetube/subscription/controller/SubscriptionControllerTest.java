@@ -1,7 +1,7 @@
-package com.wetube.subscription.controller;
+package com.teakter.subscription.controller;
 
-import com.wetube.subscription.dto.SubscriptionStatusDto;
-import com.wetube.subscription.service.SubscriptionService;
+import com.teakter.subscription.dto.SubscriptionStatusDto;
+import com.teakter.subscription.service.SubscriptionService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;

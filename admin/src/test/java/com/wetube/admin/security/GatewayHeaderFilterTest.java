@@ -1,6 +1,6 @@
-package com.wetube.admin.security;
+package com.teakter.admin.security;
 
-import com.wetube.admin.dto.UserPrincipal;
+import com.teakter.admin.dto.UserPrincipal;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

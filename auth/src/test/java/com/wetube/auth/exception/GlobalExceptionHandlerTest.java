@@ -1,4 +1,4 @@
-package com.wetube.auth.exception;
+package com.teakter.auth.exception;
 
 import java.util.Map;
 

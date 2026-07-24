@@ -1,8 +1,8 @@
-package com.wetube.likes.controller;
+package com.teakter.likes.controller;
 
-import com.wetube.likes.Service.LikeService;
-import com.wetube.likes.dto.IdsDto;
-import com.wetube.likes.dto.VideoLikeStatusDto;
+import com.teakter.likes.Service.LikeService;
+import com.teakter.likes.dto.IdsDto;
+import com.teakter.likes.dto.VideoLikeStatusDto;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;

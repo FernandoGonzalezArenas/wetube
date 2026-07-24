@@ -1,7 +1,7 @@
-package com.wetube.gateway.filters;
+package com.teakter.gateway.filters;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
-import com.wetube.gateway.config.JwtUtil;
+import com.teakter.gateway.config.JwtUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

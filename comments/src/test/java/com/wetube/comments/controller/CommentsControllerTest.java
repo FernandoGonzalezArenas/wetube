@@ -1,8 +1,8 @@
-package com.wetube.comments.controller;
+package com.teakter.comments.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.wetube.comments.dto.CommentDtoEntrada;
-import com.wetube.comments.service.CommentService;
+import com.teakter.comments.dto.CommentDtoEntrada;
+import com.teakter.comments.service.CommentService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;

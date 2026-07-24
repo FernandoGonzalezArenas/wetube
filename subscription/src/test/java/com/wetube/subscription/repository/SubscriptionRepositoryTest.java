@@ -1,6 +1,6 @@
-package com.wetube.subscription.repository;
+package com.teakter.subscription.repository;
 
-import com.wetube.subscription.entity.SubscriptionEntity;
+import com.teakter.subscription.entity.SubscriptionEntity;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

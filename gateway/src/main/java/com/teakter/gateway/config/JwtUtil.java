@@ -1,0 +1,53 @@
+package com.teakter.gateway.config;
+
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.TokenExpiredException;
+import com.auth0.jwt.interfaces.DecodedJWT;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+import java.util.Date;
+import java.util.Optional;
+
+@Component
+public class JwtUtil {
+
+    @Value("${jwt.secret}")
+    private String secretKey;
+
+public DecodedJWT validateToken(String token){
+    return JWT.require(Algorithm.HMAC256(secretKey))
+            .build()
+            .verify(token);
+}
+
+public String extractUserId(String token){
+    return validateToken(token).getClaim("userId").asString();
+}
+
+public String extractRole(String token){
+    return validateToken(token).getClaim("role").asString();
+}
+
+public Optional<String> extractUsername(String token){
+    if (token==null) return Optional.empty();
+    try {
+        String username=validateToken(token).getSubject();
+        return Optional.of(username);
+    }catch (Exception e){
+        return Optional.empty();
+    }
+}
+
+public boolean isTokenExpired(String token){
+    try {
+        return validateToken(token).getExpiresAt().before(new Date());
+    }catch (TokenExpiredException e){
+        return true;
+    }catch (Exception e){
+        return true;
+    }
+    }
+
+}

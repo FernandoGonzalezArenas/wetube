@@ -1,9 +1,9 @@
-package com.wetube.user.controller;
+package com.teakter.user.controller;
 
-import com.wetube.user.dto.UploadUrlResponse;
-import com.wetube.user.dto.UserDto;
-import com.wetube.user.dto.UserDtoEntrada;
-import com.wetube.user.service.UserService;
+import com.teakter.user.dto.UploadUrlResponse;
+import com.teakter.user.dto.UserDto;
+import com.teakter.user.dto.UserDtoEntrada;
+import com.teakter.user.service.UserService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

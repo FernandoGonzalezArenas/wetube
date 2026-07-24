@@ -1,4 +1,4 @@
-package com.wetube.auth.security;
+package com.teakter.auth.security;
 
 import java.util.Optional;
 
@@ -12,8 +12,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
-import com.wetube.auth.entity.UserEntity;
-import com.wetube.auth.repository.UserRepository;
+import com.teakter.auth.entity.UserEntity;
+import com.teakter.auth.repository.UserRepository;
 
 public class CustomUserDetailsServiceTest {
 

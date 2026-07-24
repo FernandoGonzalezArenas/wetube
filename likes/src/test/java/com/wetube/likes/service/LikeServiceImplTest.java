@@ -1,11 +1,11 @@
-package com.wetube.likes.service;
+package com.teakter.likes.service;
 
-import com.wetube.likes.Service.LikeServiceImpl;
-import com.wetube.likes.dto.IdsDto;
-import com.wetube.likes.dto.UserPrincipal;
-import com.wetube.likes.dto.VideoLikeStatusDto;
-import com.wetube.likes.entity.LikeEntity;
-import com.wetube.likes.repository.LikeRepository;
+import com.teakter.likes.Service.LikeServiceImpl;
+import com.teakter.likes.dto.IdsDto;
+import com.teakter.likes.dto.UserPrincipal;
+import com.teakter.likes.dto.VideoLikeStatusDto;
+import com.teakter.likes.entity.LikeEntity;
+import com.teakter.likes.repository.LikeRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

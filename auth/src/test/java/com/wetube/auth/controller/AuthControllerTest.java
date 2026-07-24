@@ -1,13 +1,13 @@
-package com.wetube.auth.controller;
+package com.teakter.auth.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.wetube.auth.dto.AuthResponse;
-import com.wetube.auth.dto.LoginRequest;
-import com.wetube.auth.dto.RefreshTokenRequest;
-import com.wetube.auth.dto.RegisterRequest;
-import com.wetube.auth.security.JwtUtil;
-import com.wetube.auth.service.AuthService;
-import com.wetube.auth.service.RefreshTokenService;
+import com.teakter.auth.dto.AuthResponse;
+import com.teakter.auth.dto.LoginRequest;
+import com.teakter.auth.dto.RefreshTokenRequest;
+import com.teakter.auth.dto.RegisterRequest;
+import com.teakter.auth.security.JwtUtil;
+import com.teakter.auth.service.AuthService;
+import com.teakter.auth.service.RefreshTokenService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

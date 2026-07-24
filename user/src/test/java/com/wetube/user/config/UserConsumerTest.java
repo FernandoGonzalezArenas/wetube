@@ -1,7 +1,7 @@
-package com.wetube.user.config;
+package com.teakter.user.config;
 
-import com.wetube.user.dto.UserRabbitDto;
-import com.wetube.user.service.UserService;
+import com.teakter.user.dto.UserRabbitDto;
+import com.teakter.user.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

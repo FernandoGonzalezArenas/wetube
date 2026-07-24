@@ -1,6 +1,6 @@
-package com.wetube.comments.security;
+package com.teakter.comments.security;
 
-import com.wetube.comments.dto.UserPrincipal;
+import com.teakter.comments.dto.UserPrincipal;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

@@ -1,6 +1,6 @@
-package com.wetube.likes.security;
+package com.teakter.likes.security;
 
-import com.wetube.likes.dto.UserPrincipal;
+import com.teakter.likes.dto.UserPrincipal;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

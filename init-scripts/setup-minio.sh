@@ -21,8 +21,8 @@ echo '{
 # Aplicar CORS solo a los buckets específicos
 # El comando 'mc ls' verifica si existe, pero 'mc cors set' simplemente falla si no está.
 # Aquí lo aplicamos a ambos buckets:
-mc cors set myminio/wetube-videos /tmp/cors.json || echo "Bucket videos no encontrado aún."
-mc cors set myminio/wetube-users /tmp/cors.json || echo "Bucket users no encontrado aún."
+mc cors set myminio/teakter-videos /tmp/cors.json || echo "Bucket videos no encontrado aún."
+mc cors set myminio/teakter-users /tmp/cors.json || echo "Bucket users no encontrado aún."
 
 echo "Configuración de CORS completada correctamente.";
 exit 0;
