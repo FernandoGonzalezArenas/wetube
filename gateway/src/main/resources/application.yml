@@ -82,6 +82,13 @@ spring:
           uri: lb://likes
           predicates:
             - Path=/like/**
+
+#microservicio notification
+        - id: notification
+          uri: lb://notification
+          predicates:
+            - Path=/notifications/**
+
 #seguridad JWT
 jwt:
   secret: ${JWT_SECRET}

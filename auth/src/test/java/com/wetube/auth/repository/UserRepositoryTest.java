@@ -34,7 +34,7 @@ void  findByUsername_devuelveUsuario(){
     Optional<UserEntity> out=repo.findByUsername("fernando");
 
     //verificaciones
-assertThat(out.isPresent());
+assertThat(out).isPresent();
 assertThat(out.get().getEmail()).isEqualTo("fer@mail.com");
 }
 

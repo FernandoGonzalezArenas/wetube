@@ -17,6 +17,9 @@ public static final String USER_EXCHANGE = "user.exchange";
 //routing key para el registro de usuarios
     public static final String USER_CREATE_RK="user.create";
 
+    //routing key para el email de verificacion
+    public static final String USER_EMAIL_VERIFICATION_RK = "user.email.verification.rk";
+
 //cola donde el reseptor escuchara a el microservicio emisor (admin-emisor, auth-reseptor)
 public static final String AUTH_BAN_QUEUE="auth.user.ban.queue";
 

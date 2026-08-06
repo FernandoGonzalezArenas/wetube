@@ -12,4 +12,6 @@ public interface AuthService {
 
     void banUser(Long userId);
 
+    void verifyAccount(String token);
+
 }

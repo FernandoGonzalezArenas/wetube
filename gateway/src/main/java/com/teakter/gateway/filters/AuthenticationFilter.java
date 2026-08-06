@@ -44,6 +44,7 @@ String method=request.getMethod().name();
     if (
         path.startsWith("/auth/register") ||
             path.startsWith("/auth/login") ||
+            path.startsWith("/auth/verify") ||
             path.startsWith("/auth/refresh") ||
             path.startsWith("/auth/logout") ||
             path.startsWith("/actuator") ||

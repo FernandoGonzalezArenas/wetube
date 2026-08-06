@@ -255,6 +255,36 @@ services:
       - RABBIT_USER=guest
       - RABBIT_PASSWORD=guest
 
+#microservicio notification
+  notification-service:
+    networks:
+      - teakter-network
+    build:
+      context: ./notification
+      dockerfile: Dockerfile
+    container_name: notification-microservice
+    depends_on:
+      db-global:
+        condition: service_healthy
+      consul:
+        condition: service_started
+      rabbitmq:
+        condition: service_started
+    environment:
+      - user_db=${user_db_env}
+      - password_db=${password_db_env}
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db-global:5432/notificationdb
+      - SPRING_CLOUD_CONSUL_HOST=consul
+      - RABBIT_HOST=rabbitmq-teakter
+      - RABBIT_USER=guest
+      - RABBIT_PASSWORD=guest
+      - MAIL_HOST=${mail_host_env:-smtp-relay-brevo.com}
+      - MAIL_PORT=${mail_port_env:-587}
+      - MAIL_USERNAME=${mail_username_env}
+      - MAIL_PASSWORD=${mail_password_env}
+      - MAIL_FROM=${mail_from_env:-fer.gonare98@gmail.com}
+      - FRONTEND_URL=${frontend_url_env:-http://localhost:3000}
+
   #microservicio gateway
   gateway-service:
     networks:

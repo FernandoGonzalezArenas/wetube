@@ -1,0 +1,72 @@
+server:
+  port: 8088
+
+spring:
+  application:
+    name: notification
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/notificationdb}
+    username: ${user_db}
+    password: ${password_db}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+
+  cloud:
+    consul:
+      host: ${SPRING_CLOUD_CONSUL_HOST:localhost}
+      port: 8500
+      discovery:
+        instance-id: ${spring.application.name}:${random.value}
+        health-check-path: /actuator/health
+        health-check-interval: 10s
+        enabled: true
+        register: true
+        prefer-ip-address: true
+  config:
+    import: "optional:consul:"
+
+  rabbitmq:
+    host: ${RABBIT_HOST:localhost}
+    port: 5672
+    username: ${RABBIT_USER:guest}
+    password: ${RABBIT_PASSWORD:guest}
+
+#configuracion de Mail (ejemplo con Brebo / SMTP genérico)
+  mail:
+    host: ${MAIL_HOST:smtp-relay.brevo.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+#propiedades personalizadas
+app:
+  frontend_url: ${FRONTEND_URL:http://localhost:3000}
+  mail:
+    from: ${MAIL_FROM:fer.gonare98@gmail.com}
+
+#configuracion de documentacion
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /notification/v3/api-docs
+
+#actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: ALWAYS

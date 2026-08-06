@@ -25,6 +25,7 @@ private final PasswordEncoder passwordEncoder;
                     .password(passwordEncoder.encode("admin123"))
                     .email("admin@teakter.com")
                     .role("ROLE_ADMIN")
+                    .isVerified(true)
                     .address("Aguascalientes, MX")
                     .phone("4491234567")
                     .build();

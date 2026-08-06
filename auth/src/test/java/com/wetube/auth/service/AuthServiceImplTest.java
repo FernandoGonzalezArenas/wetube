@@ -1,17 +1,16 @@
 package com.teakter.auth.service;
 
-import java.util.Optional;
-
+import com.teakter.auth.dto.AuthResponse;
+import com.teakter.auth.dto.LoginRequest;
+import com.teakter.auth.dto.RegisterRequest;
+import com.teakter.auth.entity.UserEntity;
 import com.teakter.auth.repository.RefreshTokenRepository;
+import com.teakter.auth.repository.UserRepository;
+import com.teakter.auth.repository.VerificationTokenRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
-
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -20,11 +19,11 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.teakter.auth.dto.AuthResponse;
-import com.teakter.auth.dto.LoginRequest;
-import com.teakter.auth.dto.RegisterRequest;
-import com.teakter.auth.entity.UserEntity;
-import com.teakter.auth.repository.UserRepository;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 public class AuthServiceImplTest {
 
@@ -33,6 +32,7 @@ private PasswordEncoder passwordEncoder;
 private AuthenticationManager authenticationManager;
 private RefreshTokenService refreshTokenService;
 private RefreshTokenRepository refreshTokenRepository;
+private VerificationTokenRepository verificationTokenRepository;
 private RabbitTemplate rabbitTemplate;
 
 private AuthServiceImpl service;
@@ -41,11 +41,12 @@ private AuthServiceImpl service;
 void setUp(){
     userRepository=mock(UserRepository.class);
     refreshTokenRepository=mock(RefreshTokenRepository.class);
+    verificationTokenRepository = mock(VerificationTokenRepository.class);
     passwordEncoder=mock(PasswordEncoder.class);
     authenticationManager=mock(AuthenticationManager.class);
     refreshTokenService=mock(RefreshTokenService.class);
     rabbitTemplate=mock(RabbitTemplate.class);
-    service=new AuthServiceImpl(userRepository, refreshTokenRepository, passwordEncoder, authenticationManager, refreshTokenService, rabbitTemplate);
+    service=new AuthServiceImpl(userRepository, refreshTokenRepository, verificationTokenRepository, passwordEncoder, authenticationManager, refreshTokenService, rabbitTemplate);
 }
 
 @Test
@@ -88,19 +89,29 @@ void register_OK_guardaConPasswordCodificado(){
    assertEquals("mario@mail.com", saved.getEmail());
 
    //verificamos que se llama a convertAndSent de RabbitMQ
-    verify(rabbitTemplate).convertAndSend(any(String.class), any(String.class), any(Object.class));
+    verify(rabbitTemplate, times(2)).convertAndSend(any(String.class), any(String.class), any(Object.class));
 }
 
 @Test
 void login_OK_autentica_y_generaTokens(){
+
+    //crear usuario en la base de datos para agregar el estado true de la verificacion
+UserEntity mockUser=UserEntity.builder()
+        .username("fernando")
+        .password("secret98")
+        .email("fer@mail.com")
+        .isVerified(true)
+        .build();
+when(userRepository.findByUsername("fernando")).thenReturn(Optional.of(mockUser));
+
     //refreshTokenService devuelve tokens
     when(refreshTokenService.generateTokensForUser("fernando")).thenReturn(new AuthResponse("ACC", "REF"));
 
     //crear objeto LoginRequest con credenciales
     LoginRequest req=new LoginRequest();
     req.setUsername("fernando");
-    req.setPassword("secret");
-AuthResponse resp=service.login(req);
+    req.setPassword("secret98");
+    AuthResponse resp=service.login(req);
 
 //comprobar que los tokens no son nulos
 assertNotNull(resp.getAccessToken());
@@ -114,7 +125,7 @@ assertEquals("REF", resp.getRefreshToken());
 verify(refreshTokenService).registerRefresh("REF", "fernando");
 
 //verificamos que el usuario se autentico
-verify(authenticationManager).authenticate(new UsernamePasswordAuthenticationToken("fernando", "secret"));
+verify(authenticationManager).authenticate(new UsernamePasswordAuthenticationToken("fernando", "secret98"));
 }
 
 @Test
@@ -134,9 +145,18 @@ assertEquals(HttpStatus.UNAUTHORIZED, ex.getStatusCode());
 
 @Test
 void login_errorGenerico_500(){
+UserEntity user=UserEntity.builder()
+                .username("fernando")
+                        .password("oops")
+                                .email("fer@mail.com")
+                                        .isVerified(true)
+                                                .build();
+when(userRepository.findByUsername("fernando")).thenReturn(Optional.of(user));
+when(refreshTokenService.generateTokensForUser("fernando")).thenReturn(new AuthResponse("ACC", "REF"));
+
     //generar el error 500 de el servidor
-    doThrow(new RuntimeException("boom"))
-    .when(authenticationManager).authenticate(any());
+    doThrow(new RuntimeException("Error inesperado en el servidor"))
+            .when(authenticationManager).authenticate(any());
 
 //crear objecto login para error 500
 LoginRequest req=new LoginRequest();

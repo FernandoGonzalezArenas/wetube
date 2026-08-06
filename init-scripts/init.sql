@@ -5,3 +5,4 @@ CREATE DATABASE likedb;
 CREATE DATABASE userdb;
 CREATE DATABASE subscriptiondb;
 CREATE DATABASE admindb;
+CREATE DATABASE notificationdb;

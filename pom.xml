@@ -24,6 +24,7 @@
         <module>user</module>
         <module>subscription</module>
         <module>admin</module>
+        <module>notification</module>
         <module>gateway</module>
         </modules>
 

@@ -16,12 +16,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
- @RestController
+@RestController
 @RequestMapping("/auth")
  @RequiredArgsConstructor
  @Tag(name = "Auth Controller", description = "gestiona el registro y acceso de usuarios, mediante la generacion de tokens JWT para acceso y refresco")
@@ -54,6 +51,18 @@ description = "inicio de cesion de los usuarios con su username y password")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request){
         AuthResponse response=authService.login(request);
         return ResponseEntity.ok(response);
+}
+
+@Operation(summary = "verificar correo de usuario",
+description = "valida el token enviado por correo para activar la cuenta")
+@ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "cuenta verificada con exito"),
+        @ApiResponse(responseCode = "400", description = "token invalido o expirado")
+})
+@PostMapping("/verify")
+public ResponseEntity<String> verifyAccount(@RequestParam("token") String token){
+    authService.verifyAccount(token);
+    return ResponseEntity.ok("cuenta verificada correctamente, ya puedes iniciar sesion");
 }
 
 @Operation(summary = "refresco de tokens (renovacion)", description = "se piden tokens de acceso y refresco nuevos")
