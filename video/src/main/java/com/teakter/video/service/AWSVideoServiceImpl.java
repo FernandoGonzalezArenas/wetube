@@ -25,6 +25,9 @@ public class AWSVideoServiceImpl extends AbstractVideoService {
 @Value("${aws.s3.bucket-videos}")
     private String bucketName;
 
+@Value("${aws.cloudfront.domain.videos}")
+private String cloudfrontDomainVideos;
+
     public AWSVideoServiceImpl(VideoRepository videoRepository, InteractionsService interactionsService, LikeService likeService, SubscriptionService subscriptionService, UserService userService, RabbitTemplate rabbitTemplate, S3Presigner s3Presigner){
     super(videoRepository, interactionsService, likeService, subscriptionService, userService, rabbitTemplate);
     this.s3Presigner=s3Presigner;
@@ -36,7 +39,7 @@ public class AWSVideoServiceImpl extends AbstractVideoService {
 String finalFileName=UUID.randomUUID().toString() + "-" + filename;
 String objectName="videos/" + finalFileName;
         PutObjectPresignRequest presignRequest=PutObjectPresignRequest.builder()
-                .signatureDuration(Duration.ZERO.ofMinutes(15))
+                .signatureDuration(Duration.ofMinutes(15))
                 .putObjectRequest(req -> req.bucket(bucketName).key(objectName))
                 .build();
 
@@ -46,7 +49,7 @@ String objectName="videos/" + finalFileName;
 
     @Override
     protected String buildFullVideoUrl(String filename){
-    return "https://" + bucketName + ".s3.amazonaws.com/videos/" + filename;
+    return "https://" + cloudfrontDomainVideos + "/videos/" + filename;
     }
 
     //metodo para obtener la URL prefirmada de AWS S3 para miniaturas
@@ -55,7 +58,7 @@ String objectName="videos/" + finalFileName;
         String finalFileName=UUID.randomUUID().toString() + "-" + filename;
         String objectName="thumbnails/" + finalFileName;
         PutObjectPresignRequest presignRequest=PutObjectPresignRequest.builder()
-                .signatureDuration(Duration.ZERO.ofMinutes(15))
+                .signatureDuration(Duration.ofMinutes(15))
                 .putObjectRequest(req -> req.bucket(bucketName).key(objectName))
                 .build();
 
@@ -65,11 +68,12 @@ String objectName="videos/" + finalFileName;
 
     @Override
     protected String buildFullThumbnailUrl(String filename){
-        return "https://" + bucketName + ".s3.amazonaws.com/thumbnails/" + filename;
+        return "https://" + cloudfrontDomainVideos + "/thumbnails/" + filename;
     }
 
     @Override
 protected String getPlaybackUrl(String filename){
+/*
         //extraemos el nombre de el objeto
     String key="videos/"+filename;
 
@@ -84,6 +88,11 @@ protected String getPlaybackUrl(String filename){
 logger.error("error generando URL de reproduccion AWS: {}", e.getMessage());
 throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "el servicio esta temporalmente no disponible");
     }
+*/
+
+        String baseName=filename.contains(".") ? filename.substring(0, filename.lastIndexOf('.')) : filename;
+        return "https://" + cloudfrontDomainVideos + "/videos/hls/" + baseName + "/master.m3u8";
 }
+
 
 }

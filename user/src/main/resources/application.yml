@@ -40,6 +40,9 @@ aws:
     region: us-east-1
   access-key: ${AWS_ACCESS_KEY}
   secret-key: ${AWS_SECRET_KEY}
+  cloudfront:
+    domain:
+      users: ${AWS_CLOUDFRONT_DOMAIN_USERS}
 
 minio:
   url: ${MINIO_URL}

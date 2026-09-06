@@ -65,11 +65,13 @@ private PresignedPutObjectRequest presignedPutObjectRequest;
 
 private AWSVideoServiceImpl service;
 private final Long userId=1L;
+String cloudfrontDomain="d3am6ojx8a1nkx.cloudfront.net";
 
 @BeforeEach
     void setup(){
     service=new AWSVideoServiceImpl(repository, interactionsService, likeService, subscriptionService, userService, rabbitTemplate, s3Presigner);
     ReflectionTestUtils.setField(service, "bucketName", "aws-bucket-videos");
+    ReflectionTestUtils.setField(service, "cloudfrontDomainVideos", cloudfrontDomain);
 
     UserPrincipal principal=new UserPrincipal(userId, "user-aws");
     UsernamePasswordAuthenticationToken auth=new UsernamePasswordAuthenticationToken(principal, null, Collections.emptyList());
@@ -158,7 +160,7 @@ void shouldGetFeedCorrectly(){
 }
 
 @Test
-    @DisplayName("aws: debe retornar VideoPlaybackDto con URL firmada de GetObject")
+    @DisplayName("aws: debe retornar VideoPlaybackDto con URL de cloudfront")
     void shouldGetVideoForPlaybackAWS() throws Exception{
 VideoEntity video=VideoEntity.builder()
         .id(10L)
@@ -166,17 +168,17 @@ VideoEntity video=VideoEntity.builder()
         .duration(84L)
         .videoUrl("clip-123.mp4")
         .build();
-    String fakeSignedUrl = "https://aws-bucket.s3.amazonaws.com/videos/clip-123.mp4?X-Amz-Signature=xyz";
+    String fakeSignedUrl = "https://" + cloudfrontDomain + "/videos/hls/clip-123/master.m3u8";
 
     when(repository.findById(10L)).thenReturn(Optional.of(video));
-    when(s3Presigner.presignGetObject(any(GetObjectPresignRequest.class))).thenReturn(presignedGetObjectRequest);
-    when(presignedGetObjectRequest.url()).thenReturn(new URL(fakeSignedUrl));
+//    when(s3Presigner.presignGetObject(any(GetObjectPresignRequest.class))).thenReturn(presignedGetObjectRequest);
+//    when(presignedGetObjectRequest.url()).thenReturn(new URL(fakeSignedUrl));
 
     VideoPlaybackDto result=service.getVideoForPlayback(10L);
 
     assertNotNull(result);
     assertEquals(fakeSignedUrl, result.getVideoUrl());
-    verify(s3Presigner).presignGetObject(any(GetObjectPresignRequest.class));
+//    verify(s3Presigner).presignGetObject(any(GetObjectPresignRequest.class));
 }
 
 @Test
@@ -251,21 +253,21 @@ assertEquals(HttpStatus.FORBIDDEN, ex.getStatusCode());
     SecurityContextHolder.getContext().setAuthentication(auth);
 
     VideoEntity v1=VideoEntity.builder()
-            .id(1L).title("Video Admin1").duration(48L).videoUrl("URL-Original1").build();
+            .id(1L).title("Video Admin1").duration(48L).videoUrl("clip1.mp4").build();
     VideoEntity v2=VideoEntity.builder()
-            .id(2L).title("Video Admin2").duration(78L).videoUrl("URL-Original2").build();
+            .id(2L).title("Video Admin2").duration(78L).videoUrl("clip2.mp4").build();
     VideoEntity v3=VideoEntity.builder()
-            .id(3L).title("Video Admin3").duration(35L).videoUrl("URL-Original3").build();
+            .id(3L).title("Video Admin3").duration(35L).videoUrl("clip3.mp4").build();
 
     when(repository.findAllById(videoIds)).thenReturn(List.of(v1, v2, v3));
-when(s3Presigner.presignGetObject(any(GetObjectPresignRequest.class))).thenReturn(presignedGetObjectRequest);
-when(presignedGetObjectRequest.url()).thenReturn(new URL("http://url-firmada-aws.com"));
+//when(s3Presigner.presignGetObject(any(GetObjectPresignRequest.class))).thenReturn(presignedGetObjectRequest);
+//when(presignedGetObjectRequest.url()).thenReturn(new URL("http://url-firmada-aws.com"));
 
     List<VideoDto> results=service.videoInternalDetails(videoIds);
 
     assertNotNull(results);
     assertEquals("Video Admin1", results.get(0).getTitle());
-assertEquals("http://url-firmada-aws.com", results.get(0).getVideoUrl());
+assertEquals("https://" + cloudfrontDomain + "/videos/hls/clip1/master.m3u8", results.get(0).getVideoUrl());
 }
 
 @Test
@@ -308,23 +310,6 @@ assertThrows(SdkClientException.class, () ->{
 
 //verificamos que no se intento realizar ninguna operacion mas
     verify(presignedPutObjectRequest, never()).url();
-}
-
-@Test
-    @DisplayName("debe manejar el error cuando faye la generacion de URL de reproduccion")
-    void shouldHandleErrorWhenPlaybackFails(){
-    VideoEntity video=VideoEntity.builder()
-            .id(1L)
-            .userId(1L)
-            .videoUrl("video-key.mp4")
-            .duration(38L)
-            .build();
-    when(repository.findById(1L)).thenReturn(Optional.of(video));
-
-    //simulamos error en el presigner de lectura
-    when(s3Presigner.presignGetObject(any(GetObjectPresignRequest.class))).thenThrow(new RuntimeException("error en el servicio AWS"));
-
-    assertThrows(ResponseStatusException.class, () -> service.getVideoForPlayback(1L));
 }
 
 }

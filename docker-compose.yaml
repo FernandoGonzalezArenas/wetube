@@ -2,27 +2,34 @@ networks:
   teakter-network:
     driver: bridge
 
+volumes:
+  postgres_data:
+  rabbitmq_data:
+
 services:
   # Base de Datos
   db-global:
     networks:
       - teakter-network
-    image: postgres:15
+    image: postgres:15-alpine
     container_name: postgres-teakter
     environment:
       POSTGRES_USER: ${user_db_env}
       POSTGRES_PASSWORD: ${password_db_env}
     volumes:
+      - postgres_data:/var/lib/postgresql/data
       - ./init-scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
-    ports:
-      - "5432:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
       timeout: 5s
       retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 512M
 
-  # Consul
+# Consul
   consul:
     networks:
       - teakter-network
@@ -31,45 +38,55 @@ services:
     ports:
       - "8500:8500"
     command: agent -dev -client=0.0.0.0
+    deploy:
+      resources:
+        limits:
+          memory: 256M
 
-  # MinIO
-  minio:
-    networks:
-      - teakter-network
-    image: minio/minio
-    container_name: minio-server
-    environment:
-      - MINIO_ROOT_USER=${minio_accessKey_env}
-      - MINIO_ROOT_PASSWORD=${minio_secretKey_env}
-    ports:
-      - "9000:9000"
-      - "9001:9001"
-    command: server /data --console-address ":9001"
+# MinIO
+#  minio:
+#    networks:
+#      - teakter-network
+#    image: minio/minio
+#    container_name: minio-server
+#    environment:
+#      - MINIO_ROOT_USER=${minio_accessKey_env}
+#      - MINIO_ROOT_PASSWORD=${minio_secretKey_env}
+#    ports:
+#      - "9000:9000"
+#      - "9001:9001"
+#    command: server /data --console-address ":9001"
 
-  minio-provisioner:
-    image: minio/mc
-    depends_on:
-      - minio
-    networks:
-      - teakter-network
-    volumes:
-      - ./init-scripts/setup-minio.sh:/setup-minio.sh
-    entrypoint: /bin/sh
-    command: /setup-minio.sh
-    environment:
-      - MINIO_ROOT_USER=${minio_accessKey_env}
-      - MINIO_ROOT_PASSWORD=${minio_secretKey_env}
+#  minio-provisioner:
+#    image: minio/mc
+#    depends_on:
+#      - minio
+#    networks:
+#      - teakter-network
+#    volumes:
+#      - ./init-scripts/setup-minio.sh:/setup-minio.sh
+#    entrypoint: /bin/sh
+#    command: /setup-minio.sh
+#    environment:
+#      - MINIO_ROOT_USER=${minio_accessKey_env}
+#      - MINIO_ROOT_PASSWORD=${minio_secretKey_env}
 
   rabbitmq:
     networks:
       - teakter-network
-    image: rabbitmq:3-management
+    image: rabbitmq:3-management-alpine
     container_name: rabbitmq-teakter
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
     ports:
-      - "5672:5672"
+#      - "5672:5672"
       - "15672:15672"
+    deploy:
+      resources:
+        limits:
+          memory: 384M
 
-#microservicio auth
+  #microservicio auth
   auth-service:
     networks:
       - teakter-network
@@ -85,6 +102,7 @@ services:
       rabbitmq:
         condition: service_started
     environment:
+      - JAVA_TOOL_OPTIONS=-Xms128m -Xmx384m -XX:+UseG1GC
       - user_db=${user_db_env}
       - password_db=${password_db_env}
       - JWT_SECRET=${jwt_secret_env}
@@ -93,6 +111,10 @@ services:
       - RABBIT_HOST=rabbitmq-teakter
       - RABBIT_USER=guest
       - RABBIT_PASSWORD=guest
+    deploy:
+      resources:
+        limits:
+          memory: 512m
 
   # microservicio video
   video-service:
@@ -107,25 +129,30 @@ services:
         condition: service_healthy
       consul:
         condition: service_started
-      minio:
-        condition: service_started
+#      minio:
+#        condition: service_started
       rabbitmq:
         condition: service_started
     environment:
+      - JAVA_TOOL_OPTIONS=-Xms128m -Xmx384m -XX:+UseG1GC
       - user_db=${user_db_env}
       - password_db=${password_db_env}
       - MINIO_ACCESS_KEY=${minio_accessKey_env}
       - MINIO_SECRET_KEY=${minio_secretKey_env}
       - AWS_ACCESS_KEY=${aws_accessKey_env}
       - AWS_SECRET_KEY=${aws_secretKey_env}
+      - AWS_CLOUDFRONT_DOMAIN_VIDEOS=${aws_cloudfront_domain_videos_env}
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db-global:5432/videodb
       - SPRING_CLOUD_CONSUL_HOST=consul
       - MINIO_URL=http://minio:9000
-      - STORAGE_TYPE=minio
+      - STORAGE_TYPE=aws
       - RABBIT_HOST=rabbitmq-teakter
       - RABBIT_USER=guest
       - RABBIT_PASSWORD=guest
-
+    deploy:
+      resources:
+        limits:
+          memory: 1g
 
   #microservicio comments
   comments-service:
@@ -143,6 +170,7 @@ services:
       rabbitmq:
         condition: service_started
     environment:
+      - JAVA_TOOL_OPTIONS=-Xms128m -Xmx384m -XX:+UseG1GC
       - user_db=${user_db_env}
       - password_db=${password_db_env}
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db-global:5432/commentdb
@@ -150,6 +178,10 @@ services:
       - RABBIT_HOST=rabbitmq-teakter
       - RABBIT_USER=guest
       - RABBIT_PASSWORD=guest
+    deploy:
+      resources:
+        limits:
+          memory: 450m
 
 #microservicio likes
   likes-service:
@@ -167,6 +199,7 @@ services:
       rabbitmq:
         condition: service_started
     environment:
+      - JAVA_TOOL_OPTIONS=-Xms128m -Xmx384m -XX:+UseG1GC
       - user_db=${user_db_env}
       - password_db=${password_db_env}
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db-global:5432/likedb
@@ -174,6 +207,10 @@ services:
       - RABBIT_HOST=rabbitmq-teakter
       - RABBIT_USER=guest
       - RABBIT_PASSWORD=guest
+    deploy:
+      resources:
+        limits:
+          memory: 450m
 
 #microservice user
   user-service:
@@ -190,22 +227,28 @@ services:
         condition: service_started
       rabbitmq:
         condition: service_started
-      minio:
-        condition: service_started
+#      minio:
+#        condition: service_started
     environment:
+      - JAVA_TOOL_OPTIONS=-Xms128m -Xmx384m -XX:+UseG1GC
       - user_db=${user_db_env}
       - password_db=${password_db_env}
       - MINIO_ACCESS_KEY=${minio_accessKey_env}
       - MINIO_SECRET_KEY=${minio_secretKey_env}
       - AWS_ACCESS_KEY=${aws_accessKey_env}
       - AWS_SECRET_KEY=${aws_secretKey_env}
+      - AWS_CLOUDFRONT_DOMAIN_USERS=${aws_cloudfront_domain_users_env}
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db-global:5432/userdb
       - SPRING_CLOUD_CONSUL_HOST=consul
       - RABBIT_HOST=rabbitmq-teakter
       - RABBIT_USER=guest
       - RABBIT_PASSWORD=guest
       - MINIO_URL=http://minio:9000
-      - STORAGE_TYPE=minio
+      - STORAGE_TYPE=aws
+    deploy:
+      resources:
+        limits:
+          memory: 512m
 
 #microservicio subscription
   subscription-service:
@@ -223,6 +266,7 @@ services:
       rabbitmq:
         condition: service_started
     environment:
+      - JAVA_TOOL_OPTIONS=-Xms128m -Xmx384m -XX:+UseG1GC
       - user_db=${user_db_env}
       - password_db=${password_db_env}
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db-global:5432/subscriptiondb
@@ -230,6 +274,10 @@ services:
       - RABBIT_HOST=rabbitmq-teakter
       - RABBIT_USER=guest
       - RABBIT_PASSWORD=guest
+    deploy:
+      resources:
+        limits:
+          memory: 450m
 
   #microservicio admin
   admin-service:
@@ -247,6 +295,7 @@ services:
       rabbitmq:
         condition: service_started
     environment:
+      - JAVA_TOOL_OPTIONS=-Xms128m -Xmx384m -XX:+UseG1GC
       - user_db=${user_db_env}
       - password_db=${password_db_env}
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db-global:5432/admindb
@@ -254,6 +303,10 @@ services:
       - RABBIT_HOST=rabbitmq-teakter
       - RABBIT_USER=guest
       - RABBIT_PASSWORD=guest
+    deploy:
+      resources:
+        limits:
+          memory: 450m
 
 #microservicio notification
   notification-service:
@@ -271,6 +324,7 @@ services:
       rabbitmq:
         condition: service_started
     environment:
+      - JAVA_TOOL_OPTIONS=-Xms128m -Xmx384m -XX:+UseG1GC
       - user_db=${user_db_env}
       - password_db=${password_db_env}
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db-global:5432/notificationdb
@@ -284,6 +338,10 @@ services:
       - MAIL_PASSWORD=${mail_password_env}
       - MAIL_FROM=${mail_from_env:-fer.gonare98@gmail.com}
       - FRONTEND_URL=${frontend_url_env:-http://localhost:3000}
+    deploy:
+      resources:
+        limits:
+          memory: 450m
 
   #microservicio gateway
   gateway-service:
@@ -299,7 +357,12 @@ services:
       consul:
         condition: service_started
     environment:
+      - JAVA_TOOL_OPTIONS=-Xms128m -Xmx384m -XX:+UseG1GC
       - JWT_SECRET=${jwt_secret_env}
       - SPRING_CLOUD_CONSUL_HOST=consul
       - SPRING_CLOUD_CONSUL_PORT=8500
+    deploy:
+      resources:
+        limits:
+          memory: 512m
 

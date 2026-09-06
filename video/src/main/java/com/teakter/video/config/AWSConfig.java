@@ -13,7 +13,6 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
 import software.amazon.awssdk.services.s3.model.HeadBucketRequest;
 import software.amazon.awssdk.services.s3.model.NoSuchBucketException;
-import software.amazon.awssdk.services.s3.model.PutBucketPolicyRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 
 import java.util.Arrays;
@@ -49,10 +48,10 @@ public class AWSConfig {
     if (!isTest) {
         try {
             s3.headBucket(HeadBucketRequest.builder().bucket(bucketName).build());
-            setPublicReadOnlyPolicy(s3, "thumbnails/*");
+//            setPublicReadOnlyPolicy(s3, "thumbnails/*");
         } catch (NoSuchBucketException e) {
             s3.createBucket(CreateBucketRequest.builder().bucket(bucketName).build());
-            setPublicReadOnlyPolicy(s3, "thumbnails/*");
+//            setPublicReadOnlyPolicy(s3, "thumbnails/*");
         }
     }
     return s3;
@@ -67,6 +66,7 @@ public class AWSConfig {
                 )).build();
     }
 
+    /*
     private void setPublicReadOnlyPolicy(S3Client client, String prefix) throws Exception{
         String policy = "{\n" +
                 "  \"Version\": \"2012-10-17\",\n" +
@@ -81,7 +81,6 @@ public class AWSConfig {
                 "}";
 client.putBucketPolicy(PutBucketPolicyRequest.builder().bucket(bucketName).policy(policy).build());
     }
-
-
+*/
 
 }

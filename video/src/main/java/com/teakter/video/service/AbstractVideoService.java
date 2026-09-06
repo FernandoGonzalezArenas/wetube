@@ -1,5 +1,6 @@
 package com.teakter.video.service;
 
+import com.teakter.video.config.RabbitMQConfig;
 import com.teakter.video.dto.*;
 import com.teakter.video.entity.VideoEntity;
 import com.teakter.video.repository.VideoRepository;
@@ -49,6 +50,15 @@ Long userId=principal.userId();
             video.setThumbnailUrl(entrada.getThumbnailUrl());
             videoRepository.save(video);
 
+            VideoProcessEvent event=new VideoProcessEvent(
+                    video.getId(),
+                    entrada.getFilename()
+            );
+rabbitTemplate.convertAndSend(
+        RabbitMQConfig.VIDEO_EXCHANGE,
+        RabbitMQConfig.VIDEO_PROCESS_HLS_RK,
+        event
+);
             return mapToDto(video);
         }
 
@@ -123,6 +133,7 @@ return result.map(this::mapToDto);
         //generamos la URL de acceso
         String urlFinal=getPlaybackUrl(video.getVideoUrl());
 String thumbUrl=buildFullThumbnailUrl(video.getThumbnailUrl());
+System.out.println("la URL final de reproduccion es: "+ urlFinal);
 
         //retornamos el DTO
         return VideoPlaybackDto.builder()
@@ -233,13 +244,9 @@ if (!isAdmin){
 return videos.stream().map(video -> {
     VideoDto dto = mapToDto(video);
 
-try {
-    java.lang.String urlFirmada = getPlaybackUrl(video.getVideoUrl());
+    String urlReproduccion = getPlaybackUrl(video.getVideoUrl());
 
-    dto.setVideoUrl(urlFirmada);
-}catch (Exception e){
-logger.error("error al construir la URL firmada de reproduccion: ", e);
-}
+    dto.setVideoUrl(urlReproduccion);
     return dto;
 }).collect(Collectors.toList());
     }

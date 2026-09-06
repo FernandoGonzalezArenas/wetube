@@ -23,6 +23,9 @@ private final S3Presigner s3Presigner;
 @Value("${aws.s3.bucket-users}")
     private String bucketName;
 
+@Value("${aws.cloudfront.domain.users}")
+private String cloudfrontDomainUsers;
+
 @Override
     public UploadUrlResponse generateUploadUrl(String filename){
     String finalFilename= UUID.randomUUID()+"-"+filename;
@@ -38,7 +41,7 @@ private final S3Presigner s3Presigner;
 
 @Override
     public String getPublicUrl(String filename){
-    return "https://"+bucketName+".s3.amazonaws.com/profiles/"+filename;
+    return "https://"+cloudfrontDomainUsers+"/profiles/"+filename;
 }
 
 }
